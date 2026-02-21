@@ -12,7 +12,7 @@
     <%= form.file_field :avatar, accept: "image/*" %>
     <% if profile.persisted? && profile.avatar.attached? %>
       <p class="form-hint">Current avatar:</p>
-      <%= image_tag profile.avatar.variant(resize_to_fill: [64, 64]), class: "avatar" %>
+      <%= image_tag profile.avatar.variant(resize_to_fill: [64, 64]), class: "avatar", width: 64, height: 64 %>
     <% end %>
   </div>
 

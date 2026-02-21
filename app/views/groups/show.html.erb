@@ -11,7 +11,7 @@
     <% @profiles.each do |profile| %>
       <%= link_to group_profile_path(@group.uuid, profile.uuid), class: "profile-card card" do %>
         <% if profile.avatar.attached? %>
-          <%= image_tag profile.avatar.variant(resize_to_fill: [64, 64]), class: "avatar" %>
+          <%= image_tag profile.avatar.variant(resize_to_fill: [64, 64]), class: "avatar", width: 64, height: 64 %>
         <% else %>
           <div class="avatar avatar--placeholder"><%= profile.name.first.upcase %></div>
         <% end %>
