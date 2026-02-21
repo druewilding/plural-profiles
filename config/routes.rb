@@ -4,15 +4,29 @@ Rails.application.routes.draw do
   resource :registration, only: %i[ new create ]
   resource :email_verification, only: :show
 
-  # Define your application routes per the DSL in https://guides.rubyonrails.org/routing.html
+  # Authenticated user management of their own profiles and groups
+  resources :my_profiles, path: "my/profiles", controller: "my/profiles" do
+    member do
+      delete :remove_from_group
+    end
+  end
+  resources :my_groups, path: "my/groups", controller: "my/groups" do
+    member do
+      get :manage_profiles
+      post :add_profile
+      delete :remove_profile
+    end
+  end
+
+  # Public shareable URLs (no auth required)
+  resources :profiles, only: :show, param: :uuid
+  resources :groups, only: :show, param: :uuid do
+    resources :profiles, only: :show, param: :uuid, controller: "group_profiles"
+  end
 
   # Reveal health status on /up that returns 200 if the app boots with no exceptions, otherwise 500.
   # Can be used by load balancers and uptime monitors to verify that the app is live.
   get "up" => "rails/health#show", as: :rails_health_check
-
-  # Render dynamic PWA files from app/views/pwa/* (remember to link manifest in application.html.erb)
-  # get "manifest" => "rails/pwa#manifest", as: :pwa_manifest
-  # get "service-worker" => "rails/pwa#service_worker", as: :pwa_service_worker
 
   # Defines the root path route ("/")
   root "home#index"

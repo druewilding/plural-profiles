@@ -1,0 +1,49 @@
+<h1><%= @group.name %></h1>
+
+<div class="card">
+  <% if @group.description.present? %>
+    <div class="group-description">
+      <%= simple_format(@group.description) %>
+    </div>
+  <% end %>
+
+  <div class="profile-actions">
+    <%= link_to "Edit", edit_my_group_path(@group), class: "btn btn--secondary" %>
+    <%= link_to "Manage profiles", manage_profiles_my_group_path(@group), class: "btn btn--secondary" %>
+    <%= link_to "Delete", my_group_path(@group), data: { turbo_method: :delete, turbo_confirm: "Are you sure? This won't delete the profiles themselves." }, class: "btn btn--danger" %>
+  </div>
+
+  <div class="share-box">
+    <h3>Share this group</h3>
+    <div class="share-url">
+      <input type="text" value="<%= group_url(@group.uuid) %>" readonly id="group-share-url">
+      <button onclick="navigator.clipboard.writeText(document.getElementById('group-share-url').value); this.textContent='Copied!'; setTimeout(() => this.textContent='Copy', 2000)" class="btn">Copy</button>
+    </div>
+  </div>
+</div>
+
+<h2>Profiles in this group</h2>
+
+<% if @group.profiles.any? %>
+  <div class="profile-grid">
+    <% @group.profiles.order(:name).each do |profile| %>
+      <div class="card profile-card">
+        <% if profile.avatar.attached? %>
+          <%= image_tag profile.avatar.variant(resize_to_fill: [64, 64]), class: "avatar" %>
+        <% else %>
+          <div class="avatar avatar--placeholder"><%= profile.name.first.upcase %></div>
+        <% end %>
+        <h3><%= link_to profile.name, my_profile_path(profile) %></h3>
+        <% if profile.pronouns.present? %>
+          <span class="pronouns"><%= profile.pronouns %></span>
+        <% end %>
+      </div>
+    <% end %>
+  </div>
+<% else %>
+  <div class="card">
+    <p>No profiles in this group yet. <%= link_to "Add some!", manage_profiles_my_group_path(@group) %></p>
+  </div>
+<% end %>
+
+<p><%= link_to "← Back to my groups", my_groups_path %></p>

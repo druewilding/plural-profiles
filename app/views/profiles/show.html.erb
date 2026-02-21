@@ -1,0 +1,21 @@
+<div class="card profile-public">
+  <div class="profile-header">
+    <% if @profile.avatar.attached? %>
+      <%= image_tag @profile.avatar.variant(resize_to_fill: [96, 96]), class: "avatar avatar--large" %>
+    <% else %>
+      <div class="avatar avatar--large avatar--placeholder"><%= @profile.name.first.upcase %></div>
+    <% end %>
+    <div>
+      <h1><%= @profile.name %></h1>
+      <% if @profile.pronouns.present? %>
+        <p class="pronouns"><%= @profile.pronouns %></p>
+      <% end %>
+    </div>
+  </div>
+
+  <% if @profile.description.present? %>
+    <div class="profile-description">
+      <%= simple_format(@profile.description) %>
+    </div>
+  <% end %>
+</div>

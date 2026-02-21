@@ -1,0 +1,29 @@
+<h1><%= @group.name %></h1>
+
+<% if @group.description.present? %>
+  <div class="card">
+    <%= simple_format(@group.description) %>
+  </div>
+<% end %>
+
+<% if @profiles.any? %>
+  <div class="profile-grid">
+    <% @profiles.each do |profile| %>
+      <%= link_to group_profile_path(@group.uuid, profile.uuid), class: "profile-card card" do %>
+        <% if profile.avatar.attached? %>
+          <%= image_tag profile.avatar.variant(resize_to_fill: [64, 64]), class: "avatar" %>
+        <% else %>
+          <div class="avatar avatar--placeholder"><%= profile.name.first.upcase %></div>
+        <% end %>
+        <h3><%= profile.name %></h3>
+        <% if profile.pronouns.present? %>
+          <span class="pronouns"><%= profile.pronouns %></span>
+        <% end %>
+      <% end %>
+    <% end %>
+  </div>
+<% else %>
+  <div class="card">
+    <p>No profiles in this group yet.</p>
+  </div>
+<% end %>

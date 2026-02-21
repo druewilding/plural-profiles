@@ -1,11 +1,27 @@
 <h1>Welcome!</h1>
 
-<div class="card">
-  <p>Signed in as <strong><%= Current.user.email_address %></strong></p>
+<% unless Current.user.email_verified? %>
+  <div class="flash flash--warning">
+    ⚠️ Your email is not yet verified. Please check your inbox.
+  </div>
+<% end %>
 
-  <% unless Current.user.email_verified? %>
-    <div class="flash flash--warning">
-      ⚠️ Your email is not yet verified. Please check your inbox.
-    </div>
-  <% end %>
+<div class="dashboard-grid">
+  <div class="card">
+    <h2>My Profiles</h2>
+    <p class="text-muted"><%= pluralize(Current.user.profiles.count, "profile") %></p>
+    <p>
+      <%= link_to "View profiles", my_profiles_path, class: "btn" %>
+      <%= link_to "New profile", new_my_profile_path, class: "btn btn--secondary" %>
+    </p>
+  </div>
+
+  <div class="card">
+    <h2>My Groups</h2>
+    <p class="text-muted"><%= pluralize(Current.user.groups.count, "group") %></p>
+    <p>
+      <%= link_to "View groups", my_groups_path, class: "btn" %>
+      <%= link_to "New group", new_my_group_path, class: "btn btn--secondary" %>
+    </p>
+  </div>
 </div>

@@ -10,9 +10,42 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_02_21_194004) do
+ActiveRecord::Schema[8.1].define(version: 2026_02_21_195852) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
+
+  create_table "group_profiles", force: :cascade do |t|
+    t.datetime "created_at", null: false
+    t.bigint "group_id", null: false
+    t.bigint "profile_id", null: false
+    t.datetime "updated_at", null: false
+    t.index ["group_id", "profile_id"], name: "index_group_profiles_on_group_id_and_profile_id", unique: true
+    t.index ["group_id"], name: "index_group_profiles_on_group_id"
+    t.index ["profile_id"], name: "index_group_profiles_on_profile_id"
+  end
+
+  create_table "groups", force: :cascade do |t|
+    t.datetime "created_at", null: false
+    t.text "description"
+    t.string "name", null: false
+    t.datetime "updated_at", null: false
+    t.bigint "user_id", null: false
+    t.string "uuid", null: false
+    t.index ["user_id"], name: "index_groups_on_user_id"
+    t.index ["uuid"], name: "index_groups_on_uuid", unique: true
+  end
+
+  create_table "profiles", force: :cascade do |t|
+    t.datetime "created_at", null: false
+    t.text "description"
+    t.string "name", null: false
+    t.string "pronouns"
+    t.datetime "updated_at", null: false
+    t.bigint "user_id", null: false
+    t.string "uuid", null: false
+    t.index ["user_id"], name: "index_profiles_on_user_id"
+    t.index ["uuid"], name: "index_profiles_on_uuid", unique: true
+  end
 
   create_table "sessions", force: :cascade do |t|
     t.datetime "created_at", null: false
@@ -32,5 +65,9 @@ ActiveRecord::Schema[8.1].define(version: 2026_02_21_194004) do
     t.index ["email_address"], name: "index_users_on_email_address", unique: true
   end
 
+  add_foreign_key "group_profiles", "groups"
+  add_foreign_key "group_profiles", "profiles"
+  add_foreign_key "groups", "users"
+  add_foreign_key "profiles", "users"
   add_foreign_key "sessions", "users"
 end
