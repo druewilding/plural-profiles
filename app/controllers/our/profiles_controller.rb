@@ -42,7 +42,8 @@ class Our::ProfilesController < ApplicationController
   private
 
   def set_profile
-    @profile = Current.user.profiles.find_by!(uuid: params[:id])
+    @profile = Current.user.profiles.find_by(uuid: params[:id])
+    redirect_to profile_path(params[:id]) unless @profile
   end
 
   def set_groups

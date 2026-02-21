@@ -59,7 +59,8 @@ class Our::GroupsController < ApplicationController
   private
 
   def set_group
-    @group = Current.user.groups.find_by!(uuid: params[:id])
+    @group = Current.user.groups.find_by(uuid: params[:id])
+    redirect_to group_path(params[:id]) unless @group
   end
 
   def group_params
