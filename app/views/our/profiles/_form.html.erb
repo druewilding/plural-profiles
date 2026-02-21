@@ -35,6 +35,7 @@
     <fieldset class="form-group">
       <legend>Groups</legend>
       <div class="checkbox-list">
+        <%= hidden_field_tag "profile[group_ids][]", "" %>
         <% @groups.each do |group| %>
           <label class="checkbox-label">
             <%= check_box_tag "profile[group_ids][]", group.id, profile.group_ids.include?(group.id), id: "profile_group_ids_#{group.id}" %>
