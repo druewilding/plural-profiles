@@ -1,0 +1,32 @@
+<h1>Sign up</h1>
+
+<%= tag.div(id: "error_messages") do %>
+  <% if @user.errors.any? %>
+    <% @user.errors.full_messages.each do |message| %>
+      <p style="color: red;"><%= message %></p>
+    <% end %>
+  <% end %>
+<% end %>
+
+<%= form_with model: @user, url: registration_path do |form| %>
+  <div>
+    <%= form.label :email_address, "Email address" %><br>
+    <%= form.email_field :email_address, required: true, autofocus: true, autocomplete: "email" %>
+  </div>
+
+  <div>
+    <%= form.label :password %><br>
+    <%= form.password_field :password, required: true, autocomplete: "new-password" %>
+  </div>
+
+  <div>
+    <%= form.label :password_confirmation, "Confirm password" %><br>
+    <%= form.password_field :password_confirmation, required: true, autocomplete: "new-password" %>
+  </div>
+
+  <div>
+    <%= form.submit "Sign up" %>
+  </div>
+<% end %>
+
+<p>Already have an account? <%= link_to "Sign in", new_session_path %></p>

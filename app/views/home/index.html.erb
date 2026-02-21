@@ -1,0 +1,11 @@
+<h1>Plural Profiles</h1>
+
+<p>Welcome, <%= Current.user.email_address %>!</p>
+
+<% unless Current.user.email_verified? %>
+  <p style="color: orange;">
+    ⚠️ Your email is not yet verified. Please check your inbox.
+  </p>
+<% end %>
+
+<p><%= link_to "Sign out", session_path, data: { turbo_method: :delete } %></p>
