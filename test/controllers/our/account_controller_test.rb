@@ -135,4 +135,21 @@ class Our::AccountControllerTest < ActionDispatch::IntegrationTest
     assert_match "pending@example.com", response.body
     assert_match "Verification pending", response.body
   end
+
+  # -- cancel_email_change --
+
+  test "cancel email change clears unverified email" do
+    sign_in_as @user
+    @user.update!(unverified_email_address: "pending@example.com")
+    delete cancel_email_change_our_account_path
+    assert_redirected_to our_account_path
+    follow_redirect!
+    assert_match "Email change cancelled", response.body
+    assert_nil @user.reload.unverified_email_address
+  end
+
+  test "cancel email change redirects unauthenticated user" do
+    delete cancel_email_change_our_account_path
+    assert_redirected_to new_session_path
+  end
 end

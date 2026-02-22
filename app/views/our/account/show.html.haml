@@ -12,6 +12,7 @@
     %p.flash.flash--warning
       ⏳ Verification pending for
       %strong= Current.user.unverified_email_address
+      = link_to "Cancel", cancel_email_change_our_account_path, data: { turbo_method: :delete }
 
   = form_with url: update_email_our_account_path, method: :patch do |form|
     .form-group
