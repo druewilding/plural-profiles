@@ -26,7 +26,7 @@ export default class extends Controller {
     const button = event.currentTarget
     this.#clearActive()
     button.classList.add("tree__item--active")
-    history.replaceState(null, "", window.location.pathname)
+    history.replaceState(null, "", window.location.pathname + window.location.search)
     this.#loadPanel(button.dataset.panelUrl)
   }
 
