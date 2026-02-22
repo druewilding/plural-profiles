@@ -23,7 +23,9 @@ class User < ApplicationRecord
   private
 
   def unverified_email_not_taken
-    if User.where.not(id: id).exists?(email_address: unverified_email_address)
+    if User.where.not(id: id)
+            .where("email_address = :email OR unverified_email_address = :email", email: unverified_email_address)
+            .exists?
       errors.add(:unverified_email_address, "is already taken")
     end
   end
