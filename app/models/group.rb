@@ -34,7 +34,7 @@ class Group < ApplicationRecord
     SQL
     Group.connection.select_values(
       Group.sanitize_sql([ sql, root_id: id ])
-    )
+    ).map(&:to_i)
   end
 
   # All group IDs in the ancestor tree (this group + all parents, recursive).
@@ -52,7 +52,7 @@ class Group < ApplicationRecord
     SQL
     Group.connection.select_values(
       Group.sanitize_sql([ sql, root_id: id ])
-    )
+    ).map(&:to_i)
   end
 
   # Collect all profiles from this group and all descendant groups.
