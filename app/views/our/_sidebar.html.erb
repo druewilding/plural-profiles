@@ -1,6 +1,6 @@
 <nav class="sidebar" aria-label="Your content">
   <ul class="sidebar__list">
-    <li class="sidebar__item sidebar__item--action">
+    <li class="sidebar__item sidebar__item--action <%= 'sidebar__item--active' if current_page?(root_path) %>">
       <%= link_to "Home", root_path, class: "sidebar__link sidebar__link--action" %>
     </li>
   </ul>
@@ -8,7 +8,7 @@
   <hr>
 
   <ul class="sidebar__list">
-    <li class="sidebar__item sidebar__item--action">
+    <li class="sidebar__item sidebar__item--action <%= 'sidebar__item--active' if current_page?(new_our_group_path) %>">
       <%= link_to "New group", new_our_group_path, class: "sidebar__link sidebar__link--action" %>
     </li>
   </ul>
@@ -29,7 +29,7 @@
   <hr>
 
   <ul class="sidebar__list">
-    <li class="sidebar__item sidebar__item--action">
+    <li class="sidebar__item sidebar__item--action <%= 'sidebar__item--active' if current_page?(new_our_profile_path) %>">
       <%= link_to "New profile", new_our_profile_path, class: "sidebar__link sidebar__link--action" %>
     </li>
   </ul>
