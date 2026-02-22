@@ -543,6 +543,10 @@ button.profile-card:hover {
   display: none;
 }
 
+.js .explorer__fallback {
+  display: none;
+}
+
 .explorer__sidebar {
   background-color: var(--bg-contrast);
   border-radius: 8px;
