@@ -1,4 +1,5 @@
 class Our::GroupsController < ApplicationController
+  include OurSidebar
   allow_unauthenticated_access only: :show
   before_action :resume_session, only: :show
   before_action :set_group, only: %i[ show edit update destroy manage_profiles add_profile remove_profile ]

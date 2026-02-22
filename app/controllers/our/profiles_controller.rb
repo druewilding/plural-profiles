@@ -1,4 +1,5 @@
 class Our::ProfilesController < ApplicationController
+  include OurSidebar
   allow_unauthenticated_access only: :show
   before_action :resume_session, only: :show
   before_action :set_profile, only: %i[ show edit update destroy ]
