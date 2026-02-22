@@ -146,6 +146,12 @@ class Our::GroupsControllerTest < ActionDispatch::IntegrationTest
   test "show redirects logged-out user to public group" do
     get our_group_path(@group)
     assert_redirected_to group_path(@group.uuid)
+    follow_redirect!
+    assert_response :success
+    assert_match "Friends", response.body
+    assert_no_match "Edit", response.body
+    assert_no_match "Delete", response.body
+    assert_no_match "Manage profiles", response.body
   end
 
   test "index redirects logged-out user to sign in" do
@@ -178,12 +184,37 @@ class Our::GroupsControllerTest < ActionDispatch::IntegrationTest
     assert_redirected_to new_session_path
   end
 
+  test "manage_profiles redirects logged-out user to sign in" do
+    get manage_profiles_our_group_path(@group)
+    assert_redirected_to new_session_path
+  end
+
+  test "add_profile redirects logged-out user to sign in" do
+    assert_no_difference("GroupProfile.count") do
+      post add_profile_our_group_path(@group), params: { profile_id: profiles(:alice).id }
+    end
+    assert_redirected_to new_session_path
+  end
+
+  test "remove_profile redirects logged-out user to sign in" do
+    assert_no_difference("GroupProfile.count") do
+      delete remove_profile_our_group_path(@group), params: { profile_id: profiles(:alice).id }
+    end
+    assert_redirected_to new_session_path
+  end
+
   # -- Edge case: wrong user gets redirected to public --
 
   test "show redirects wrong user to public group" do
     sign_in_as @other_user
     get our_group_path(@group)
     assert_redirected_to group_path(@group.uuid)
+    follow_redirect!
+    assert_response :success
+    assert_match "Friends", response.body
+    assert_no_match "Edit", response.body
+    assert_no_match "Delete", response.body
+    assert_no_match "Manage profiles", response.body
   end
 
   test "edit redirects wrong user to public group" do
