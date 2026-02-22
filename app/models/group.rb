@@ -19,29 +19,37 @@ class Group < ApplicationRecord
     uuid
   end
 
-  # Collect all profiles from this group and all descendant groups.
-  # Profiles may appear in multiple sub-groups; the result is de-duplicated.
-  def all_profiles(visited = Set.new)
-    return Profile.none if visited.include?(id)
-    visited.add(id)
-
-    ids = profile_ids
-    child_groups.each do |child|
-      ids += child.all_profiles(visited).pluck(:id)
-    end
-    Profile.where(id: ids.uniq)
+  # All group IDs in the descendant tree (this group + all children, recursive).
+  # Uses a single recursive CTE query instead of N+1 queries per nesting level.
+  def descendant_group_ids
+    sql = <<~SQL.squish
+      WITH RECURSIVE tree AS (
+        SELECT CAST(:root_id AS bigint) AS id
+        UNION
+        SELECT gg.child_group_id AS id
+        FROM group_groups gg
+        INNER JOIN tree ON tree.id = gg.parent_group_id
+      )
+      SELECT id FROM tree
+    SQL
+    Group.connection.select_values(
+      Group.sanitize_sql([ sql, root_id: id ])
+    )
   end
 
-  # Collect all descendant groups (recursive, de-duplicated)
-  def all_child_groups(visited = Set.new)
-    return Group.none if visited.include?(id)
-    visited.add(id)
+  # Collect all profiles from this group and all descendant groups.
+  # Profiles may appear in multiple sub-groups; the result is de-duplicated.
+  # Two queries total: one recursive CTE for group IDs, one for profiles.
+  def all_profiles
+    Profile.where(
+      id: GroupProfile.where(group_id: descendant_group_ids).select(:profile_id)
+    )
+  end
 
-    ids = child_group_ids
-    child_groups.each do |child|
-      ids += child.all_child_groups(visited).pluck(:id)
-    end
-    Group.where(id: ids.uniq)
+  # Collect all descendant groups (not including self).
+  # Single recursive CTE query.
+  def all_child_groups
+    Group.where(id: descendant_group_ids).where.not(id: id)
   end
 
   private
