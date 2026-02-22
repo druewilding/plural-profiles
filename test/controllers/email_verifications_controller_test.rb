@@ -106,5 +106,9 @@ class EmailVerificationsControllerTest < ActionDispatch::IntegrationTest
 
     # No unverified_email_address set, so it tries email_verification purpose and fails
     assert_redirected_to new_session_path
+    follow_redirect!
+    assert_match "Invalid or expired", response.body
+
+    assert_equal "one@example.com", @user.reload.email_address
   end
 end
