@@ -529,10 +529,18 @@ button.profile-card:hover {
 
 /* Explorer layout (public group tree view) */
 .explorer {
-  display: grid;
+  display: none;
   grid-template-columns: 280px 1fr;
   gap: 1.5rem;
   min-height: 400px;
+}
+
+.explorer--active {
+  display: grid;
+}
+
+.explorer__fallback[hidden] {
+  display: none;
 }
 
 .explorer__sidebar {
@@ -740,7 +748,7 @@ button.profile-card:hover {
     position: static;
   }
 
-  .explorer {
+  .explorer--active {
     grid-template-columns: 1fr;
   }
 

@@ -3,7 +3,16 @@ import { Controller } from "@hotwired/stimulus"
 // Tree explorer controller for navigating nested groups and profiles.
 // Handles expand/collapse of folders and swapping the content panel.
 export default class extends Controller {
-  static targets = ["content", "folder", "groupTemplate", "profileTemplate"]
+  static targets = ["content", "folder", "groupTemplate", "profileTemplate", "fallback"]
+
+  connect() {
+    // Progressive enhancement: show the interactive explorer, hide the flat fallback
+    const explorer = this.element.querySelector(".explorer")
+    if (explorer) explorer.classList.add("explorer--active")
+    if (this.hasFallbackTarget) {
+      this.fallbackTarget.hidden = true
+    }
+  }
 
   selectRoot(event) {
     const button = event.currentTarget
@@ -40,6 +49,7 @@ export default class extends Controller {
 
     const isHidden = children.style.display === "none"
     children.style.display = isHidden ? "" : "none"
+    folder.setAttribute("aria-expanded", isHidden)
     const arrow = button.querySelector(".tree__arrow")
     if (arrow) {
       arrow.classList.toggle("tree__arrow--open", isHidden)
@@ -73,6 +83,8 @@ export default class extends Controller {
       let parent = treeLeaf.closest(".tree__children")
       while (parent) {
         parent.style.display = ""
+        const folder = parent.closest(".tree__folder")
+        if (folder) folder.setAttribute("aria-expanded", "true")
         const arrowBtn = parent.previousElementSibling?.querySelector(".tree__arrow")
         if (arrowBtn) arrowBtn.classList.add("tree__arrow--open")
         parent = parent.parentElement?.closest(".tree__children")
