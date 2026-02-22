@@ -3,7 +3,7 @@ class Group < ApplicationRecord
 
   belongs_to :user
   has_many :group_profiles, dependent: :destroy
-  has_many :profiles, through: :group_profiles
+  has_many :profiles, -> { order(:name) }, through: :group_profiles
 
   has_many :parent_links, class_name: "GroupGroup", foreign_key: :child_group_id, dependent: :destroy
   has_many :child_links, class_name: "GroupGroup", foreign_key: :parent_group_id, dependent: :destroy
@@ -71,14 +71,14 @@ class Group < ApplicationRecord
   end
 
   # Build a depth-first ordered list of all descendant groups.
-  # Each group has its profiles eager-loaded.
-  # Uses 3 queries total: CTE for IDs, groups with profiles, group_groups for tree structure.
+  # Each group has its profiles and avatars eager-loaded.
+  # Uses 3 queries total: CTE for IDs, groups with profiles/avatars, group_groups for tree structure.
   def descendant_sections
     desc_ids = descendant_group_ids - [ id ]
     return [] if desc_ids.empty?
 
     groups_by_id = Group.where(id: desc_ids)
-                        .includes(:profiles)
+                        .includes(profiles: { avatar_attachment: :blob }, avatar_attachment: :blob)
                         .index_by(&:id)
 
     children_map = GroupGroup.where(parent_group_id: [ id ] + desc_ids)
@@ -91,13 +91,13 @@ class Group < ApplicationRecord
 
   # Build a nested tree of all descendant groups for tree-view navigation.
   # Returns an array of nodes: { group:, profiles:, children: [...] }
-  # Each group has its profiles eager-loaded.
+  # Each group has its profiles and avatars eager-loaded.
   def descendant_tree
     desc_ids = descendant_group_ids - [ id ]
     return [] if desc_ids.empty?
 
     groups_by_id = Group.where(id: desc_ids)
-                        .includes(:profiles)
+                        .includes(profiles: { avatar_attachment: :blob }, avatar_attachment: :blob)
                         .index_by(&:id)
 
     children_map = GroupGroup.where(parent_group_id: [ id ] + desc_ids)
@@ -124,7 +124,7 @@ class Group < ApplicationRecord
       .map do |g|
         {
           group: g,
-          profiles: g.profiles.sort_by(&:name),
+          profiles: g.profiles.to_a,
           children: build_tree(g.id, children_map, groups_by_id)
         }
       end
