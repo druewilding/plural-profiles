@@ -82,4 +82,27 @@ class GroupTest < ActiveSupport::TestCase
     assert_includes descendants, friends
     assert_includes descendants, coworkers
   end
+
+  test "descendant_sections returns depth-first ordered groups with profiles" do
+    user = users(:one)
+    everyone = groups(:everyone)
+    friends = groups(:friends)
+    # Build: everyone → friends, everyone → zoo, friends → close
+    zoo = user.groups.create!(name: "Zoo Group")
+    close = user.groups.create!(name: "Close Friends")
+    GroupGroup.create!(parent_group: everyone, child_group: zoo)
+    GroupGroup.create!(parent_group: friends, child_group: close)
+
+    sections = everyone.descendant_sections
+    names = sections.map(&:name)
+    # Depth-first alphabetical: Close Friends (under Friends), then Friends, then Zoo Group
+    assert_equal [ "Friends", "Close Friends", "Zoo Group" ], names
+  end
+
+  test "descendant_sections eager-loads profiles" do
+    everyone = groups(:everyone)
+    sections = everyone.descendant_sections
+    # profiles should be pre-loaded — no additional query
+    assert sections.first.profiles.loaded?
+  end
 end

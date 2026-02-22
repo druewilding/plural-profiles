@@ -70,7 +70,33 @@ class Group < ApplicationRecord
     Group.where(id: descendant_group_ids).where.not(id: id)
   end
 
+  # Build a depth-first ordered list of all descendant groups.
+  # Each group has its profiles eager-loaded.
+  # Uses 3 queries total: CTE for IDs, groups with profiles, group_groups for tree structure.
+  def descendant_sections
+    desc_ids = descendant_group_ids - [ id ]
+    return [] if desc_ids.empty?
+
+    groups_by_id = Group.where(id: desc_ids)
+                        .includes(:profiles)
+                        .index_by(&:id)
+
+    children_map = GroupGroup.where(parent_group_id: [ id ] + desc_ids)
+                             .pluck(:parent_group_id, :child_group_id)
+                             .group_by(&:first)
+                             .transform_values { |pairs| pairs.map(&:last) }
+
+    walk_descendants(id, children_map, groups_by_id)
+  end
+
   private
+
+  def walk_descendants(parent_id, children_map, groups_by_id)
+    (children_map[parent_id] || [])
+      .filter_map { |cid| groups_by_id[cid] }
+      .sort_by(&:name)
+      .flat_map { |g| [ g, *walk_descendants(g.id, children_map, groups_by_id) ] }
+  end
 
   def generate_uuid
     self.uuid = SecureRandom.uuid
