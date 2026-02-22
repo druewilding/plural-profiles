@@ -6,18 +6,6 @@
   </div>
 <% end %>
 
-<div class="card">
-  <p>
-    Plural Profiles is a space for pluralfolk to create and share profiles.
-    You can set up individual profiles with names, pronouns, avatars
-    and descriptions, and organise them into groups, however works best for your collective.
-  </p>
-  <p>
-    Each profile and group gets a shareable public link you can give to
-    friends, add to bios, or keep handy for introductions.
-  </p>
-</div>
-
 <% profile_count = Current.user.profiles.count %>
 <% group_count = Current.user.groups.count %>
 
@@ -42,5 +30,21 @@
       <li><%= link_to "Create a group", new_our_group_path %></li>
       <li><%= link_to "Create a profile", new_our_profile_path %></li>
     </ul>
+  </p>
+</div>
+
+<div class="card">
+  <h2>About</h2>
+  <p>
+    Plural Profiles is a space for pluralfolk to create and share profiles.
+    You can set up individual profiles with names, pronouns, avatars
+    and descriptions, and organise them into groups, however works best for your collective.
+  </p>
+  <p>
+    Each profile and group gets a shareable public link you can give to
+    friends, add to bios, or keep handy for introductions.
+  </p>
+  <p>
+    All forms of plurality are welcome, from median to multiple, traumagenic to endogenic, soulbonders to fractals, collectives to systems, and many more! Any and all ways of being more-than-one belong here.
   </p>
 </div>
