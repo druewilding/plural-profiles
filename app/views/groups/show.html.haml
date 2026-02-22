@@ -65,20 +65,20 @@
       %template{"data-tree-target": "groupTemplate", "data-group-uuid": @group.uuid}
         = render "groups/group_content", group: @group, profiles: @direct_profiles
 
-    -# No-JS fallback: all content rendered flat, hidden when JS activates the explorer
+    -# No-JS fallback: all content rendered flat with linked profile cards
     .explorer__fallback{"data-tree-target": "fallback"}
-      = render "groups/group_content", group: @group, profiles: @direct_profiles
+      = render "groups/group_content_fallback", group: @group, profiles: @direct_profiles
       - render_flat = lambda do |nodes|
         - nodes.each do |node|
           - if node[:profiles].any? || node[:children].any?
             %h2
               - if node[:group].avatar.attached?
-                = image_tag node[:group].avatar.variant(resize_to_fill: [32, 32]), class: "avatar--inline", width: 32, height: 32, alt: ""
+                = image_tag node[:group].avatar.variant(resize_to_fill: [32, 32]), class: "avatar avatar--inline", width: 32, height: 32, alt: ""
               = node[:group].name
             - if node[:profiles].any?
               .profile-grid
                 - node[:profiles].each do |profile|
-                  = render "groups/profile_content", group: node[:group], profile: profile
+                  = render "groups/profile_card_link", group: node[:group], profile: profile
             - render_flat.call(node[:children])
       - render_flat.call(@descendant_tree)
 
