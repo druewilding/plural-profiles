@@ -49,9 +49,35 @@ export default class extends Controller {
   selectProfile(event) {
     const button = event.currentTarget
     const { groupUuid, profileUuid } = button.dataset
+    this.#showProfile(groupUuid, profileUuid)
+  }
 
+  selectProfileCard(event) {
+    const button = event.currentTarget
+    const { groupUuid, profileUuid } = button.dataset
+    this.#showProfile(groupUuid, profileUuid)
+  }
+
+  // --- private ---
+
+  #showProfile(groupUuid, profileUuid) {
     this.#clearActive()
-    button.classList.add("tree__item--active")
+
+    // Highlight the matching leaf in the tree
+    const treeLeaf = this.element.querySelector(
+      `.tree button[data-group-uuid="${groupUuid}"][data-profile-uuid="${profileUuid}"]`
+    )
+    if (treeLeaf) {
+      treeLeaf.classList.add("tree__item--active")
+      // Ensure parent folders are expanded so the leaf is visible
+      let parent = treeLeaf.closest(".tree__children")
+      while (parent) {
+        parent.style.display = ""
+        const arrowBtn = parent.previousElementSibling?.querySelector(".tree__arrow")
+        if (arrowBtn) arrowBtn.classList.add("tree__arrow--open")
+        parent = parent.parentElement?.closest(".tree__children")
+      }
+    }
 
     const template = this.profileTemplateTargets.find(
       t => t.dataset.groupUuid === groupUuid && t.dataset.profileUuid === profileUuid
@@ -60,8 +86,6 @@ export default class extends Controller {
       this.contentTarget.innerHTML = template.innerHTML
     }
   }
-
-  // --- private ---
 
   #clearActive() {
     this.element.querySelectorAll(".tree__item--active").forEach(el => {
