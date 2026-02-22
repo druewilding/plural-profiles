@@ -37,6 +37,24 @@ class Group < ApplicationRecord
     )
   end
 
+  # All group IDs in the ancestor tree (this group + all parents, recursive).
+  # Used to prevent circular references in the UI before validation.
+  def ancestor_group_ids
+    sql = <<~SQL.squish
+      WITH RECURSIVE tree AS (
+        SELECT CAST(:root_id AS bigint) AS id
+        UNION
+        SELECT gg.parent_group_id AS id
+        FROM group_groups gg
+        INNER JOIN tree ON tree.id = gg.child_group_id
+      )
+      SELECT id FROM tree
+    SQL
+    Group.connection.select_values(
+      Group.sanitize_sql([ sql, root_id: id ])
+    )
+  end
+
   # Collect all profiles from this group and all descendant groups.
   # Profiles may appear in multiple sub-groups; the result is de-duplicated.
   # Two queries total: one recursive CTE for group IDs, one for profiles.

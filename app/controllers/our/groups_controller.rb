@@ -61,8 +61,9 @@ class Our::GroupsController < ApplicationController
   end
 
   def manage_groups
+    excluded_ids = @group.descendant_group_ids | @group.ancestor_group_ids
     @available_groups = Current.user.groups
-      .where.not(id: [ @group.id ] + @group.child_group_ids)
+      .where.not(id: excluded_ids)
       .order(:name)
   end
 
