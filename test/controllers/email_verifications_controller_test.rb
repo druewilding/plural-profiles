@@ -83,6 +83,7 @@ class EmailVerificationsControllerTest < ActionDispatch::IntegrationTest
     assert_equal "new@example.com", @user.email_address
     assert_nil @user.unverified_email_address
     assert_not_nil @user.email_verified_at
+    assert_equal 0, @user.sessions.count
   end
 
   test "expired email change token is rejected" do
