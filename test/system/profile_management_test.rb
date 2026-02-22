@@ -3,11 +3,7 @@ require "application_system_test_case"
 class ProfileManagementTest < ApplicationSystemTestCase
   setup do
     @user = users(:one)
-    visit new_session_path
-    fill_in "Email address", with: @user.email_address
-    fill_in "Password", with: "password"
-    click_button "Sign in"
-    assert_selector ".site-header a", text: "Sign out" # wait for sign-in to complete
+    sign_in_via_browser
   end
 
   test "create a new profile" do
@@ -25,6 +21,7 @@ class ProfileManagementTest < ApplicationSystemTestCase
   test "edit an existing profile" do
     visit our_profile_path(profiles(:alice))
     click_link "Edit"
+    assert_current_path edit_our_profile_path(profiles(:alice))
     fill_in "Name", with: "Alice Updated"
     click_button "Update profile"
 
@@ -44,5 +41,15 @@ class ProfileManagementTest < ApplicationSystemTestCase
   test "view own profile shows share link" do
     visit our_profile_path(profiles(:alice))
     assert_text "Share this profile"
+  end
+
+  private
+
+  def sign_in_via_browser
+    visit new_session_path
+    fill_in "Email address", with: @user.email_address
+    fill_in "Password", with: "password"
+    click_button "Sign in"
+    assert_current_path root_path
   end
 end

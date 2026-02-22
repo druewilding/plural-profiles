@@ -6,11 +6,10 @@ class AuthenticationFlowsTest < ApplicationSystemTestCase
     fill_in "Email address", with: users(:one).email_address
     fill_in "Password", with: "password"
     click_button "Sign in"
-    assert_text "Plural Profiles" # wait for the home page to load
-    assert_selector ".site-header a", text: "Sign out"
+    assert_current_path root_path
 
     within(".site-header") { click_link "Sign out" }
-    assert_current_path new_session_path
+    assert_no_link "Sign out" # wait for signed-out state
   end
 
   test "sign in with wrong password shows error" do

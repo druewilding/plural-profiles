@@ -3,11 +3,7 @@ require "application_system_test_case"
 class GroupManagementTest < ApplicationSystemTestCase
   setup do
     @user = users(:one)
-    visit new_session_path
-    fill_in "Email address", with: @user.email_address
-    fill_in "Password", with: "password"
-    click_button "Sign in"
-    assert_selector ".site-header a", text: "Sign out" # wait for sign-in to complete
+    sign_in_via_browser
   end
 
   test "create a new group" do
@@ -23,6 +19,7 @@ class GroupManagementTest < ApplicationSystemTestCase
   test "edit an existing group" do
     visit our_group_path(groups(:friends))
     click_link "Edit"
+    assert_current_path edit_our_group_path(groups(:friends))
     fill_in "Name", with: "Best Friends"
     click_button "Update group"
 
@@ -46,5 +43,15 @@ class GroupManagementTest < ApplicationSystemTestCase
     assert_text "Manage profiles in"
     assert_text "Alice" # already in the group
     assert_text "Bob"   # available to add
+  end
+
+  private
+
+  def sign_in_via_browser
+    visit new_session_path
+    fill_in "Email address", with: @user.email_address
+    fill_in "Password", with: "password"
+    click_button "Sign in"
+    assert_current_path root_path
   end
 end
