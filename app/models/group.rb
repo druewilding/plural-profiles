@@ -1,4 +1,6 @@
 class Group < ApplicationRecord
+  include HasAvatar
+
   belongs_to :user
   has_many :group_profiles, dependent: :destroy
   has_many :profiles, through: :group_profiles
@@ -8,13 +10,10 @@ class Group < ApplicationRecord
   has_many :parent_groups, through: :parent_links, source: :parent_group
   has_many :child_groups, through: :child_links, source: :child_group
 
-  has_one_attached :avatar
-
   before_create :generate_uuid
 
   validates :name, presence: true
   validates :uuid, uniqueness: true
-  validate :avatar_content_type_allowed
 
   def to_param
     uuid
@@ -129,13 +128,6 @@ class Group < ApplicationRecord
           children: build_tree(g.id, children_map, groups_by_id)
         }
       end
-  end
-
-  def avatar_content_type_allowed
-    return unless avatar.attached?
-    unless avatar.blob.content_type.in?(%w[image/png image/jpeg image/gif image/webp])
-      errors.add(:avatar, "must be a PNG, JPEG, GIF, or WebP image")
-    end
   end
 
   def generate_uuid
