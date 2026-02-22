@@ -41,14 +41,28 @@
     </header>
 
     <main class="container <%= content_for(:container_class) %>">
-      <% if flash[:notice] %>
-        <div class="flash flash--notice"><%= flash[:notice] %></div>
+      <% if @sidebar_profiles %>
+        <div class="layout">
+          <%= render "our/sidebar" %>
+          <div class="main-content">
+            <% if flash[:notice] %>
+              <div class="flash flash--notice"><%= flash[:notice] %></div>
+            <% end %>
+            <% if flash[:alert] %>
+              <div class="flash flash--alert"><%= flash[:alert] %></div>
+            <% end %>
+            <%= yield %>
+          </div>
+        </div>
+      <% else %>
+        <% if flash[:notice] %>
+          <div class="flash flash--notice"><%= flash[:notice] %></div>
+        <% end %>
+        <% if flash[:alert] %>
+          <div class="flash flash--alert"><%= flash[:alert] %></div>
+        <% end %>
+        <%= yield %>
       <% end %>
-      <% if flash[:alert] %>
-        <div class="flash flash--alert"><%= flash[:alert] %></div>
-      <% end %>
-
-      <%= yield %>
     </main>
   </body>
 </html>

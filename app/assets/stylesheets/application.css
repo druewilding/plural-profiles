@@ -61,6 +61,10 @@ body {
   padding: 0 1.5rem;
 }
 
+.container:has(.layout) {
+  max-width: 1200px;
+}
+
 .container.narrow {
   max-width: 540px;
 }
@@ -76,6 +80,115 @@ body {
   position: sticky;
   top: 2rem;
   align-self: start;
+  background-color: var(--bg-contrast);
+  border-radius: 8px;
+  padding: 0.75rem;
+  border: 1px solid var(--input-border);
+}
+
+.sidebar details {
+  margin-bottom: 0.5rem;
+}
+
+.sidebar details:last-child {
+  margin-bottom: 0;
+}
+
+.sidebar summary {
+  cursor: pointer;
+  font-weight: 700;
+  color: var(--heading);
+  font-size: 0.85rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  padding: 0.4rem 0.5rem;
+  list-style: none;
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  user-select: none;
+}
+
+.sidebar summary::-webkit-details-marker {
+  display: none;
+}
+
+.sidebar summary::before {
+  content: "▸";
+  font-size: 0.7rem;
+  transition: transform 0.15s ease;
+}
+
+.sidebar details[open] > summary::before {
+  transform: rotate(90deg);
+}
+
+.sidebar__list {
+  list-style: none;
+  margin: 0.25rem 0 0;
+  padding: 0;
+}
+
+.sidebar__item {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.35rem 0.5rem 0.35rem 1.25rem;
+  border-radius: 4px;
+  font-size: 0.9rem;
+}
+
+.sidebar__item:hover {
+  background-color: rgba(78, 133, 95, 0.1);
+}
+
+.sidebar__item--active {
+  background-color: rgba(78, 133, 95, 0.2);
+}
+
+.sidebar__item--active .sidebar__link {
+  color: var(--heading);
+  font-weight: 600;
+}
+
+.sidebar__avatar {
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  flex-shrink: 0;
+  object-fit: cover;
+}
+
+.sidebar__avatar--placeholder {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: var(--link);
+  color: #fff;
+  font-weight: 700;
+  font-size: 0.65rem;
+}
+
+.sidebar__link {
+  color: var(--text);
+  text-decoration: none;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.sidebar__link:hover {
+  color: var(--heading);
+}
+
+.sidebar__link--action {
+  color: var(--link);
+  font-size: 0.85rem;
+  font-weight: 600;
+}
+
+.sidebar__link--action:hover {
+  color: var(--heading);
 }
 
 .main-content {
