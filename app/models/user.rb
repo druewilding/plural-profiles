@@ -5,11 +5,26 @@ class User < ApplicationRecord
   has_many :groups, dependent: :destroy
 
   normalizes :email_address, with: ->(e) { e.strip.downcase }
+  normalizes :unverified_email_address, with: ->(e) { e.strip.downcase }
 
   validates :email_address, presence: true, uniqueness: true, format: { with: URI::MailTo::EMAIL_REGEXP }
+  validates :unverified_email_address, format: { with: URI::MailTo::EMAIL_REGEXP }, allow_blank: true
+  validate :unverified_email_not_taken, if: -> { unverified_email_address.present? }
   validates :password, length: { minimum: 8 }, if: -> { new_record? || password.present? }
 
   def email_verified?
     email_verified_at.present?
+  end
+
+  def pending_email_change?
+    unverified_email_address.present?
+  end
+
+  private
+
+  def unverified_email_not_taken
+    if User.where.not(id: id).exists?(email_address: unverified_email_address)
+      errors.add(:unverified_email_address, "is already taken")
+    end
   end
 end

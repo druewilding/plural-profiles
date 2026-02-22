@@ -81,4 +81,58 @@ class Our::AccountControllerTest < ActionDispatch::IntegrationTest
     }
     assert_redirected_to new_session_path
   end
+
+  # -- update_email --
+
+  test "update email stores unverified email and sends verification" do
+    sign_in_as @user
+    assert_enqueued_emails 1 do
+      patch update_email_our_account_path, params: { unverified_email_address: "new@example.com" }
+    end
+    assert_redirected_to our_account_path
+    follow_redirect!
+    assert_match "Verification email sent", response.body
+
+    @user.reload
+    assert_equal "new@example.com", @user.unverified_email_address
+    assert_equal "one@example.com", @user.email_address
+  end
+
+  test "update email rejects same as current email" do
+    sign_in_as @user
+    patch update_email_our_account_path, params: { unverified_email_address: @user.email_address }
+    assert_redirected_to our_account_path
+    follow_redirect!
+    assert_match "already your current email", response.body
+  end
+
+  test "update email rejects invalid email format" do
+    sign_in_as @user
+    patch update_email_our_account_path, params: { unverified_email_address: "not-an-email" }
+    assert_redirected_to our_account_path
+    follow_redirect!
+    assert_match "invalid", response.body.downcase
+  end
+
+  test "update email rejects email already taken by another user" do
+    sign_in_as @user
+    patch update_email_our_account_path, params: { unverified_email_address: users(:two).email_address }
+    assert_redirected_to our_account_path
+    follow_redirect!
+    assert_match "taken", response.body.downcase
+  end
+
+  test "update email redirects unauthenticated user" do
+    patch update_email_our_account_path, params: { unverified_email_address: "new@example.com" }
+    assert_redirected_to new_session_path
+  end
+
+  test "show displays pending email change notice" do
+    sign_in_as @user
+    @user.update!(unverified_email_address: "pending@example.com")
+    get our_account_path
+    assert_response :success
+    assert_match "pending@example.com", response.body
+    assert_match "Verification pending", response.body
+  end
 end

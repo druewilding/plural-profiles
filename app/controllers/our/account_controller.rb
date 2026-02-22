@@ -14,6 +14,19 @@ class Our::AccountController < ApplicationController
     end
   end
 
+  def update_email
+    new_email = params[:unverified_email_address].to_s.strip.downcase
+
+    if new_email == Current.user.email_address
+      redirect_to our_account_path, alert: "That's already your current email address."
+    elsif Current.user.update(unverified_email_address: new_email)
+      UserMailer.email_change_verification(Current.user).deliver_later
+      redirect_to our_account_path, notice: "Verification email sent to #{new_email}. Please check your inbox."
+    else
+      redirect_to our_account_path, alert: Current.user.errors.full_messages.to_sentence
+    end
+  end
+
   private
 
   def password_params
