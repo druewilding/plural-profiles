@@ -414,23 +414,29 @@ button:hover,
   gap: 1rem;
 }
 
-button.profile-card {
+.profile-card {
   text-align: center;
   padding: 1.5rem 1rem;
   text-decoration: none;
   color: var(--text);
+  transition: transform 0.15s, box-shadow 0.15s;
+}
+
+button.profile-card {
   background: var(--bg-contrast);
   border: none;
   font: inherit;
   cursor: pointer;
-  transition: transform 0.15s, box-shadow 0.15s;
+}
+
+.profile-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+  text-decoration: none;
 }
 
 button.profile-card:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
   background: var(--bg-contrast);
-  text-decoration: none;
 }
 
 .profile-card h3 {
