@@ -113,6 +113,12 @@ class Our::ProfilesControllerTest < ActionDispatch::IntegrationTest
   test "show redirects logged-out user to public profile" do
     get our_profile_path(@profile)
     assert_redirected_to profile_path(@profile.uuid)
+    follow_redirect!
+    assert_response :success
+    assert_match "Alice", response.body
+    assert_no_match "Edit", response.body
+    assert_no_match "Delete", response.body
+    assert_no_match "Share this profile", response.body
   end
 
   test "index redirects logged-out user to sign in" do
@@ -151,6 +157,12 @@ class Our::ProfilesControllerTest < ActionDispatch::IntegrationTest
     sign_in_as @other_user
     get our_profile_path(@profile)
     assert_redirected_to profile_path(@profile.uuid)
+    follow_redirect!
+    assert_response :success
+    assert_match "Alice", response.body
+    assert_no_match "Edit", response.body
+    assert_no_match "Delete", response.body
+    assert_no_match "Share this profile", response.body
   end
 
   test "edit redirects wrong user to public profile" do
