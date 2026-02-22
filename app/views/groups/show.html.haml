@@ -74,7 +74,7 @@
             %h2
               - if node[:group].avatar.attached?
                 = image_tag node[:group].avatar.variant(resize_to_fill: [32, 32]), class: "avatar avatar--inline", width: 32, height: 32, alt: ""
-              = node[:group].name
+              = link_to node[:group].name, group_path(node[:group].uuid)
             - if node[:profiles].any?
               .profile-grid
                 - node[:profiles].each do |profile|
