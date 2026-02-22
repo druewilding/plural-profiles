@@ -12,7 +12,7 @@ class EmailVerificationsController < ApplicationController
   private
 
   def try_email_change(token)
-    user = User.find_signed(token, purpose: :email_change)
+    user = User.find_by_token_for(:email_change, token)
     return false unless user
     return false unless user.unverified_email_address.present?
 

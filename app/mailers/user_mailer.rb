@@ -8,7 +8,7 @@ class UserMailer < ApplicationMailer
   def verify_new_email(user)
     @user = user
     @new_email = user.unverified_email_address
-    @verification_url = email_verification_url(token: user.signed_id(purpose: :email_change, expires_in: 24.hours))
+    @verification_url = email_verification_url(token: user.generate_token_for(:email_change))
     mail to: @new_email, subject: "Verify your new email address"
   end
 
