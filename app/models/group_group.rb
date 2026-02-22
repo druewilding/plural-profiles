@@ -26,18 +26,8 @@ class GroupGroup < ApplicationRecord
     return unless parent_group && child_group
     return if parent_group_id == child_group_id # already caught above
 
-    if descendant_ids(child_group).include?(parent_group_id)
+    if child_group.descendant_group_ids.include?(parent_group_id)
       errors.add(:child_group, "would create a circular reference")
     end
-  end
-
-  # Walk down from a given group and collect all descendant group IDs
-  def descendant_ids(group, visited = Set.new)
-    GroupGroup.where(parent_group_id: group.id).pluck(:child_group_id).each do |cid|
-      next if visited.include?(cid)
-      visited.add(cid)
-      descendant_ids(Group.find(cid), visited)
-    end
-    visited
   end
 end
