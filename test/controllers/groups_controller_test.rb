@@ -41,4 +41,38 @@ class GroupsControllerTest < ActionDispatch::IntegrationTest
     # Alice is in friends, which is a child of everyone
     assert_match "Alice", response.body
   end
+
+  test "show recurses deeply into nested sub-groups" do
+    user = users(:one)
+    everyone = groups(:everyone)
+    friends = groups(:friends)
+
+    # Build: everyone → friends → close_friends → alice
+    close_friends = user.groups.create!(name: "Close Friends")
+    GroupGroup.create!(parent_group: friends, child_group: close_friends)
+    close_friends.profiles << profiles(:alice)
+
+    get group_path(uuid: everyone.uuid)
+    assert_response :success
+    assert_match "Close Friends", response.body
+    assert_match "Alice", response.body
+  end
+
+  test "show links sub-group profiles through their own group" do
+    everyone = groups(:everyone)
+    friends = groups(:friends)
+    alice = profiles(:alice)
+
+    get group_path(uuid: everyone.uuid)
+    assert_response :success
+    # Profile card should link through friends (the group Alice belongs to), not everyone
+    assert_match group_profile_path(friends.uuid, alice.uuid), response.body
+  end
+
+  test "show hides Other profiles heading when no direct profiles" do
+    everyone = groups(:everyone)
+    get group_path(uuid: everyone.uuid)
+    assert_response :success
+    assert_no_match "Other profiles", response.body
+  end
 end
