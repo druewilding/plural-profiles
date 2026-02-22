@@ -28,6 +28,11 @@ class Our::AccountController < ApplicationController
     end
   end
 
+  def cancel_email_change
+    Current.user.update!(unverified_email_address: nil)
+    redirect_to our_account_path, notice: "Email change cancelled."
+  end
+
   private
 
   def password_params

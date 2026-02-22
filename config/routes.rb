@@ -23,6 +23,7 @@ Rails.application.routes.draw do
   resource :our_account, path: "our/account", controller: "our/account", only: %i[show] do
     patch :update_password
     patch :update_email
+    delete :cancel_email_change
   end
 
   # Public shareable URLs (no auth required)

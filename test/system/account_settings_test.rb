@@ -37,6 +37,19 @@ class AccountSettingsTest < ApplicationSystemTestCase
     assert_text "pending@example.com"
   end
 
+  test "cancel pending email change" do
+    within(".card", text: "Change email") do
+      fill_in "New email address", with: "pending@example.com"
+      click_button "Send verification email"
+    end
+
+    assert_text "Verification pending"
+    click_link "Cancel"
+
+    assert_text "Email change cancelled"
+    assert_no_text "Verification pending"
+  end
+
   # -- change password --
 
   test "change password successfully" do
