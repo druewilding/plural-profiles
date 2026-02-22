@@ -82,6 +82,8 @@ class Our::GroupsController < ApplicationController
     child = @group.child_groups.find(params[:group_id])
     @group.child_groups.delete(child)
     redirect_to manage_groups_our_group_path(@group), notice: "Group removed."
+  rescue ActiveRecord::RecordNotFound
+    redirect_to manage_groups_our_group_path(@group), alert: "Group not found."
   end
 
   private
