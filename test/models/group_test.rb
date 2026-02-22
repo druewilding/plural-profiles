@@ -61,7 +61,6 @@ class GroupTest < ActiveSupport::TestCase
   end
 
   test "all_profiles de-duplicates profiles appearing in multiple sub-groups" do
-    user = users(:one)
     everyone = groups(:everyone)
     alice = profiles(:alice)
 
