@@ -11,8 +11,8 @@ class RegistrationsControllerTest < ActionDispatch::IntegrationTest
       post registration_path, params: {
         user: {
           email_address: "newuser@example.com",
-          password: "password123",
-          password_confirmation: "password123"
+          password: "N3wUs3r!S1gnup#2026",
+          password_confirmation: "N3wUs3r!S1gnup#2026"
         }
       }
     end
@@ -39,8 +39,8 @@ class RegistrationsControllerTest < ActionDispatch::IntegrationTest
       post registration_path, params: {
         user: {
           email_address: users(:one).email_address,
-          password: "password123",
-          password_confirmation: "password123"
+          password: "N3wUs3r!S1gnup#2026",
+          password_confirmation: "N3wUs3r!S1gnup#2026"
         }
       }
     end
@@ -62,8 +62,8 @@ class RegistrationsControllerTest < ActionDispatch::IntegrationTest
       post registration_path, params: {
         user: {
           email_address: "blocked@example.com",
-          password: "password123",
-          password_confirmation: "password123"
+          password: "N3wUs3r!S1gnup#2026",
+          password_confirmation: "N3wUs3r!S1gnup#2026"
         }
       }
     end

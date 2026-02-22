@@ -7,7 +7,7 @@ class UserTest < ActiveSupport::TestCase
   end
 
   test "requires email_address" do
-    user = User.new(password: "password123", password_confirmation: "password123")
+    user = User.new(password: "N3wUs3r!S1gnup#2026", password_confirmation: "N3wUs3r!S1gnup#2026")
     assert_not user.valid?
     assert_includes user.errors[:email_address], "can't be blank"
   end
@@ -15,15 +15,15 @@ class UserTest < ActiveSupport::TestCase
   test "requires unique email_address" do
     user = User.new(
       email_address: users(:one).email_address,
-      password: "password123",
-      password_confirmation: "password123"
+      password: "N3wUs3r!S1gnup#2026",
+      password_confirmation: "N3wUs3r!S1gnup#2026"
     )
     assert_not user.valid?
     assert_includes user.errors[:email_address], "has already been taken"
   end
 
   test "requires valid email format" do
-    user = User.new(email_address: "not-an-email", password: "password123", password_confirmation: "password123")
+    user = User.new(email_address: "not-an-email", password: "N3wUs3r!S1gnup#2026", password_confirmation: "N3wUs3r!S1gnup#2026")
     assert_not user.valid?
     assert_includes user.errors[:email_address], "is invalid"
   end
