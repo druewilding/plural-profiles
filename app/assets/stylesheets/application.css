@@ -13,6 +13,7 @@
   --warning: #e2a854;
   --input-bg: #263a2e;
   --input-border: #4e855f;
+  --tree-guide: rgba(129, 157, 108, 0.3);
 }
 
 *, *::before, *::after {
@@ -588,6 +589,40 @@ button:hover,
 
 .tree__children {
   padding-left: 1rem;
+}
+
+/* Tree guide lines */
+.tree__children > li {
+  position: relative;
+}
+
+.tree__children > li::before {
+  content: "";
+  position: absolute;
+  left: -0.55rem;
+  top: 0;
+  bottom: 0;
+  border-left: 1px solid var(--tree-guide);
+  pointer-events: none;
+}
+
+.tree__children > li::after {
+  content: "";
+  position: absolute;
+  left: -0.55rem;
+  top: 0.95rem;
+  width: 0.7rem;
+  border-top: 1px solid var(--tree-guide);
+  pointer-events: none;
+}
+
+.tree__children > .tree__leaf::after {
+  width: 1.8rem;
+}
+
+.tree__children > li:last-child::before {
+  bottom: auto;
+  height: 0.95rem;
 }
 
 .tree__folder {
