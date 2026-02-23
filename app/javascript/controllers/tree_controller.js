@@ -69,8 +69,8 @@ export default class extends Controller {
 
   // --- private ---
 
-  #selectProfileButton(button) {
-    const { panelUrl, groupUuid, profileUuid } = button.dataset
+  #selectProfileButton(link) {
+    const { panelUrl, groupUuid, profileUuid } = link.dataset
 
     this.#clearActive()
 
@@ -103,21 +103,21 @@ export default class extends Controller {
     const parts = hash.split("/")
 
     if (parts[0] === "group" && parts[1]) {
-      const button = this.element.querySelector(
+      const link = this.element.querySelector(
         `.tree .tree__item[data-action*="selectGroup"][data-group-uuid="${parts[1]}"],
          .tree .tree__item[data-action*="selectRoot"][data-group-uuid="${parts[1]}"]`
       )
-      if (button) {
+      if (link) {
         this.#clearActive()
-        button.classList.add("tree__item--active")
-        this.#loadPanelAndScroll(button.dataset.panelUrl)
+        link.classList.add("tree__item--active")
+        this.#loadPanelAndScroll(link.dataset.panelUrl)
       }
     } else if (parts[0] === "profile" && parts[1] && parts[2]) {
-      const button = this.element.querySelector(
+      const link = this.element.querySelector(
         `.tree .tree__item[data-group-uuid="${parts[1]}"][data-profile-uuid="${parts[2]}"]`
       )
-      if (button) {
-        this.#selectProfileButton(button)
+      if (link) {
+        this.#selectProfileButton(link)
       }
     }
   }
