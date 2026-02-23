@@ -590,6 +590,36 @@ button:hover,
   padding-left: 1rem;
 }
 
+/* Tree guide lines */
+.tree__children > li {
+  position: relative;
+}
+
+.tree__children > li::before {
+  content: "";
+  position: absolute;
+  left: -0.55rem;
+  top: 0;
+  bottom: 0;
+  border-left: 1px solid rgba(129, 157, 108, 0.2);
+  pointer-events: none;
+}
+
+.tree__children > li::after {
+  content: "";
+  position: absolute;
+  left: -0.55rem;
+  top: 0.95rem;
+  width: 0.55rem;
+  border-top: 1px solid rgba(129, 157, 108, 0.2);
+  pointer-events: none;
+}
+
+.tree__children > li:last-child::before {
+  bottom: auto;
+  height: 0.95rem;
+}
+
 .tree__folder {
   margin: 0;
 }
