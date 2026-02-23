@@ -610,9 +610,13 @@ button:hover,
   position: absolute;
   left: -0.55rem;
   top: 0.95rem;
-  width: 0.55rem;
+  width: 0.7rem;
   border-top: 1px solid rgba(129, 157, 108, 0.2);
   pointer-events: none;
+}
+
+.tree__children > .tree__leaf::after {
+  width: 1.8rem;
 }
 
 .tree__children > li:last-child::before {
