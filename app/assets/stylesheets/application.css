@@ -121,9 +121,12 @@ body {
 }
 
 .sidebar summary::before {
-  content: "›";
-  font-size: 1.2rem;
+  content: "▶";
+  font-size: 0.55rem;
   display: inline-block;
+  width: 1rem;
+  text-align: center;
+  line-height: 1;
   transition: transform 0.15s ease;
 }
 
@@ -688,11 +691,13 @@ button:hover,
 }
 
 .tree__arrow {
-  font-size: 1.2rem;
+  font-size: 0.55rem;
   flex-shrink: 0;
   width: 1rem;
   text-align: center;
   display: inline-block;
+  line-height: 1;
+  vertical-align: middle;
   transition: transform 0.15s ease;
 }
 
