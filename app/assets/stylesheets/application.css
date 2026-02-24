@@ -44,6 +44,14 @@ body {
   font-weight: 700;
   color: var(--heading);
   text-decoration: none;
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+}
+
+.site-header .logo svg {
+  width: 1.4em;
+  height: 1.4em;
 }
 
 .site-header nav a {
@@ -505,6 +513,13 @@ button:hover,
 .tree__avatar--placeholder {
   color: var(--link);
   border: 1px solid var(--placeholder-border);
+}
+
+.avatar--placeholder svg,
+.sidebar__avatar--placeholder svg,
+.tree__avatar--placeholder svg {
+  width: 75%;
+  height: 75%;
 }
 
 .avatar--placeholder {
