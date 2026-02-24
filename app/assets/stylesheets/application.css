@@ -492,6 +492,8 @@ button:hover,
   cursor: pointer;
   transition: background-color 0.2s ease, color 0.2s ease;
   user-select: none;
+  box-decoration-break: clone;
+  -webkit-box-decoration-break: clone;
 }
 
 .spoiler--revealed {

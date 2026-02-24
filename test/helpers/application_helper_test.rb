@@ -107,4 +107,11 @@ class ApplicationHelperTest < ActionView::TestCase
     assert_includes result, '<span class="spoiler">also hidden</span>'
     assert_includes result, "<code>||visible||</code>"
   end
+
+  test "converts multiline spoilers" do
+    text = "||line one\nline two||"
+    result = formatted_description(text)
+    assert_includes result, '<span class="spoiler">line one'
+    assert_includes result, "line two</span>"
+  end
 end

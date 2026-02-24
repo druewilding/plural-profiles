@@ -2,7 +2,7 @@ module ApplicationHelper
   DESCRIPTION_EXTRA_TAGS = %w[details summary span].to_set.freeze
   DESCRIPTION_EXTRA_ATTRIBUTES = %w[open class].to_set.freeze
 
-  SPOILER_PATTERN = /\|\|(.+?)\|\|/
+  SPOILER_PATTERN = /\|\|(.+?)\|\|/m
   CODE_BLOCK_PATTERN = /<code>.*?<\/code>/m
 
   def formatted_description(text)
