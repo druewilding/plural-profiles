@@ -92,4 +92,19 @@ class ApplicationHelperTest < ActionView::TestCase
     assert_includes result, "<details>"
     assert_includes result, '<span class="spoiler">secret</span>'
   end
+
+  test "does not convert double pipes inside code tags" do
+    text = "Use <code>||text||</code> to hide text"
+    result = formatted_description(text)
+    assert_includes result, "<code>||text||</code>"
+    assert_not_includes result, '<span class="spoiler">text</span>'
+  end
+
+  test "converts spoilers outside code but not inside" do
+    text = "||hidden|| and <code>||visible||</code> and ||also hidden||"
+    result = formatted_description(text)
+    assert_includes result, '<span class="spoiler">hidden</span>'
+    assert_includes result, '<span class="spoiler">also hidden</span>'
+    assert_includes result, "<code>||visible||</code>"
+  end
 end

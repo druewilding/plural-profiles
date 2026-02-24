@@ -3,12 +3,25 @@ module ApplicationHelper
   DESCRIPTION_EXTRA_ATTRIBUTES = %w[open class].to_set.freeze
 
   SPOILER_PATTERN = /\|\|(.+?)\|\|/
+  CODE_BLOCK_PATTERN = /<code>.*?<\/code>/m
 
   def formatted_description(text)
     safe_list_class = self.class.safe_list_sanitizer.class
     tags = safe_list_class.allowed_tags + DESCRIPTION_EXTRA_TAGS
     attrs = safe_list_class.allowed_attributes + DESCRIPTION_EXTRA_ATTRIBUTES
-    text = text.gsub(SPOILER_PATTERN, '<span class="spoiler">\1</span>')
+    text = convert_spoilers_outside_code(text)
     simple_format(text, {}, sanitize_options: { tags: tags, attributes: attrs })
+  end
+
+  private
+
+  def convert_spoilers_outside_code(text)
+    # Split on <code>...</code> blocks so we only convert ||text|| outside them
+    parts = text.split(CODE_BLOCK_PATTERN)
+    code_blocks = text.scan(CODE_BLOCK_PATTERN)
+
+    result = parts.map { |part| part.gsub(SPOILER_PATTERN, '<span class="spoiler">\1</span>') }
+    code_blocks.each_with_index { |block, i| result.insert((i * 2) + 1, block) }
+    result.join
   end
 end
