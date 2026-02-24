@@ -175,10 +175,6 @@ body {
   display: flex;
   align-items: center;
   justify-content: center;
-  color: var(--link);
-  font-weight: 700;
-  font-size: 0.65rem;
-  border: 1px solid var(--placeholder-border);
 }
 
 .sidebar__link {
@@ -507,20 +503,23 @@ button:hover,
   margin-right: 0.35em;
 }
 
+.avatar--placeholder,
+.sidebar__avatar--placeholder,
+.tree__avatar--placeholder {
+  color: var(--link);
+  border: 1px solid var(--placeholder-border);
+}
+
 .avatar--placeholder {
   display: flex;
   align-items: center;
   justify-content: center;
-  color: var(--link);
-  font-weight: 700;
   border-radius: 50%;
-  border: 1px solid var(--placeholder-border);
   width: 64px;
   height: 64px;
   min-width: 64px;
   min-height: 64px;
   flex-shrink: 0;
-  font-size: 1.5rem;
 }
 
 .profile-card .avatar--placeholder {
@@ -531,13 +530,11 @@ button:hover,
 .avatar--small.avatar--placeholder {
   width: 40px;
   height: 40px;
-  font-size: 1rem;
 }
 
 .avatar--large.avatar--placeholder {
   width: 96px;
   height: 96px;
-  font-size: 2.5rem;
 }
 
 /* Pronouns */
@@ -720,10 +717,6 @@ button:hover,
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  color: var(--link);
-  font-weight: 700;
-  font-size: 0.65rem;
-  border: 1px solid var(--placeholder-border);
 }
 
 .tree__label {
