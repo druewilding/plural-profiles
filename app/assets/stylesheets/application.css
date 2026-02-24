@@ -14,6 +14,7 @@
   --input-bg: #263a2e;
   --input-border: #4e855f;
   --tree-guide: color-mix(in srgb, var(--text) 30%, transparent);
+  --placeholder-border: color-mix(in srgb, var(--link) 15%, transparent);
 }
 
 *, *::before, *::after {
@@ -178,6 +179,7 @@ body {
   color: #fff;
   font-weight: 700;
   font-size: 0.65rem;
+  border: 1px solid var(--placeholder-border);
 }
 
 .sidebar__link {
@@ -514,6 +516,7 @@ button:hover,
   color: #fff;
   font-weight: 700;
   border-radius: 50%;
+  border: 1px solid var(--placeholder-border);
   width: 64px;
   height: 64px;
   min-width: 64px;
@@ -723,6 +726,7 @@ button:hover,
   color: #fff;
   font-weight: 700;
   font-size: 0.65rem;
+  border: 1px solid var(--placeholder-border);
 }
 
 .tree__label {
