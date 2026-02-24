@@ -779,6 +779,15 @@ button:hover,
   background-color: #c04e44;
 }
 
+/* Utility classes (for user-generated content) */
+.font-bold { font-weight: 700; }
+.font-italic { font-style: italic; }
+.text-center { text-align: center; }
+.text-left { text-align: left; }
+.text-lg { font-size: 1.2rem; }
+.text-right { text-align: right; }
+.text-sm { font-size: 0.85rem; }
+
 /* ---- Responsive ---- */
 
 /* Tablet (768px and below) */
