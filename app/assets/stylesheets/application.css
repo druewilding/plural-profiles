@@ -175,8 +175,7 @@ body {
   display: flex;
   align-items: center;
   justify-content: center;
-  background-color: var(--link);
-  color: #fff;
+  color: var(--link);
   font-weight: 700;
   font-size: 0.65rem;
   border: 1px solid var(--placeholder-border);
@@ -512,8 +511,7 @@ button:hover,
   display: flex;
   align-items: center;
   justify-content: center;
-  background-color: var(--link);
-  color: #fff;
+  color: var(--link);
   font-weight: 700;
   border-radius: 50%;
   border: 1px solid var(--placeholder-border);
@@ -722,8 +720,7 @@ button:hover,
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  background-color: var(--link);
-  color: #fff;
+  color: var(--link);
   font-weight: 700;
   font-size: 0.65rem;
   border: 1px solid var(--placeholder-border);
