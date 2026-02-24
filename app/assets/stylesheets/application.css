@@ -14,7 +14,7 @@
   --input-bg: #263a2e;
   --input-border: #4e855f;
   --tree-guide: color-mix(in srgb, var(--text) 30%, transparent);
-  --placeholder-border: color-mix(in srgb, var(--link) 15%, transparent);
+  --placeholder-border: color-mix(in srgb, var(--text) 50%, transparent);
 }
 
 *, *::before, *::after {
@@ -44,6 +44,14 @@ body {
   font-weight: 700;
   color: var(--heading);
   text-decoration: none;
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+}
+
+.site-header .logo svg {
+  width: 1.4em;
+  height: 1.4em;
 }
 
 .site-header nav a {
@@ -175,15 +183,10 @@ body {
   display: flex;
   align-items: center;
   justify-content: center;
-  background-color: var(--link);
-  color: #fff;
-  font-weight: 700;
-  font-size: 0.65rem;
-  border: 1px solid var(--placeholder-border);
 }
 
 .sidebar__link {
-  color: var(--text);
+  color: var(--link);
   text-decoration: none;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -451,12 +454,9 @@ button:hover,
   padding: 1.5rem 1rem;
   text-decoration: none;
   color: var(--text);
-  transition: transform 0.15s, box-shadow 0.15s;
 }
 
 .profile-card:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
   text-decoration: none;
   color: var(--text);
 }
@@ -508,21 +508,30 @@ button:hover,
   margin-right: 0.35em;
 }
 
+.avatar--placeholder,
+.sidebar__avatar--placeholder,
+.tree__avatar--placeholder {
+  color: var(--text);
+  border: 1px solid var(--placeholder-border);
+}
+
+.avatar--placeholder svg,
+.sidebar__avatar--placeholder svg,
+.tree__avatar--placeholder svg {
+  width: 75%;
+  height: 75%;
+}
+
 .avatar--placeholder {
   display: flex;
   align-items: center;
   justify-content: center;
-  background-color: var(--link);
-  color: #fff;
-  font-weight: 700;
   border-radius: 50%;
-  border: 1px solid var(--placeholder-border);
   width: 64px;
   height: 64px;
   min-width: 64px;
   min-height: 64px;
   flex-shrink: 0;
-  font-size: 1.5rem;
 }
 
 .profile-card .avatar--placeholder {
@@ -533,13 +542,11 @@ button:hover,
 .avatar--small.avatar--placeholder {
   width: 40px;
   height: 40px;
-  font-size: 1rem;
 }
 
 .avatar--large.avatar--placeholder {
   width: 96px;
   height: 96px;
-  font-size: 2.5rem;
 }
 
 /* Pronouns */
@@ -722,11 +729,6 @@ button:hover,
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  background-color: var(--link);
-  color: #fff;
-  font-weight: 700;
-  font-size: 0.65rem;
-  border: 1px solid var(--placeholder-border);
 }
 
 .tree__label {

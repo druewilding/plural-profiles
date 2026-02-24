@@ -2,7 +2,8 @@
   - if profile.avatar.attached?
     = image_tag profile.avatar.variant(resize_to_fill: [64, 64]), class: "avatar", width: 64, height: 64, alt: profile.avatar_alt_text.presence || ""
   - else
-    .avatar.avatar--placeholder= profile.name.first
+    .avatar.avatar--placeholder
+      = render "shared/plural_pride_logo"
   %h3= profile.name
   - if profile.pronouns.present?
     %span.pronouns= profile.pronouns

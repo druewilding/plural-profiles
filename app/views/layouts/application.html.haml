@@ -16,9 +16,9 @@
     -# Enable PWA manifest for installable apps (make sure to enable in config/routes.rb too!)
     -#= tag.link rel: "manifest", href: pwa_manifest_path(format: :json)
 
-    %link{rel: "icon", href: "/icon.png", type: "image/png"}
-    %link{rel: "icon", href: "/icon.svg", type: "image/svg+xml"}
-    %link{rel: "apple-touch-icon", href: "/icon.png"}
+    %link{rel: "icon", href: "/logo.png", type: "image/png"}
+    %link{rel: "icon", href: "/logo.svg", type: "image/svg+xml"}
+    %link{rel: "apple-touch-icon", href: "/logo.png"}
 
     -# Includes all stylesheet files in app/assets/stylesheets
     = stylesheet_link_tag :app, "data-turbo-track": "reload"
@@ -26,7 +26,9 @@
 
   %body
     %header.site-header
-      = link_to "Plural Profiles", root_path, class: "logo"
+      = link_to root_path, class: "logo" do
+        = render "shared/plural_pride_logo"
+        Plural Profiles
       %nav
         - if authenticated?
           = link_to "Groups", our_groups_path
