@@ -478,7 +478,8 @@ button:hover,
   margin-bottom: 1.5rem;
 }
 
-details summary {
+.profile-description details summary,
+.group-description details summary {
   font-weight: bold;
 }
 
