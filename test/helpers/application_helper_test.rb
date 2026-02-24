@@ -1,6 +1,9 @@
 require "test_helper"
 
 class ApplicationHelperTest < ActionView::TestCase
+  SPOILER_OPEN = '<span class="spoiler" role="button" tabindex="0" ' \
+    'aria-expanded="false" aria-label="Hidden content, click to reveal">'
+
   test "allows details and summary tags" do
     text = "<details><summary>Title</summary>Content</details>"
     result = formatted_description(text)
@@ -63,14 +66,14 @@ class ApplicationHelperTest < ActionView::TestCase
   test "converts double-pipe syntax to spoiler span" do
     text = "the secret is ||hidden content|| here"
     result = formatted_description(text)
-    assert_includes result, '<span class="spoiler">hidden content</span>'
+    assert_includes result, "#{SPOILER_OPEN}hidden content</span>"
   end
 
   test "converts multiple spoilers in one text" do
     text = "||first|| and ||second||"
     result = formatted_description(text)
-    assert_includes result, '<span class="spoiler">first</span>'
-    assert_includes result, '<span class="spoiler">second</span>'
+    assert_includes result, "#{SPOILER_OPEN}first</span>"
+    assert_includes result, "#{SPOILER_OPEN}second</span>"
   end
 
   test "does not convert single pipes" do
@@ -83,42 +86,86 @@ class ApplicationHelperTest < ActionView::TestCase
   test "does not convert empty double pipes" do
     text = "nothing |||| here"
     result = formatted_description(text)
-    assert_not_includes result, '<span class="spoiler"></span>'
+    assert_not_includes result, "#{SPOILER_OPEN}</span>"
+    assert_includes result, "||||"
   end
 
   test "spoiler works alongside details tags" do
     text = "<details><summary>Info</summary>||secret||</details>"
     result = formatted_description(text)
     assert_includes result, "<details>"
-    assert_includes result, '<span class="spoiler">secret</span>'
+    assert_includes result, "#{SPOILER_OPEN}secret</span>"
   end
 
   test "does not convert double pipes inside code tags" do
     text = "Use <code>||text||</code> to hide text"
     result = formatted_description(text)
     assert_includes result, "<code>||text||</code>"
-    assert_not_includes result, '<span class="spoiler">text</span>'
+    assert_not_includes result, "#{SPOILER_OPEN}text</span>"
   end
 
   test "converts spoilers outside code but not inside" do
     text = "||hidden|| and <code>||visible||</code> and ||also hidden||"
     result = formatted_description(text)
-    assert_includes result, '<span class="spoiler">hidden</span>'
-    assert_includes result, '<span class="spoiler">also hidden</span>'
+    assert_includes result, "#{SPOILER_OPEN}hidden</span>"
+    assert_includes result, "#{SPOILER_OPEN}also hidden</span>"
     assert_includes result, "<code>||visible||</code>"
   end
 
   test "converts multiline spoilers" do
     text = "||line one\nline two||"
     result = formatted_description(text)
-    assert_includes result, '<span class="spoiler">line one'
+    assert_includes result, "#{SPOILER_OPEN}line one"
     assert_includes result, "line two</span>"
   end
 
   test "disallows dangerous content inside spoilers" do
     text = "||<script>alert('xss')</script>||"
     result = formatted_description(text)
-    assert_includes result, '<span class="spoiler">'
+    assert_includes result, SPOILER_OPEN
     assert_not_includes result, "<script"
+  end
+
+  test "handles nested spoilers input" do
+    text = "||outer ||inner|| outer||"
+    result = formatted_description(text)
+    assert_includes result, "outer"
+    assert_includes result, "inner"
+    assert_includes result, "spoiler"
+  end
+
+  test "escapes special HTML characters inside spoilers" do
+    text = '||<>&"||'
+    result = formatted_description(text)
+    assert_includes result, SPOILER_OPEN
+    assert_not_includes result, '||<>&"||'
+    assert_includes result, "&lt;&gt;&amp;\""
+  end
+
+  test "handles spoilers spanning multiple lines" do
+    text = "start ||multi\nline|| end"
+    result = formatted_description(text)
+    assert_includes result, "multi"
+    assert_includes result, "line"
+    assert_includes result, "spoiler"
+  end
+
+  test "handles spoilers containing markdown-like content" do
+    text = "||**bold** and http://example.com||"
+    result = formatted_description(text)
+    assert_includes result, SPOILER_OPEN
+    assert_includes result, "bold"
+    assert_includes result, "http://example.com"
+  end
+
+  # -- Spoiler accessibility attributes --
+
+  test "spoiler span includes accessibility attributes" do
+    text = "||secret||"
+    result = formatted_description(text)
+    assert_includes result, 'role="button"'
+    assert_includes result, 'tabindex="0"'
+    assert_includes result, 'aria-expanded="false"'
+    assert_includes result, 'aria-label="Hidden content, click to reveal"'
   end
 end

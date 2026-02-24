@@ -6,7 +6,7 @@ class SpoilerTest < ApplicationSystemTestCase
     sign_in_via_browser
   end
 
-  test "clicking a spoiler reveals it" do
+  test "clicking a spoiler reveals it and updates ARIA attributes" do
     within(".site-header") { click_link "New profile" }
     fill_in "Name", with: "Spoiler Tester"
     fill_in "Description", with: "the password is ||super secret||"
@@ -15,13 +15,17 @@ class SpoilerTest < ApplicationSystemTestCase
 
     spoiler = find(".spoiler")
     assert_no_selector ".spoiler.spoiler--revealed"
+    assert_equal "false", spoiler[:"aria-expanded"]
+    assert_equal "Hidden content, click to reveal", spoiler[:"aria-label"]
 
     spoiler.click
     assert_selector ".spoiler.spoiler--revealed"
     assert_text "super secret"
+    assert_equal "true", spoiler[:"aria-expanded"]
+    assert_equal "Content revealed, click to hide", spoiler[:"aria-label"]
   end
 
-  test "clicking a revealed spoiler hides it again" do
+  test "clicking a revealed spoiler hides it again and restores ARIA" do
     within(".site-header") { click_link "New profile" }
     fill_in "Name", with: "Toggle Tester"
     fill_in "Description", with: "||hidden text||"
@@ -31,9 +35,64 @@ class SpoilerTest < ApplicationSystemTestCase
     spoiler = find(".spoiler")
     spoiler.click
     assert_selector ".spoiler.spoiler--revealed"
+    assert_equal "true", spoiler[:"aria-expanded"]
 
     spoiler.click
     assert_no_selector ".spoiler.spoiler--revealed"
+    assert_equal "false", spoiler[:"aria-expanded"]
+    assert_equal "Hidden content, click to reveal", spoiler[:"aria-label"]
+  end
+
+  test "spoiler can be toggled with Enter key" do
+    within(".site-header") { click_link "New profile" }
+    fill_in "Name", with: "Keyboard Tester"
+    fill_in "Description", with: "||keyboard secret||"
+    click_button "Create profile"
+    assert_text "Profile created."
+
+    spoiler = find(".spoiler")
+    assert_no_selector ".spoiler.spoiler--revealed"
+
+    spoiler.send_keys(:enter)
+    assert_selector ".spoiler.spoiler--revealed"
+    assert_equal "true", spoiler[:"aria-expanded"]
+
+    spoiler.send_keys(:enter)
+    assert_no_selector ".spoiler.spoiler--revealed"
+    assert_equal "false", spoiler[:"aria-expanded"]
+  end
+
+  test "spoiler can be toggled with Space key" do
+    within(".site-header") { click_link "New profile" }
+    fill_in "Name", with: "Space Tester"
+    fill_in "Description", with: "||space secret||"
+    click_button "Create profile"
+    assert_text "Profile created."
+
+    spoiler = find(".spoiler")
+    assert_no_selector ".spoiler.spoiler--revealed"
+
+    spoiler.send_keys(:space)
+    assert_selector ".spoiler.spoiler--revealed"
+    assert_equal "true", spoiler[:"aria-expanded"]
+
+    spoiler.send_keys(:space)
+    assert_no_selector ".spoiler.spoiler--revealed"
+    assert_equal "false", spoiler[:"aria-expanded"]
+  end
+
+  test "spoiler has correct accessibility attributes" do
+    within(".site-header") { click_link "New profile" }
+    fill_in "Name", with: "A11y Tester"
+    fill_in "Description", with: "||accessible||"
+    click_button "Create profile"
+    assert_text "Profile created."
+
+    spoiler = find(".spoiler")
+    assert_equal "button", spoiler[:"role"]
+    assert_equal "0", spoiler[:"tabindex"]
+    assert_equal "false", spoiler[:"aria-expanded"]
+    assert_equal "Hidden content, click to reveal", spoiler[:"aria-label"]
   end
 
   test "multiline spoiler is fully revealed on click" do
