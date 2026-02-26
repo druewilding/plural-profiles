@@ -308,6 +308,7 @@ fieldset.form-group legend {
 
 .toggle-label:hover {
   opacity: 1;
+  text-decoration: none;
 }
 
 .toggle-label input[type="checkbox"] {
