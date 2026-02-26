@@ -324,7 +324,7 @@ fieldset.form-group legend {
   width: 2rem;
   height: 1.15rem;
   background-color: #888;
-  border: 1px solid var(--link);
+  border: 1px solid color-mix(in srgb, var(--link) 10%, transparent);
   border-radius: 0.6rem;
   flex-shrink: 0;
   transition: background-color 0.2s;
