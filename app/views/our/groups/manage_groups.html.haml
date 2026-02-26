@@ -22,7 +22,7 @@
             = link_to toggle_relationship_our_group_path(@group, group_id: child.id), data: { turbo_method: :patch }, class: "toggle-label" do
               %input{type: "checkbox", id: "toggle_#{link.id}", checked: link.nested?, disabled: true, tabindex: "-1", "aria-hidden": "true"}
               %span.toggle-track
-              %span.toggle-text Include all sub-groups
+              %span.toggle-text Include sub-groups
         = link_to "Remove", remove_group_our_group_path(@group, group_id: child.id), data: { turbo_method: :delete }, class: "btn btn--danger btn--small"
 - else
   .card
