@@ -39,7 +39,7 @@ class Group < ApplicationRecord
       SELECT DISTINCT (jsonb_array_elements_text(gg.included_subgroup_ids))::bigint AS id
       FROM group_groups gg
       INNER JOIN tree t ON t.id = gg.parent_group_id
-      WHERE gg.inclusion_mode = 'selected'
+      WHERE gg.inclusion_mode = 'selected' AND t.recurse_further = true
     SQL
     Group.connection.select_values(
       Group.sanitize_sql([ sql, root_id: id ])

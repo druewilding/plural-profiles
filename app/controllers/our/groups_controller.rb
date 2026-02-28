@@ -68,7 +68,12 @@ class Our::GroupsController < ApplicationController
     @available_groups = Current.user.groups
       .where.not(id: excluded_ids)
       .order(:name)
-    @child_links = @group.child_links.includes(child_group: { avatar_attachment: :blob }).order("groups.name")
+    @child_links = @group.child_links.includes(
+      child_group: [
+        { avatar_attachment: :blob },
+        { child_links: :child_group }
+      ]
+    ).order("groups.name")
   end
 
   def add_group

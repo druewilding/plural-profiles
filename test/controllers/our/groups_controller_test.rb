@@ -384,7 +384,7 @@ class Our::GroupsControllerTest < ActionDispatch::IntegrationTest
 
   # -- Update relationship type --
 
-  test "update_relationship switches none to all" do
+  test "update_relationship switches all to none" do
     sign_in_as @user
     everyone = groups(:everyone)
     link = group_groups(:friends_in_everyone)
@@ -396,7 +396,7 @@ class Our::GroupsControllerTest < ActionDispatch::IntegrationTest
     assert link.reload.none?
   end
 
-  test "update_relationship switches all back to none" do
+  test "update_relationship switches none back to all" do
     sign_in_as @user
     everyone = groups(:everyone)
     link = group_groups(:friends_in_everyone)

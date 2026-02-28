@@ -50,7 +50,7 @@ class GroupGroupTest < ActiveSupport::TestCase
   test "prevents partial circular relationship" do
     # A->B (none)
     # B->C (all)
-    # C->A is allowed (not a circular reference)
+    # C->A is not allowed (would create a circular reference)
     a = @user.groups.create!(name: "A")
     b = @user.groups.create!(name: "B")
     c = @user.groups.create!(name: "C")
