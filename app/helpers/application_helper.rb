@@ -1,5 +1,5 @@
 module ApplicationHelper
-  DESCRIPTION_EXTRA_TAGS = %w[details summary span].to_set.freeze
+  DESCRIPTION_EXTRA_TAGS = %w[details summary span b i u s].to_set.freeze
   DESCRIPTION_EXTRA_ATTRIBUTES = %w[open class role tabindex aria-label aria-expanded].to_set.freeze
 
   SPOILER_PATTERN = /\|\|(.+?)\|\|/m
