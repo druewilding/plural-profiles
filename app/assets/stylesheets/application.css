@@ -1159,7 +1159,13 @@ button:hover,
     color: CanvasText;
   }
 
-  /* Checkboxes — replace native control, manual system-color styling */
+  /*
+   * Checkboxes — replace native control, manual system-color styling.
+   * Note: .toggle-label input[type="checkbox"] is restored to appearance: checkbox
+   * in the earlier forced-colors block with higher specificity (0,2,1).
+   * That ensures toggle switches keep the hidden native checkbox. Do not add rules here
+   * that match .toggle-label input[type="checkbox"] or the toggle will break.
+   */
   input[type="checkbox"],
   .checkbox-label input[type="checkbox"] {
     forced-color-adjust: none;
