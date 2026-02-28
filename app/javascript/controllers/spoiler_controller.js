@@ -4,6 +4,15 @@ import { Controller } from "@hotwired/stimulus"
 // Connects automatically to any element with data-controller="spoiler".
 export default class extends Controller {
   toggle(event) {
+    if (event.target.closest(".details-close")) {
+      const details = event.target.closest("details")
+      if (details) {
+        details.removeAttribute("open")
+        details.querySelector(":scope > summary")?.focus()
+      }
+      return
+    }
+
     const span = event.target.closest(".spoiler")
     if (!span) return
 
