@@ -231,6 +231,10 @@ a:hover {
   text-decoration: underline;
 }
 
+a.btn:hover {
+  text-decoration: none;
+}
+
 /* Flash messages */
 .flash {
   padding: 0.75rem 1rem;
@@ -351,6 +355,13 @@ input:checked + .toggle-track::after {
 }
 
 @media (forced-colors: active) {
+  /* Keep toggle checkbox hidden even with appearance: none */
+  .toggle-label input[type="checkbox"] {
+    forced-color-adjust: auto;
+    -webkit-appearance: checkbox;
+    appearance: checkbox;
+  }
+
   .toggle-track {
     forced-color-adjust: none;
     background-color: Canvas;
@@ -360,6 +371,15 @@ input:checked + .toggle-track::after {
   .toggle-track::after {
     background-color: CanvasText;
     border-color: CanvasText;
+  }
+
+  input:checked + .toggle-track {
+    background-color: CanvasText;
+    border-color: CanvasText;
+  }
+
+  input:checked + .toggle-track::after {
+    background-color: Canvas;
   }
 
   input:not(:checked) ~ .toggle-text {
@@ -448,9 +468,63 @@ select:focus {
   border-color: var(--heading);
 }
 
+/* Chrome autofill: override the forced white background */
+input:-webkit-autofill,
+input:-webkit-autofill:hover,
+input:-webkit-autofill:focus,
+textarea:-webkit-autofill,
+select:-webkit-autofill {
+  -webkit-text-fill-color: var(--text);
+  -webkit-box-shadow: 0 0 0 1000px var(--input-bg) inset;
+  border-color: var(--input-border);
+  caret-color: var(--text);
+  transition: background-color 5000s ease-in-out 0s;
+}
+
 textarea {
   resize: vertical;
   min-height: 100px;
+}
+
+input[type="file"] {
+  color: var(--text);
+}
+
+input[type="file"]::file-selector-button {
+  background-color: var(--link);
+  color: #fff;
+  border: none;
+  border-radius: 6px;
+  padding: 0.4rem 1rem;
+  font-size: 0.9rem;
+  cursor: pointer;
+  margin-right: 0.75rem;
+  transition: background-color 0.2s;
+}
+
+input[type="file"]::file-selector-button:hover {
+  background-color: #3d6d4c;
+}
+
+/* Disabled form controls */
+input:disabled,
+textarea:disabled,
+select:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
+input[type="checkbox"]:disabled,
+input[type="radio"]:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
+input[type="submit"]:disabled,
+button:disabled,
+.btn:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
 }
 
 input[type="submit"],
@@ -1026,6 +1100,255 @@ button:hover,
 .text-lg { font-size: 1.2rem; }
 .text-right { text-align: right; }
 .text-sm { font-size: 0.85rem; }
+
+/* ---- Forced-colors: form controls & buttons ---- */
+@media (forced-colors: active) {
+  /* Text inputs, textareas, selects — take full control */
+  input[type="text"],
+  input[type="email"],
+  input[type="password"],
+  input[type="url"],
+  textarea,
+  select {
+    forced-color-adjust: none;
+    background-color: Canvas;
+    color: CanvasText;
+    border: 1px solid CanvasText;
+  }
+
+  /* Prevent Firefox autofill from overriding */
+  input:-moz-autofill,
+  textarea:-moz-autofill,
+  select:-moz-autofill,
+  input:autofill,
+  textarea:autofill,
+  select:autofill {
+    forced-color-adjust: none;
+    background-color: Canvas !important;
+    color: CanvasText !important;
+    -webkit-text-fill-color: CanvasText;
+    border-color: CanvasText !important;
+  }
+
+  /* Override Chrome autofill box-shadow trick for forced-colors */
+  input:-webkit-autofill,
+  input:-webkit-autofill:hover,
+  input:-webkit-autofill:focus,
+  textarea:-webkit-autofill,
+  select:-webkit-autofill {
+    -webkit-text-fill-color: CanvasText;
+    -webkit-box-shadow: none;
+    background-color: Canvas !important;
+    border-color: CanvasText;
+  }
+
+  input[type="text"]:focus,
+  input[type="email"]:focus,
+  input[type="password"]:focus,
+  input[type="url"]:focus,
+  textarea:focus,
+  select:focus {
+    outline: 2px solid CanvasText;
+  }
+
+  /* Labels & legends */
+  label,
+  fieldset.form-group legend,
+  fieldset.inclusion-radios legend,
+  fieldset.inclusion-checkboxes legend {
+    color: CanvasText;
+  }
+
+  /*
+   * Checkboxes — replace native control, manual system-color styling.
+   * Note: .toggle-label input[type="checkbox"] is restored to appearance: checkbox
+   * in the earlier forced-colors block with higher specificity (0,2,1).
+   * That ensures toggle switches keep the hidden native checkbox. Do not add rules here
+   * that match .toggle-label input[type="checkbox"] or the toggle will break.
+   */
+  input[type="checkbox"],
+  .checkbox-label input[type="checkbox"] {
+    forced-color-adjust: none;
+    -webkit-appearance: none;
+    appearance: none;
+    width: 1.15em;
+    height: 1.15em;
+    min-width: 1.15em;
+    min-height: 1.15em;
+    margin: 0;
+    flex-shrink: 0;
+    background-color: Canvas;
+    border: 2px solid CanvasText;
+    border-radius: 3px;
+    vertical-align: middle;
+    cursor: pointer;
+  }
+
+  input[type="checkbox"]:checked {
+    background-color: CanvasText;
+    border-color: CanvasText;
+    /* Use a mask so the Canvas background shows through as the checkmark */
+    background-image: none;
+    position: relative;
+  }
+
+  input[type="checkbox"]:checked::after {
+    content: "";
+    display: block;
+    width: 100%;
+    height: 100%;
+    background-color: Canvas;
+    -webkit-mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Cpath fill='none' stroke='black' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round' d='M3.5 8.5 6.5 11.5 12.5 4.5'/%3E%3C/svg%3E");
+    -webkit-mask-size: 100% 100%;
+    -webkit-mask-repeat: no-repeat;
+    -webkit-mask-position: center;
+    mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Cpath fill='none' stroke='black' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round' d='M3.5 8.5 6.5 11.5 12.5 4.5'/%3E%3C/svg%3E");
+    mask-size: 100% 100%;
+    mask-repeat: no-repeat;
+    mask-position: center;
+  }
+
+  input[type="checkbox"]:focus-visible {
+    outline: 2px solid CanvasText;
+    outline-offset: 2px;
+  }
+
+  /* Radio buttons — pure CSS dot using box-shadow, no SVG needed */
+  input[type="radio"] {
+    forced-color-adjust: none;
+    -webkit-appearance: none;
+    appearance: none;
+    width: 1.15em;
+    height: 1.15em;
+    margin: 0;
+    flex-shrink: 0;
+    background-color: Canvas;
+    border: 2px solid CanvasText;
+    border-radius: 50%;
+    vertical-align: middle;
+    cursor: pointer;
+  }
+
+  input[type="radio"]:checked {
+    border: 2px solid CanvasText;
+    background-color: CanvasText;
+    /* Inset Canvas ring creates the gap around the CanvasText dot */
+    box-shadow: inset 0 0 0 0.13em Canvas;
+  }
+
+  input[type="radio"]:focus-visible {
+    outline: 2px solid CanvasText;
+    outline-offset: 2px;
+  }
+
+  /* Disabled controls in forced-colors */
+  input:disabled,
+  textarea:disabled,
+  select:disabled {
+    color: GrayText;
+    border-color: GrayText;
+    cursor: not-allowed;
+  }
+
+  input[type="checkbox"]:disabled,
+  input[type="radio"]:disabled {
+    border-color: GrayText;
+    background-color: GrayText;
+    cursor: not-allowed;
+  }
+
+  input[type="submit"]:disabled,
+  button:disabled,
+  .btn:disabled {
+    background-color: GrayText;
+    border-color: GrayText;
+    color: Canvas;
+    cursor: not-allowed;
+  }
+
+  /* Primary buttons */
+  input[type="submit"],
+  button,
+  .btn {
+    forced-color-adjust: none;
+    background-color: CanvasText;
+    color: Canvas;
+    border: 1px solid CanvasText;
+  }
+
+  /* File input browse button */
+  input[type="file"] {
+    color: CanvasText;
+  }
+
+  input[type="file"]::file-selector-button {
+    forced-color-adjust: none;
+    background-color: CanvasText;
+    color: Canvas;
+    border: 1px solid CanvasText;
+    border-radius: 4px;
+    padding: 0.3rem 0.75rem;
+    cursor: pointer;
+  }
+
+  input[type="file"]::file-selector-button:hover {
+    background-color: Canvas;
+    color: CanvasText;
+  }
+
+  input[type="submit"]:hover,
+  button:hover,
+  .btn:hover {
+    background-color: Canvas;
+    color: CanvasText;
+  }
+
+  input[type="submit"]:focus-visible,
+  button:focus-visible,
+  .btn:focus-visible {
+    outline: 2px solid CanvasText;
+    outline-offset: 2px;
+  }
+
+  /* Secondary / outline buttons */
+  .btn--secondary,
+  .btn--outline {
+    background-color: Canvas;
+    color: CanvasText;
+    border: 1px solid CanvasText;
+  }
+
+  .btn--secondary:hover,
+  .btn--outline:hover {
+    background-color: CanvasText;
+    color: Canvas;
+  }
+
+  /* Fieldset borders */
+  fieldset.form-group,
+  fieldset.inclusion-radios,
+  fieldset.inclusion-checkboxes {
+    border-color: CanvasText;
+  }
+
+  /* Bare chrome-less buttons (tree controls, etc.) */
+  .tree__arrow-btn,
+  .tree__item {
+    background-color: transparent;
+    color: CanvasText;
+    border-color: transparent;
+  }
+
+  .tree__arrow-btn:hover,
+  .tree__item:hover {
+    opacity: 0.7;
+  }
+
+  .tree__item--active {
+    outline: 2px solid CanvasText;
+    font-weight: 700;
+  }
+}
 
 /* ---- Responsive ---- */
 
