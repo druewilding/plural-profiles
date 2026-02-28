@@ -28,11 +28,30 @@ class Group < ApplicationRecord
       WITH RECURSIVE tree AS (
         SELECT CAST(:root_id AS bigint) AS id, true AS recurse_further
         UNION
-        SELECT gg.child_group_id AS id,
-               (gg.relationship_type = 'nested') AS recurse_further
+         SELECT gg.child_group_id AS id,
+           (gg.inclusion_mode = 'all') AS recurse_further
         FROM group_groups gg
         INNER JOIN tree ON tree.id = gg.parent_group_id
         WHERE tree.recurse_further = true
+      )
+      SELECT DISTINCT id FROM tree
+    SQL
+    Group.connection.select_values(
+      Group.sanitize_sql([ sql, root_id: id ])
+    ).map(&:to_i)
+  end
+
+  # All group IDs reachable from this group via any edge type (nested or overlapping).
+  # Unlike descendant_group_ids, this does NOT stop at overlapping links.
+  # Used for circular-reference validation and UI exclusion lists.
+  def reachable_group_ids
+    sql = <<~SQL.squish
+      WITH RECURSIVE tree AS (
+        SELECT CAST(:root_id AS bigint) AS id
+        UNION
+        SELECT gg.child_group_id AS id
+        FROM group_groups gg
+        INNER JOIN tree ON tree.id = gg.parent_group_id
       )
       SELECT DISTINCT id FROM tree
     SQL
@@ -86,9 +105,9 @@ class Group < ApplicationRecord
                         .index_by(&:id)
 
     children_map = GroupGroup.where(parent_group_id: [ id ] + desc_ids)
-                             .pluck(:parent_group_id, :child_group_id, :relationship_type)
-                             .group_by(&:first)
-                             .transform_values { |rows| rows.map { |r| { id: r[1], relationship_type: r[2] } } }
+                 .pluck(:parent_group_id, :child_group_id, :inclusion_mode)
+                 .group_by(&:first)
+                 .transform_values { |rows| rows.map { |r| { id: r[1], relationship_type: r[2] } } }
 
     walk_descendants(id, children_map, groups_by_id)
   end
@@ -105,9 +124,9 @@ class Group < ApplicationRecord
                         .index_by(&:id)
 
     children_map = GroupGroup.where(parent_group_id: [ id ] + desc_ids)
-                             .pluck(:parent_group_id, :child_group_id, :relationship_type)
-                             .group_by(&:first)
-                             .transform_values { |rows| rows.map { |r| { id: r[1], relationship_type: r[2] } } }
+                 .pluck(:parent_group_id, :child_group_id, :inclusion_mode)
+                 .group_by(&:first)
+                 .transform_values { |rows| rows.map { |r| { id: r[1], relationship_type: r[2] } } }
 
     build_tree(id, children_map, groups_by_id)
   end
@@ -119,7 +138,7 @@ class Group < ApplicationRecord
       .filter_map { |entry| groups_by_id[entry[:id]] ? [ groups_by_id[entry[:id]], entry[:relationship_type] ] : nil }
       .sort_by { |g, _| g.name }
       .flat_map do |g, rel_type|
-        if rel_type == "nested"
+        if rel_type == "all"
           [ g, *walk_descendants(g.id, children_map, groups_by_id) ]
         else
           [ g ]
@@ -132,7 +151,7 @@ class Group < ApplicationRecord
       .filter_map { |entry| groups_by_id[entry[:id]] ? [ groups_by_id[entry[:id]], entry[:relationship_type] ] : nil }
       .sort_by { |g, _| g.name }
       .map do |g, rel_type|
-        overlapping = rel_type == "overlapping"
+        overlapping = rel_type == "none"
         {
           group: g,
           profiles: g.profiles.to_a,

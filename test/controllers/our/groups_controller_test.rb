@@ -427,4 +427,41 @@ class Our::GroupsControllerTest < ActionDispatch::IntegrationTest
     patch toggle_relationship_our_group_path(everyone), params: { group_id: @group.id }
     assert_redirected_to group_path(everyone.uuid)
   end
+
+  test "toggle_relationship accepts selected inclusion_mode and persisted ids" do
+    sign_in_as @user
+    everyone = groups(:everyone)
+    link = group_groups(:friends_in_everyone)
+
+    # create a child sub-group under friends so it can be selected
+    sub = @user.groups.create!(name: "Subgroup")
+    GroupGroup.create!(parent_group: groups(:friends), child_group: sub, inclusion_mode: "all")
+
+    assert_not link.selected?
+
+    patch toggle_relationship_our_group_path(everyone), params: { group_id: @group.id, inclusion_mode: "selected", included_subgroup_ids: [ sub.id ] }
+    assert_redirected_to manage_groups_our_group_path(everyone)
+    link.reload
+    assert link.selected?
+    assert_equal [ sub.id ], link.included_subgroup_ids.map(&:to_i)
+  end
+
+  test "toggle_relationship clears included_subgroup_ids for all or none" do
+    sign_in_as @user
+    everyone = groups(:everyone)
+    link = group_groups(:friends_in_everyone)
+
+    # prepare existing included ids
+    sub = @user.groups.create!(name: "Subgroup2")
+    GroupGroup.create!(parent_group: groups(:friends), child_group: sub, inclusion_mode: "all")
+    patch toggle_relationship_our_group_path(everyone), params: { group_id: @group.id, inclusion_mode: "selected", included_subgroup_ids: [ sub.id ] }
+    link.reload
+    assert link.selected?
+    assert_equal [ sub.id ], link.included_subgroup_ids.map(&:to_i)
+
+    patch toggle_relationship_our_group_path(everyone), params: { group_id: @group.id, inclusion_mode: "all" }
+    link.reload
+    assert link.all?
+    assert_equal [], link.included_subgroup_ids
+  end
 end

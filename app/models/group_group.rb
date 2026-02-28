@@ -1,24 +1,38 @@
 class GroupGroup < ApplicationRecord
-  RELATIONSHIP_TYPES = %w[nested overlapping].freeze
+  INCLUSION_MODES = %w[all selected none].freeze
 
   belongs_to :parent_group, class_name: "Group"
   belongs_to :child_group, class_name: "Group"
 
   validates :child_group_id, uniqueness: { scope: :parent_group_id }
-  validates :relationship_type, inclusion: { in: RELATIONSHIP_TYPES }
+  validates :inclusion_mode, inclusion: { in: INCLUSION_MODES }
   validate :same_user
   validate :not_self_referencing
   validate :no_circular_reference
 
-  scope :nested, -> { where(relationship_type: "nested") }
-  scope :overlapping, -> { where(relationship_type: "overlapping") }
+  # Backwards-compatible scopes: tests and callers may still use `nested` / `overlapping`
+  scope :nested, -> { where(inclusion_mode: "all") }
+  scope :overlapping, -> { where(inclusion_mode: "none") }
+  scope :selected, -> { where(inclusion_mode: "selected") }
 
   def nested?
-    relationship_type == "nested"
+    inclusion_mode == "all"
   end
 
   def overlapping?
-    relationship_type == "overlapping"
+    inclusion_mode == "none"
+  end
+
+  def all?
+    inclusion_mode == "all"
+  end
+
+  def selected?
+    inclusion_mode == "selected"
+  end
+
+  def none?
+    inclusion_mode == "none"
   end
 
   private
