@@ -10,6 +10,7 @@ class InviteCode < ApplicationRecord
   scope :unused, -> { where(redeemed_by_id: nil) }
   scope :used, -> { where.not(redeemed_by_id: nil) }
 
+  before_validation :normalize_code
   before_validation :generate_code, on: :create
 
   def redeemed?
@@ -21,6 +22,10 @@ class InviteCode < ApplicationRecord
   end
 
   private
+
+  def normalize_code
+    self.code = code.upcase if code.present?
+  end
 
   def generate_code
     self.code ||= loop {
