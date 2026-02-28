@@ -41,7 +41,7 @@ class RegistrationsControllerTest < ActionDispatch::IntegrationTest
       }
     end
     assert_response :unprocessable_entity
-    assert_match "Invalid or already used invite code", response.body
+    assert_match "Invite code invalid or already used", response.body
   end
 
   test "create rejects registration with already used invite code" do
@@ -58,7 +58,7 @@ class RegistrationsControllerTest < ActionDispatch::IntegrationTest
       }
     end
     assert_response :unprocessable_entity
-    assert_match "Invalid or already used invite code", response.body
+    assert_match "Invite code invalid or already used", response.body
   end
 
   test "create rejects registration with bogus invite code" do

@@ -40,6 +40,6 @@ class AuthenticationFlowsTest < ApplicationSystemTestCase
     fill_in "Confirm password", with: "N3wUs3r!S1gnup#2026"
     click_button "Sign up"
 
-    assert_text "Invalid or already used invite code"
+    assert_text "Invite code invalid or already used"
   end
 end

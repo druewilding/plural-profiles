@@ -12,7 +12,7 @@ class RegistrationsController < ApplicationController
     if @invite_code.nil?
       @user = User.new(registration_params)
       @user.valid? # populate other errors too
-      @user.errors.add(:base, "Invalid or already used invite code.")
+      @user.errors.add(:base, "Invite code invalid or already used")
       render :new, status: :unprocessable_entity
       return
     end
