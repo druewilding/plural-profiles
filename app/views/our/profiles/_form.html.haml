@@ -13,8 +13,8 @@
     = form.text_field :pronouns, placeholder: "e.g. they/them, she/her, he/him"
 
   .form-group
-    = form.label :avatar, "Avatar/Icon"
-    = form.file_field :avatar, accept: "image/*"
+    = form.label :avatar, "Avatar (up to 2 MB)"
+    = form.file_field :avatar, accept: "image/jpeg, image/png, image/webp"
     - if profile.persisted? && profile.avatar.attached?
       %p.form-hint Current avatar:
       = image_tag profile.avatar.variant(resize_to_fill: [64, 64]), class: "avatar", width: 64, height: 64, alt: profile.avatar_alt_text.presence || ""
