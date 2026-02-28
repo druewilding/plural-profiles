@@ -37,3 +37,4 @@
 
   .form-group
     = form.submit group.persisted? ? "Update group" : "Create group"
+    = link_to "Cancel", group.persisted? ? our_group_path(group) : our_groups_path, class: "btn btn--secondary"

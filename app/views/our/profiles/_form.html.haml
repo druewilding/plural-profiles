@@ -51,3 +51,4 @@
 
   .form-group
     = form.submit profile.persisted? ? "Update profile" : "Create profile"
+    = link_to "Cancel", profile.persisted? ? our_profile_path(profile) : our_profiles_path, class: "btn btn--secondary"
