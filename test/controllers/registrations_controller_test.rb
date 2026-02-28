@@ -12,6 +12,7 @@ class RegistrationsControllerTest < ActionDispatch::IntegrationTest
     assert_difference("User.count", 1) do
       post registration_path, params: {
         invite_code: invite.code,
+        terms_accepted: "1",
         user: {
           email_address: "newuser@example.com",
           password: "N3wUs3r!S1gnup#2026",
@@ -33,6 +34,7 @@ class RegistrationsControllerTest < ActionDispatch::IntegrationTest
     assert_no_difference("User.count") do
       post registration_path, params: {
         invite_code: "",
+        terms_accepted: "1",
         user: {
           email_address: "newuser@example.com",
           password: "N3wUs3r!S1gnup#2026",
@@ -50,6 +52,7 @@ class RegistrationsControllerTest < ActionDispatch::IntegrationTest
     assert_no_difference("User.count") do
       post registration_path, params: {
         invite_code: used_invite.code,
+        terms_accepted: "1",
         user: {
           email_address: "newuser@example.com",
           password: "N3wUs3r!S1gnup#2026",
@@ -65,6 +68,7 @@ class RegistrationsControllerTest < ActionDispatch::IntegrationTest
     assert_no_difference("User.count") do
       post registration_path, params: {
         invite_code: "NOPE0000",
+        terms_accepted: "1",
         user: {
           email_address: "newuser@example.com",
           password: "N3wUs3r!S1gnup#2026",
@@ -81,6 +85,7 @@ class RegistrationsControllerTest < ActionDispatch::IntegrationTest
     assert_difference("User.count", 1) do
       post registration_path, params: {
         invite_code: invite.code.downcase,
+        terms_accepted: "1",
         user: {
           email_address: "casetest@example.com",
           password: "N3wUs3r!S1gnup#2026",
@@ -97,6 +102,7 @@ class RegistrationsControllerTest < ActionDispatch::IntegrationTest
     assert_no_difference("User.count") do
       post registration_path, params: {
         invite_code: invite.code,
+        terms_accepted: "1",
         user: {
           email_address: "",
           password: "short",
@@ -116,6 +122,7 @@ class RegistrationsControllerTest < ActionDispatch::IntegrationTest
     assert_no_difference("User.count") do
       post registration_path, params: {
         invite_code: invite.code,
+        terms_accepted: "1",
         user: {
           email_address: users(:one).email_address,
           password: "N3wUs3r!S1gnup#2026",
@@ -140,6 +147,7 @@ class RegistrationsControllerTest < ActionDispatch::IntegrationTest
     assert_no_difference("User.count") do
       post registration_path, params: {
         invite_code: invite_codes(:available).code,
+        terms_accepted: "1",
         user: {
           email_address: "blocked@example.com",
           password: "N3wUs3r!S1gnup#2026",
@@ -150,5 +158,25 @@ class RegistrationsControllerTest < ActionDispatch::IntegrationTest
     assert_response :success # renders the closed template
   ensure
     ENV["SIGNUPS_ENABLED"] = "true"
+  end
+
+  test "create rejects registration without accepting terms" do
+    invite = invite_codes(:available)
+
+    assert_no_difference("User.count") do
+      post registration_path, params: {
+        invite_code: invite.code,
+        user: {
+          email_address: "newuser@example.com",
+          password: "N3wUs3r!S1gnup#2026",
+          password_confirmation: "N3wUs3r!S1gnup#2026"
+        }
+      }
+    end
+    assert_response :unprocessable_entity
+    assert_match "You must agree to the terms", response.body
+
+    # Invite code should not be consumed
+    assert_not invite.reload.redeemed?
   end
 end

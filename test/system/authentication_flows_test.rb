@@ -27,6 +27,7 @@ class AuthenticationFlowsTest < ApplicationSystemTestCase
     fill_in "Email address", with: "newuser@example.com"
     fill_in "Password", with: "N3wUs3r!S1gnup#2026"
     fill_in "Confirm password", with: "N3wUs3r!S1gnup#2026"
+    check "I agree to these terms"
     click_button "Sign up"
 
     assert_text "Account created"
@@ -38,8 +39,22 @@ class AuthenticationFlowsTest < ApplicationSystemTestCase
     fill_in "Email address", with: "newuser@example.com"
     fill_in "Password", with: "N3wUs3r!S1gnup#2026"
     fill_in "Confirm password", with: "N3wUs3r!S1gnup#2026"
+    check "I agree to these terms"
     click_button "Sign up"
 
     assert_text "Invite code invalid or already used"
+  end
+
+  test "register without accepting terms shows error" do
+    visit new_registration_path
+    fill_in "Invite code", with: invite_codes(:available).code
+    fill_in "Email address", with: "newuser@example.com"
+    fill_in "Password", with: "N3wUs3r!S1gnup#2026"
+    fill_in "Confirm password", with: "N3wUs3r!S1gnup#2026"
+    # Remove the HTML required attribute so the form submits without the checkbox
+    execute_script("document.querySelector('#terms_accepted').removeAttribute('required')")
+    click_button "Sign up"
+
+    assert_text "You must agree to the terms"
   end
 end

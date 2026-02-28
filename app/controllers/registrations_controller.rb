@@ -7,6 +7,14 @@ class RegistrationsController < ApplicationController
   end
 
   def create
+    unless params[:terms_accepted] == "1"
+      @user = User.new(registration_params)
+      @user.valid?
+      @user.errors.add(:base, "You must agree to the terms to create an account")
+      render :new, status: :unprocessable_entity
+      return
+    end
+
     @invite_code = InviteCode.unused.find_by(code: params[:invite_code].to_s.strip.upcase)
 
     if @invite_code.nil?

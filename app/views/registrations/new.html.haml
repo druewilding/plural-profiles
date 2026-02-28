@@ -30,6 +30,16 @@
       = form.label :password_confirmation, "Confirm password"
       = form.password_field :password_confirmation, required: true, minlength: 8, autocomplete: "new-password"
 
+    %hr.form-divider
+
+    .terms
+      %p We do not police identity or self-expression.
+      %p We only remove spam, illegal content, or material that threatens the safety of the platform.
+      %p We use cookies to keep you signed in, nothing else.
+      %label.checkbox-label
+        = check_box_tag :terms_accepted, "1", false, required: true
+        I agree to these terms
+
     .form-group
       = form.submit "Sign up"
 
