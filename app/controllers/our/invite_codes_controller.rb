@@ -9,4 +9,12 @@ class Our::InviteCodesController < ApplicationController
       redirect_to our_account_path, notice: "Invite code created."
     end
   end
+
+  def destroy
+    invite = Current.user.invite_codes.unused.find(params[:id])
+    invite.destroy!
+    redirect_to our_account_path, notice: "Invite code deleted."
+  rescue ActiveRecord::RecordNotFound
+    redirect_to our_account_path, alert: "Invite code not found or already used."
+  end
 end

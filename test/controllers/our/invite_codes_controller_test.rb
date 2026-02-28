@@ -34,4 +34,47 @@ class Our::InviteCodesControllerTest < ActionDispatch::IntegrationTest
     post our_invite_codes_path
     assert_redirected_to new_session_path
   end
+
+  # -- destroy --
+
+  test "destroy deletes an unused invite code" do
+    invite = invite_codes(:available)
+
+    assert_difference("InviteCode.count", -1) do
+      delete our_invite_code_path(invite)
+    end
+    assert_redirected_to our_account_path
+    follow_redirect!
+    assert_match "Invite code deleted", response.body
+  end
+
+  test "destroy cannot delete another user's invite code" do
+    other_invite = invite_codes(:available)
+    sign_out
+    sign_in_as users(:two)
+
+    assert_no_difference("InviteCode.count") do
+      delete our_invite_code_path(other_invite)
+    end
+    assert_redirected_to our_account_path
+    follow_redirect!
+    assert_match "not found or already used", response.body
+  end
+
+  test "destroy cannot delete a used invite code" do
+    used_invite = invite_codes(:used)
+
+    assert_no_difference("InviteCode.count") do
+      delete our_invite_code_path(used_invite)
+    end
+    assert_redirected_to our_account_path
+    follow_redirect!
+    assert_match "not found or already used", response.body
+  end
+
+  test "destroy requires authentication" do
+    sign_out
+    delete our_invite_code_path(invite_codes(:available))
+    assert_redirected_to new_session_path
+  end
 end

@@ -1475,16 +1475,30 @@ button:hover,
 .invite-code-item {
   display: flex;
   align-items: center;
+  background-color: var(--input-bg);
+  border: 1px solid var(--input-border);
+  border-radius: 4px;
 }
 
 .invite-code {
   font-family: monospace;
   font-size: 1.1rem;
   letter-spacing: 0.1em;
-  background-color: var(--input-bg);
-  border: 1px solid var(--input-border);
-  border-radius: 4px;
   padding: 0.4rem 0.75rem;
+}
+
+.invite-code-delete {
+  padding: 0.4rem 0.6rem;
+  margin: 0 0.5rem;
+  line-height: 1;
+  font-size: 1rem;
+  background-color: transparent;
+  color: var(--text);
+}
+
+.invite-code-delete:hover {
+  background-color: transparent;
+  color: var(--error);
 }
 
 .invite-code-input {
@@ -1499,10 +1513,17 @@ button:hover,
 }
 
 @media (forced-colors: active) {
-  .invite-code {
+  .invite-code-item {
     border: 1px solid CanvasText;
     background-color: Canvas;
+  }
+
+  .invite-code {
     color: CanvasText;
+  }
+
+  .invite-code-delete {
+    border-left-color: CanvasText;
   }
 }
 

@@ -12,6 +12,7 @@
       - unused_codes.each do |invite|
         %li.invite-code-item
           %code.invite-code= invite.code
+          = button_to "×", our_invite_code_path(invite), method: :delete, class: "btn btn--small invite-code-delete", title: "Delete invite code", aria: { label: "Delete invite code #{invite.code}" }
   - else
     %p.muted No unused invite codes yet.
 
