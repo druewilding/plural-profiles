@@ -745,8 +745,13 @@ button:hover,
 
 .profile-description details summary,
 .group-description details summary {
-  font-weight: bold;
+  font-weight: 600;
   cursor: pointer;
+}
+
+.profile-description details summary b,
+.group-description details summary b {
+  font-weight: 900;
 }
 
 /* "Click to close" hint shown at the bottom of open <details> blocks */
@@ -771,6 +776,27 @@ details[open] .details-close {
   .details-close {
     color: CanvasText;
   }
+}
+
+/* Inline formatting tags allowed in descriptions */
+.profile-description b,
+.group-description b {
+  font-weight: 700;
+}
+
+.profile-description i,
+.group-description i {
+  font-style: italic;
+}
+
+.profile-description u,
+.group-description u {
+  text-decoration: underline;
+}
+
+.profile-description s,
+.group-description s {
+  text-decoration: line-through;
 }
 
 /* Spoiler text (Discord-style ||hidden||) */
