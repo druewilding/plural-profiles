@@ -104,6 +104,12 @@ body {
   margin: 0.5rem 0.5rem;
 }
 
+.form-divider {
+  border: none;
+  border-top: 1px solid color-mix(in srgb, var(--input-border) 40%, transparent);
+  margin: 2rem 0;
+}
+
 .sidebar details {
   margin-bottom: 0.5rem;
 }
@@ -1461,3 +1467,72 @@ button:hover,
   }
 }
 
+/* Invite codes */
+.invite-code-list {
+  list-style: none;
+  padding: 0;
+  margin: 0 0 1rem 0;
+  display: flex;
+  flex-direction: row;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+.invite-code-item {
+  display: flex;
+  align-items: center;
+  background-color: var(--input-bg);
+  border: 1px solid var(--input-border);
+  border-radius: 4px;
+}
+
+.invite-code {
+  font-family: monospace;
+  font-size: 1.1rem;
+  letter-spacing: 0.1em;
+  padding: 0.4rem 0.75rem;
+}
+
+.invite-code-delete {
+  padding: 0.4rem 0.6rem;
+  margin: 0 0.5rem;
+  line-height: 1;
+  font-size: 1rem;
+  background-color: transparent;
+  color: var(--text);
+}
+
+.invite-code-delete:hover {
+  background-color: transparent;
+  color: var(--error);
+}
+
+.invite-code-input {
+  font-family: monospace;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+
+.muted {
+  opacity: 0.65;
+  font-style: italic;
+}
+
+@media (forced-colors: active) {
+  .invite-code-item {
+    border: 1px solid CanvasText;
+    background-color: Canvas;
+  }
+
+  .invite-code {
+    color: CanvasText;
+  }
+
+  .invite-code-delete {
+    border-left-color: CanvasText;
+  }
+
+  .form-divider {
+    border-top-color: GrayText;
+  }
+}
