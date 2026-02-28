@@ -468,6 +468,12 @@ button,
   transition: background-color 0.2s;
 }
 
+/* Space around Save button inside inclusion forms */
+.inclusion-form input[type="submit"],
+.inclusion-form .btn {
+  margin-top: 0.5rem;
+}
+
 input[type="submit"]:hover,
 button:hover,
 .btn:hover {
