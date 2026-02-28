@@ -728,6 +728,26 @@ button:hover,
 .profile-description details summary,
 .group-description details summary {
   font-weight: bold;
+  cursor: pointer;
+}
+
+/* "Click to close" hint shown at the bottom of open <details> blocks */
+.details-close {
+  display: none;
+  font-size: 0.8em;
+  opacity: 0.8;
+  margin-top: 0.25rem;
+  cursor: pointer;
+}
+
+details[open] .details-close {
+  display: block;
+}
+
+@media (forced-colors: active) {
+  .details-close {
+    color: CanvasText;
+  }
 }
 
 /* Spoiler text (Discord-style ||hidden||) */

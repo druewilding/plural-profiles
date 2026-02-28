@@ -4,6 +4,11 @@ import { Controller } from "@hotwired/stimulus"
 // Connects automatically to any element with data-controller="spoiler".
 export default class extends Controller {
   toggle(event) {
+    if (event.target.closest(".details-close")) {
+      event.target.closest("details")?.removeAttribute("open")
+      return
+    }
+
     const span = event.target.closest(".spoiler")
     if (!span) return
 
