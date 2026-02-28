@@ -174,7 +174,7 @@ class GroupManagementTest < ApplicationSystemTestCase
     GroupGroup.create!(parent_group: friends, child_group: acquaintances)
 
     # everyone -> friends but only include 'close' as selected
-    GroupGroup.create!(parent_group: everyone, child_group: friends, inclusion_mode: "selected", included_subgroup_ids: [close.id])
+    GroupGroup.create!(parent_group: everyone, child_group: friends, inclusion_mode: "selected", included_subgroup_ids: [ close.id ])
 
     visit group_path(everyone.uuid)
 
