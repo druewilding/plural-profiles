@@ -1027,6 +1027,124 @@ button:hover,
 .text-right { text-align: right; }
 .text-sm { font-size: 0.85rem; }
 
+/* ---- Forced-colors: form controls & buttons ---- */
+@media (forced-colors: active) {
+  /* Text inputs, textareas, selects */
+  input[type="text"],
+  input[type="email"],
+  input[type="password"],
+  input[type="url"],
+  textarea,
+  select {
+    background-color: Canvas;
+    color: CanvasText;
+    border: 1px solid CanvasText;
+  }
+
+  input[type="text"]:focus,
+  input[type="email"]:focus,
+  input[type="password"]:focus,
+  input[type="url"]:focus,
+  textarea:focus,
+  select:focus {
+    border-color: Highlight;
+    outline: 2px solid Highlight;
+    outline-offset: 2px;
+  }
+
+  /* Labels & legends */
+  label,
+  fieldset.form-group legend,
+  fieldset.inclusion-radios legend,
+  fieldset.inclusion-checkboxes legend {
+    color: CanvasText;
+  }
+
+  /* Checkboxes & radio buttons */
+  input[type="checkbox"],
+  input[type="radio"] {
+    accent-color: Highlight;
+  }
+
+  /* Primary buttons */
+  input[type="submit"],
+  button,
+  .btn {
+    background-color: ButtonFace;
+    color: ButtonText;
+    border: 1px solid ButtonText;
+  }
+
+  input[type="submit"]:hover,
+  button:hover,
+  .btn:hover {
+    background-color: Highlight;
+    color: HighlightText;
+    border-color: HighlightText;
+  }
+
+  input[type="submit"]:focus-visible,
+  button:focus-visible,
+  .btn:focus-visible {
+    outline: 2px solid Highlight;
+    outline-offset: 2px;
+  }
+
+  /* Secondary / outline buttons */
+  .btn--secondary,
+  .btn--outline {
+    background-color: Canvas;
+    color: CanvasText;
+    border: 1px solid CanvasText;
+  }
+
+  .btn--secondary:hover,
+  .btn--outline:hover {
+    background-color: Highlight;
+    color: HighlightText;
+    border-color: HighlightText;
+  }
+
+  /* Danger button — forced-colors can't convey "danger", keep chrome consistent */
+  .btn--danger {
+    background-color: ButtonFace;
+    color: ButtonText;
+    border-color: ButtonText;
+  }
+
+  .btn--danger:hover {
+    background-color: Highlight;
+    color: HighlightText;
+    border-color: HighlightText;
+  }
+
+  /* Fieldset borders */
+  fieldset.form-group,
+  fieldset.inclusion-radios,
+  fieldset.inclusion-checkboxes {
+    border-color: CanvasText;
+  }
+
+  /* Bare chrome-less buttons (tree controls, etc.) */
+  .tree__arrow-btn,
+  .tree__item {
+    background-color: transparent;
+    color: CanvasText;
+    border-color: transparent;
+  }
+
+  .tree__arrow-btn:hover,
+  .tree__item:hover {
+    background-color: Highlight;
+    color: HighlightText;
+  }
+
+  .tree__item--active {
+    outline: 2px solid Highlight;
+    color: HighlightText;
+  }
+}
+
 /* ---- Responsive ---- */
 
 /* Tablet (768px and below) */
