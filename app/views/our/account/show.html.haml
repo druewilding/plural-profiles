@@ -4,7 +4,7 @@
 
 .card
   %h2 Invite codes
-  %p Generate codes to invite others to Plural Profiles. You can have up to #{InviteCode::MAX_UNUSED_PER_USER} unused codes at a time.
+  %p Generate codes to invite others to Plural Profiles. You can have up to #{InviteCode::MAX_UNUSED_PER_USER} codes at a time.
 
   - unused_codes = Current.user.invite_codes.unused.order(created_at: :asc)
   - if unused_codes.any?
@@ -14,7 +14,7 @@
           %code.invite-code= invite.code
           = button_to "×", our_invite_code_path(invite), method: :delete, class: "btn btn--small invite-code-delete", title: "Delete invite code", aria: { label: "Delete invite code #{invite.code}" }
   - else
-    %p.muted No unused invite codes yet.
+    %p.muted No invite codes yet.
 
   = button_to "Generate invite code", our_invite_codes_path, method: :post, class: "btn"
 

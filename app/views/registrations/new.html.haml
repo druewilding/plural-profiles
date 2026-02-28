@@ -14,7 +14,7 @@
   = form_with model: @user, url: registration_path do |form|
     .form-group
       = label_tag :invite_code, "Invite code"
-      = text_field_tag :invite_code, params[:invite_code], required: true, autocomplete: "off", class: "invite-code-input", minlength: 8, maxlength: 8, placeholder: "XXXXXXXX"
+      = text_field_tag :invite_code, params[:invite_code], required: true, autocomplete: "off", class: "invite-code-input", minlength: InviteCode::CODE_LENGTH, maxlength: InviteCode::CODE_LENGTH, placeholder: "XXXXXXXX"
 
     %br
 
