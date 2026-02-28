@@ -28,12 +28,7 @@
 
   .form-group
     = form.label :created_at, "Created at"
-    = form.datetime_local_field :created_at, value: (group.created_at || Time.current).strftime("%Y-%m-%dT%H:%M"), max: Time.current.strftime("%Y-%m-%dT%H:%M")
-
-  - if group.persisted?
-    .form-group
-      = form.label :updated_at, "Updated at"
-      = form.datetime_local_field :updated_at, value: (group.updated_at || Time.current).strftime("%Y-%m-%dT%H:%M"), max: Time.current.strftime("%Y-%m-%dT%H:%M")
+    = form.datetime_local_field :created_at, value: (group.created_at || Time.now).strftime("%Y-%m-%dT%H:%M"), max: Date.today.strftime("%Y-%m-%dT23:59")
 
   .form-group
     = form.submit group.persisted? ? "Update group" : "Create group"
