@@ -41,8 +41,13 @@
             = group.name
 
   .form-group
-    = form.label :created_at, "Created at"
-    = form.datetime_local_field :created_at, value: (profile.created_at || Time.now.utc).strftime("%Y-%m-%dT%H:%M"), max: Date.today.strftime("%Y-%m-%dT23:59")
+    = form.label :created_at, "Created at (UTC)"
+    = form.datetime_local_field :created_at, value: (profile.created_at || Time.now.utc).strftime("%Y-%m-%dT%H:%M"), max: Time.now.utc.strftime("%Y-%m-%dT%H:%M")
+
+  - if profile.persisted?
+    .form-group
+      = form.label :updated_at, "Updated at (UTC)"
+      = form.datetime_local_field :updated_at, value: Time.now.utc.strftime("%Y-%m-%dT%H:%M"), max: Time.now.utc.strftime("%Y-%m-%dT%H:%M")
 
   .form-group
     = form.submit profile.persisted? ? "Update profile" : "Create profile"
