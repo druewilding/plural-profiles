@@ -18,7 +18,11 @@ class InviteCode < ApplicationRecord
   end
 
   def redeem!(new_user)
-    update!(redeemed_by: new_user, redeemed_at: Time.current)
+    with_lock do
+      raise ActiveRecord::RecordInvalid.new(self), "Invite code has already been redeemed" if redeemed?
+
+      update!(redeemed_by: new_user, redeemed_at: Time.current)
+    end
   end
 
   private
