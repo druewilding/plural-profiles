@@ -1148,6 +1148,26 @@ button:hover,
     border: 1px solid CanvasText;
   }
 
+  /* File input browse button */
+  input[type="file"] {
+    color: CanvasText;
+  }
+
+  input[type="file"]::file-selector-button {
+    forced-color-adjust: none;
+    background-color: CanvasText;
+    color: Canvas;
+    border: 1px solid CanvasText;
+    border-radius: 4px;
+    padding: 0.3rem 0.75rem;
+    cursor: pointer;
+  }
+
+  input[type="file"]::file-selector-button:hover {
+    background-color: Canvas;
+    color: CanvasText;
+  }
+
   input[type="submit"]:hover,
   button:hover,
   .btn:hover {
