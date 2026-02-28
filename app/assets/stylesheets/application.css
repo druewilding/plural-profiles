@@ -560,6 +560,12 @@ button,
   margin-top: 0.5rem;
 }
 
+.form-group input[type="submit"] + .btn,
+.form-group .btn + .btn,
+.form-group .btn + input[type="submit"] {
+  margin-left: 0.75rem;
+}
+
 input[type="submit"]:hover,
 button:hover,
 .btn:hover {
