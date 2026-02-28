@@ -1318,18 +1318,6 @@ button:hover,
     color: Canvas;
   }
 
-  /* Danger button */
-  .btn--danger {
-    background-color: CanvasText;
-    color: Canvas;
-    border-color: CanvasText;
-  }
-
-  .btn--danger:hover {
-    background-color: Canvas;
-    color: CanvasText;
-  }
-
   /* Fieldset borders */
   fieldset.form-group,
   fieldset.inclusion-radios,
