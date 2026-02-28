@@ -1103,16 +1103,43 @@ button:hover,
 
 /* ---- Forced-colors: form controls & buttons ---- */
 @media (forced-colors: active) {
-  /* Text inputs, textareas, selects */
+  /* Text inputs, textareas, selects — take full control */
   input[type="text"],
   input[type="email"],
   input[type="password"],
   input[type="url"],
   textarea,
   select {
+    forced-color-adjust: none;
     background-color: Canvas;
     color: CanvasText;
     border: 1px solid CanvasText;
+  }
+
+  /* Prevent Firefox autofill from overriding */
+  input:-moz-autofill,
+  textarea:-moz-autofill,
+  select:-moz-autofill,
+  input:autofill,
+  textarea:autofill,
+  select:autofill {
+    forced-color-adjust: none;
+    background-color: Canvas !important;
+    color: CanvasText !important;
+    -webkit-text-fill-color: CanvasText;
+    border-color: CanvasText !important;
+  }
+
+  /* Override Chrome autofill box-shadow trick for forced-colors */
+  input:-webkit-autofill,
+  input:-webkit-autofill:hover,
+  input:-webkit-autofill:focus,
+  textarea:-webkit-autofill,
+  select:-webkit-autofill {
+    -webkit-text-fill-color: CanvasText;
+    -webkit-box-shadow: none;
+    background-color: Canvas !important;
+    border-color: CanvasText;
   }
 
   input[type="text"]:focus,
