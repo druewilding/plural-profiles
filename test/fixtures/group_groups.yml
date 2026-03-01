@@ -22,6 +22,7 @@ flux_in_delta:
   child_group: flux
   inclusion_mode: selected
   included_subgroup_ids: <%= [ActiveRecord::FixtureSet.identify(:echo_shard)].to_json %>
+  include_direct_profiles: false
 
 echo_in_flux:
   parent_group: flux

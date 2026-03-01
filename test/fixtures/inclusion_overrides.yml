@@ -1,0 +1,2 @@
+# No inclusion_overrides fixtures yet — tests create them dynamically.
+# This file exists so Rails knows about the table for fixture loading.

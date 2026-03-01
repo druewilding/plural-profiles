@@ -67,7 +67,7 @@ ActiveRecord::Base.transaction do
   GroupGroup.create!(parent_group: spectrum,     child_group: prism_circle, inclusion_mode: "all")
   GroupGroup.create!(parent_group: prism_circle, child_group: rogue_pack,   inclusion_mode: "all")
   GroupGroup.create!(parent_group: delta_clan,   child_group: flux,         inclusion_mode: "selected",
-                     included_subgroup_ids: [ echo_shard.id ])
+                     included_subgroup_ids: [ echo_shard.id ], include_direct_profiles: false)
   GroupGroup.create!(parent_group: flux,         child_group: echo_shard,   inclusion_mode: "all")
   GroupGroup.create!(parent_group: flux,         child_group: static_burst, inclusion_mode: "all")
   GroupGroup.create!(parent_group: delta_clan,   child_group: delta_flux,   inclusion_mode: "all")
