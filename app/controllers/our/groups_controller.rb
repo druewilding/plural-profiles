@@ -69,7 +69,7 @@ class Our::GroupsController < ApplicationController
   end
 
   def manage_groups
-    excluded_ids = @group.ancestor_group_ids | @group.child_group_ids
+    excluded_ids = @group.ancestor_group_ids | @group.child_group_ids | [@group.id]
     @available_groups = Current.user.groups
       .where.not(id: excluded_ids)
       .order(:name)
@@ -123,8 +123,8 @@ class Our::GroupsController < ApplicationController
       attrs[:inclusion_mode] = mode
     end
 
-    # include_direct_profiles is always submitted by the form, regardless of
-    # whether the child has sub-groups, so update it independently.
+    # include_direct_profiles is only rendered when the child has direct profiles,
+    # so the param may be absent — only apply it when present.
     if params.key?(:include_direct_profiles)
       attrs[:include_direct_profiles] = params[:include_direct_profiles] == "1"
     end

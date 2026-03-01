@@ -95,18 +95,21 @@ class Group < ApplicationRecord
   # Each group has its profiles and avatars eager-loaded.
   # Overlapping groups appear but their own children do not.
   # Inclusion overrides are applied during traversal.
-  # Uses reachable_group_ids (not descendant_group_ids) so that overrides
-  # making a "none" edge more permissive have the deeper descendants available.
+  # children_map is built from reachable_group_ids so that overrides making a
+  # "none" edge more permissive have the deeper descendants available for
+  # navigation; the heavy preload (profiles + blobs) is limited to the groups
+  # that are actually traversed.
   def descendant_sections
-    desc_ids = reachable_group_ids - [ id ]
-    return [] if desc_ids.empty?
+    all_ids = reachable_group_ids - [ id ]
+    return [] if all_ids.empty?
 
-    groups_by_id = Group.where(id: desc_ids)
+    children_map = build_children_map([ id ] + all_ids)
+    overrides_by_edge = build_overrides_by_edge(children_map)
+    traversed_ids = collect_traversed_group_ids(children_map, overrides_by_edge)
+
+    groups_by_id = Group.where(id: traversed_ids)
                         .includes(profiles: { avatar_attachment: :blob }, avatar_attachment: :blob)
                         .index_by(&:id)
-
-    children_map = build_children_map([ id ] + desc_ids)
-    overrides_by_edge = build_overrides_by_edge(children_map)
 
     walk_descendants(id, children_map, groups_by_id, overrides_by_edge, {})
   end
@@ -117,18 +120,21 @@ class Group < ApplicationRecord
   # Each profile entry is a hash { profile:, repeated: } so the view can
   # visually distinguish profiles that appear more than once in the tree.
   # Inclusion overrides are applied during traversal.
-  # Uses reachable_group_ids (not descendant_group_ids) so that overrides
-  # making a "none" edge more permissive have the deeper descendants available.
+  # children_map is built from reachable_group_ids so that overrides making a
+  # "none" edge more permissive have the deeper descendants available for
+  # navigation; the heavy preload (profiles + blobs) is limited to the groups
+  # that are actually traversed.
   def descendant_tree(seen_profile_ids: nil)
-    desc_ids = reachable_group_ids - [ id ]
-    return [] if desc_ids.empty?
+    all_ids = reachable_group_ids - [ id ]
+    return [] if all_ids.empty?
 
-    groups_by_id = Group.where(id: desc_ids)
+    children_map = build_children_map([ id ] + all_ids)
+    overrides_by_edge = build_overrides_by_edge(children_map)
+    traversed_ids = collect_traversed_group_ids(children_map, overrides_by_edge)
+
+    groups_by_id = Group.where(id: traversed_ids)
                         .includes(profiles: { avatar_attachment: :blob }, avatar_attachment: :blob)
                         .index_by(&:id)
-
-    children_map = build_children_map([ id ] + desc_ids)
-    overrides_by_edge = build_overrides_by_edge(children_map)
 
     seen_profile_ids ||= Set.new
     build_tree(id, children_map, groups_by_id, seen_profile_ids, overrides_by_edge, {})
@@ -342,6 +348,49 @@ class Group < ApplicationRecord
           collect_profile_group_ids(e[:id], children_map, result, overrides_by_edge, merged_map)
         when "selected"
           collect_selected_profile_group_ids(e[:id], eff_subgroups, children_map, result, overrides_by_edge, merged_map)
+        end
+      end
+  end
+
+  # -- Traversed group ID collection ----------------------------------------
+
+  # Compute the set of descendant group IDs that will actually be visited
+  # during traversal, respecting inclusion modes and overrides.
+  # children_map and overrides_by_edge must already be built.
+  def collect_traversed_group_ids(children_map, overrides_by_edge)
+    result = Set.new
+    collect_traversed_ids(id, children_map, overrides_by_edge, {}, result)
+    result.to_a
+  end
+
+  def collect_traversed_ids(parent_id, children_map, overrides_by_edge, overrides_map, result)
+    (children_map[parent_id] || []).each do |entry|
+      merged_map = merge_overrides(entry, overrides_by_edge, overrides_map)
+      eff_mode, eff_subgroups, = effective_settings(entry, merged_map)
+      result.add(entry[:id])
+
+      case eff_mode
+      when "all"
+        collect_traversed_ids(entry[:id], children_map, overrides_by_edge, merged_map, result)
+      when "selected"
+        collect_selected_traversed_ids(entry[:id], eff_subgroups, children_map, overrides_by_edge, merged_map, result)
+      end
+    end
+  end
+
+  def collect_selected_traversed_ids(parent_id, included_ids, children_map, overrides_by_edge, overrides_map, result)
+    (children_map[parent_id] || [])
+      .select { |e| included_ids.include?(e[:id]) }
+      .each do |e|
+        merged_map = merge_overrides(e, overrides_by_edge, overrides_map)
+        eff_mode, eff_subgroups, = effective_settings(e, merged_map)
+        result.add(e[:id])
+
+        case eff_mode
+        when "all"
+          collect_traversed_ids(e[:id], children_map, overrides_by_edge, merged_map, result)
+        when "selected"
+          collect_selected_traversed_ids(e[:id], eff_subgroups, children_map, overrides_by_edge, merged_map, result)
         end
       end
   end
