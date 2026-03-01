@@ -196,7 +196,7 @@ In `walk_descendants`: skip the group's profiles when the flag is false.
 
 ---
 
-## Phase 4: Profile Control in UI
+## Phase 4: Profile Control in UI ✅ DONE
 
 ### 16. Update controller
 
@@ -213,10 +213,12 @@ In `app/views/our/groups/manage_groups.html.haml`:
 
 ### 18. Update Stimulus controller
 
-In `app/javascript/controllers/inclusion_controller.js`:
+~~In `app/javascript/controllers/inclusion_controller.js`:
 - Add target for `include_direct_profiles` checkbox
 - When mode → `"selected"`: uncheck it; when mode → `"all"`: check it
-- Leave editable for manual override in all modes
+- Leave editable for manual override in all modes~~
+
+**Intentionally omitted** — automatic checkbox toggling on mode change was decided against.
 
 ---
 
@@ -372,6 +374,6 @@ Manual: load fixtures, visit public group page, confirm Rogue Pack excluded from
 2. **Phase 1** (fixtures) — ✅ DONE
 3. **Phase 2** (data model) — ✅ DONE
 4. **Phase 3** (deep exclusion logic) — ✅ DONE
-5. **Phase 4** (profile control) — small addition on top of Phase 2/3
+5. **Phase 4** (profile control) — ✅ DONE
 6. **Phase 5** (tree editor) — largest UI effort, builds on all prior phases
 7. **Phase 7** (tests) — written alongside each phase, listed last for organisation
