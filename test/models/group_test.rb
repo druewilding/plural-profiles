@@ -458,4 +458,91 @@ class GroupTest < ActiveSupport::TestCase
     assert_includes names, "Beta",      "Beta (all sub-edge, in selected list) should appear"
     assert_includes names, "BetaChild", "BetaChild should appear — Beta is included and has an all sub-edge"
   end
+
+  # -- include_direct_profiles flag --
+  #
+  # include_direct_profiles controls whether a child group's own direct profiles
+  # are pulled into the parent's visible set. Sub-groups and their profiles are
+  # unaffected — only the immediate profiles of the child group are suppressed.
+  #
+  # The fixtures already encode this scenario via delta_clan → flux:
+  #   inclusion_mode: selected, included_subgroup_ids: [echo_shard], include_direct_profiles: false
+  # drift and ripple are direct flux members; mirage is in echo_shard.
+
+  test "all_profiles excludes direct profiles of child when include_direct_profiles is false" do
+    delta = groups(:delta_clan)
+    assert_not_includes delta.all_profiles, profiles(:drift),
+      "Drift (direct flux member) should be excluded because include_direct_profiles is false"
+    assert_not_includes delta.all_profiles, profiles(:ripple),
+      "Ripple (direct flux member) should be excluded because include_direct_profiles is false"
+  end
+
+  test "all_profiles still includes sub-group profiles when include_direct_profiles is false" do
+    # echo_shard is in flux's selected list and has include_direct_profiles defaulting to true;
+    # mirage (in echo_shard) must be visible from delta_clan even though flux's own profiles aren't
+    delta = groups(:delta_clan)
+    assert_includes delta.all_profiles, profiles(:mirage),
+      "Mirage (in echo_shard, a selected sub-group of flux) should be visible from delta_clan"
+  end
+
+  test "descendant_tree shows empty profiles array for node with include_direct_profiles false" do
+    delta = groups(:delta_clan)
+    tree = delta.descendant_tree
+    flux_node = tree.find { |n| n[:group].name == "Flux" }
+    assert flux_node, "Flux should appear in delta_clan's tree"
+    assert_empty flux_node[:profiles],
+      "Flux's profiles should be empty when include_direct_profiles is false on the edge"
+  end
+
+  test "descendant_tree still recurses into children when include_direct_profiles is false" do
+    # include_direct_profiles only suppresses the node's own profiles; sub-group children are unaffected
+    delta = groups(:delta_clan)
+    tree = delta.descendant_tree
+    flux_node = tree.find { |n| n[:group].name == "Flux" }
+    assert flux_node, "Flux should appear in delta_clan's tree"
+    child_names = flux_node[:children].map { |n| n[:group].name }
+    assert_includes child_names, "Echo Shard",
+      "Echo Shard (in included_subgroup_ids) should still appear as a child of Flux"
+  end
+
+  test "descendant_tree includes profiles in sub-groups of a node with include_direct_profiles false" do
+    delta = groups(:delta_clan)
+    tree = delta.descendant_tree
+    flux_node = tree.find { |n| n[:group].name == "Flux" }
+    echo_node = flux_node&.dig(:children)&.find { |n| n[:group].name == "Echo Shard" }
+    assert echo_node, "Echo Shard should appear under Flux in delta_clan's tree"
+    profile_names = echo_node[:profiles].map { |e| e[:profile].name }
+    assert_includes profile_names, "Mirage",
+      "Mirage (in echo_shard) should be visible even though Flux has include_direct_profiles false"
+  end
+
+  test "descendant_tree shows profiles when include_direct_profiles is true (default)" do
+    # everyone → friends has no explicit include_direct_profiles (defaults to true)
+    everyone = groups(:everyone)
+    tree = everyone.descendant_tree
+    friends_node = tree.find { |n| n[:group].name == "Friends" }
+    assert friends_node, "Friends should appear in everyone's tree"
+    profile_names = friends_node[:profiles].map { |e| e[:profile].name }
+    assert_includes profile_names, "Alice",
+      "Alice should appear in Friends' profiles when include_direct_profiles is true"
+  end
+
+  test "all_profiles respects include_direct_profiles false on an all-mode edge" do
+    user = users(:one)
+    parent = user.groups.create!(name: "Parent Group")
+    child  = user.groups.create!(name: "Child Group")
+    grandchild = user.groups.create!(name: "Grandchild Group")
+    child_profile = user.profiles.create!(name: "Child Profile")
+    grandchild_profile = user.profiles.create!(name: "Grandchild Profile")
+    child.profiles << child_profile
+    grandchild.profiles << grandchild_profile
+    GroupGroup.create!(parent_group: parent, child_group: child,
+                       inclusion_mode: "all", include_direct_profiles: false)
+    GroupGroup.create!(parent_group: child, child_group: grandchild, inclusion_mode: "all")
+
+    assert_not_includes parent.all_profiles, child_profile,
+      "Child's own profiles should be excluded when include_direct_profiles is false"
+    assert_includes parent.all_profiles, grandchild_profile,
+      "Grandchild's profiles should still be visible (include_direct_profiles only affects the direct child)"
+  end
 end
