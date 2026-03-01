@@ -1648,6 +1648,12 @@ details[open] .details-close {
   opacity: 0;
   margin: 0;
   cursor: pointer;
+  outline: none;
+}
+
+.heart-picker__heart:has(input:focus-visible) {
+  outline: 3px solid var(--link);
+  outline-offset: 2px;
 }
 
 .heart-display__heart {
@@ -1674,6 +1680,11 @@ details[open] .details-close {
   .heart-picker__heart:has(input:checked) {
     border: 2px solid CanvasText;
     background: Canvas;
+  }
+
+  .heart-picker__heart:has(input:focus-visible) {
+    outline: 3px solid CanvasText;
+    outline-offset: 2px;
   }
 
   .heart-picker__checkbox,
