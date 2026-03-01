@@ -121,7 +121,9 @@ class Group < ApplicationRecord
   # Build a nested tree of all descendant groups for tree-view navigation.
   # Returns an array of nodes: { group:, profiles:, children:, overlapping: }
   # Overlapping groups appear in the tree but their own children are omitted.
-  def descendant_tree
+  # Each profile entry is a hash { profile:, repeated: } so the view can
+  # visually distinguish profiles that appear more than once in the tree.
+  def descendant_tree(seen_profile_ids: nil)
     desc_ids = descendant_group_ids - [ id ]
     return [] if desc_ids.empty?
 
@@ -134,7 +136,8 @@ class Group < ApplicationRecord
           .group_by(&:first)
           .transform_values { |rows| rows.map { |r| { id: r[1], inclusion_mode: r[2], included_subgroup_ids: Array(r[3]).map(&:to_i) } } }
 
-    build_tree(id, children_map, groups_by_id)
+    seen_profile_ids ||= Set.new
+    build_tree(id, children_map, groups_by_id, seen_profile_ids)
   end
 
   private
@@ -160,7 +163,7 @@ class Group < ApplicationRecord
       end
   end
 
-  def build_tree(parent_id, children_map, groups_by_id)
+  def build_tree(parent_id, children_map, groups_by_id, seen_profile_ids)
     (children_map[parent_id] || [])
       .filter_map { |entry| groups_by_id[entry[:id]] ? [ groups_by_id[entry[:id]], entry ] : nil }
       .sort_by { |g, entry| g.name }
@@ -168,7 +171,7 @@ class Group < ApplicationRecord
         rel_type = entry[:inclusion_mode]
         overlapping = rel_type == "none"
         children = if rel_type == "all"
-          build_tree(g.id, children_map, groups_by_id)
+          build_tree(g.id, children_map, groups_by_id, seen_profile_ids)
         elsif rel_type == "selected"
           (children_map[g.id] || [])
             .select { |e| Array(entry[:included_subgroup_ids]).include?(e[:id]) }
@@ -177,8 +180,8 @@ class Group < ApplicationRecord
               next unless child_group
               {
                 group: child_group,
-                profiles: child_group.profiles.to_a,
-                children: build_tree(child_group.id, children_map, groups_by_id),
+                profiles: tag_profiles(child_group.profiles.to_a, seen_profile_ids),
+                children: build_tree(child_group.id, children_map, groups_by_id, seen_profile_ids),
                 overlapping: e[:inclusion_mode] == "none"
               }
             end
@@ -189,11 +192,21 @@ class Group < ApplicationRecord
 
         {
           group: g,
-          profiles: g.profiles.to_a,
+          profiles: tag_profiles(g.profiles.to_a, seen_profile_ids),
           children: children,
           overlapping: overlapping
         }
       end
+  end
+
+  # Tag each profile with :repeated based on whether it has been seen before.
+  # Mutates seen_profile_ids in place so later nodes see earlier occurrences.
+  def tag_profiles(profiles, seen_profile_ids)
+    profiles.map do |profile|
+      repeated = seen_profile_ids.include?(profile.id)
+      seen_profile_ids.add(profile.id)
+      { profile: profile, repeated: repeated }
+    end
   end
 
   def generate_uuid

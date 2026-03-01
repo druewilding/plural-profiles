@@ -1098,6 +1098,18 @@ details[open] .details-close {
   text-overflow: ellipsis;
 }
 
+.tree__label--repeated {
+  opacity: 0.55;
+  font-style: italic;
+}
+
+@media (forced-colors: active) {
+  .tree__label--repeated {
+    opacity: 1;
+    color: GrayText;
+  }
+}
+
 .tree__overlapping-hint {
   font-size: 0.7rem;
   opacity: 0.6;
