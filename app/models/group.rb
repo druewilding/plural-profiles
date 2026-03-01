@@ -154,8 +154,22 @@ class Group < ApplicationRecord
         when "selected"
           selected = (children_map[g.id] || [])
                      .select { |e| Array(entry[:included_subgroup_ids]).include?(e[:id]) }
-                     .map { |e| groups_by_id[e[:id]] }
-                     .compact
+                     .filter_map { |e| groups_by_id[e[:id]] ? [ groups_by_id[e[:id]], e ] : nil }
+                     .sort_by { |sg, _| sg.name }
+                     .flat_map do |sg, se|
+                       case se[:inclusion_mode]
+                       when "all"
+                         [ sg, *walk_descendants(sg.id, children_map, groups_by_id) ]
+                       when "selected"
+                         inner = (children_map[sg.id] || [])
+                                 .select { |ie| Array(se[:included_subgroup_ids]).include?(ie[:id]) }
+                                 .map { |ie| groups_by_id[ie[:id]] }
+                                 .compact
+                         [ sg, *inner ]
+                       else
+                         [ sg ]
+                       end
+                     end
           [ g, *selected ]
         else
           [ g ]
@@ -175,17 +189,24 @@ class Group < ApplicationRecord
         elsif rel_type == "selected"
           (children_map[g.id] || [])
             .select { |e| Array(entry[:included_subgroup_ids]).include?(e[:id]) }
-            .map do |e|
+            .filter_map do |e|
               child_group = groups_by_id[e[:id]]
               next unless child_group
+              child_children = case e[:inclusion_mode]
+              when "all"
+                                 build_tree(child_group.id, children_map, groups_by_id, seen_profile_ids)
+              when "selected"
+                                 build_selected_children(child_group.id, e, children_map, groups_by_id, seen_profile_ids)
+              else
+                                 []
+              end
               {
                 group: child_group,
                 profiles: tag_profiles(child_group.profiles.to_a, seen_profile_ids),
-                children: build_tree(child_group.id, children_map, groups_by_id, seen_profile_ids),
+                children: child_children,
                 overlapping: e[:inclusion_mode] == "none"
               }
             end
-            .compact
         else
           []
         end
@@ -195,6 +216,30 @@ class Group < ApplicationRecord
           profiles: tag_profiles(g.profiles.to_a, seen_profile_ids),
           children: children,
           overlapping: overlapping
+        }
+      end
+  end
+
+  # Build children for a "selected" edge — respects each sub-edge's own inclusion_mode.
+  def build_selected_children(parent_id, parent_entry, children_map, groups_by_id, seen_profile_ids)
+    (children_map[parent_id] || [])
+      .select { |e| Array(parent_entry[:included_subgroup_ids]).include?(e[:id]) }
+      .filter_map do |e|
+        child_group = groups_by_id[e[:id]]
+        next unless child_group
+        child_children = case e[:inclusion_mode]
+        when "all"
+                           build_tree(child_group.id, children_map, groups_by_id, seen_profile_ids)
+        when "selected"
+                           build_selected_children(child_group.id, e, children_map, groups_by_id, seen_profile_ids)
+        else
+                           []
+        end
+        {
+          group: child_group,
+          profiles: tag_profiles(child_group.profiles.to_a, seen_profile_ids),
+          children: child_children,
+          overlapping: e[:inclusion_mode] == "none"
         }
       end
   end
