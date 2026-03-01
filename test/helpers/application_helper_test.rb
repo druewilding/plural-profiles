@@ -232,6 +232,30 @@ class ApplicationHelperTest < ActionView::TestCase
     assert_includes result, 'alt="cadbury heart"'
   end
 
+  test "replaces short alias heart code without number prefix" do
+    text = "I love this :aqua_heart: so much"
+    result = formatted_description(text)
+    assert_includes result, '<img src="/images/hearts/11_aqua_heart.webp"'
+    assert_includes result, 'title="aqua heart"'
+    assert_includes result, 'alt="aqua heart"'
+    assert_not_includes result, ":aqua_heart:"
+  end
+
+  test "replaces cadbury alias without number prefix" do
+    text = "here is :cadbury_heart: for you"
+    result = formatted_description(text)
+    assert_includes result, '<img src="/images/hearts/50cadbury_heart.webp"'
+    assert_includes result, 'alt="cadbury heart"'
+    assert_not_includes result, ":cadbury_heart:"
+  end
+
+  test "replaces short alias case-insensitively" do
+    text = ":AQUA_HEART:"
+    result = formatted_description(text)
+    assert_includes result, '<img src="/images/hearts/11_aqua_heart.webp"'
+    assert_not_includes result, ":AQUA_HEART:"
+  end
+
   test "does not convert heart emoji code inside a code block" do
     text = "Use <code>:11_aqua_heart:</code> to show a heart"
     result = formatted_description(text)
