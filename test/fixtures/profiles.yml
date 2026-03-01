@@ -18,3 +18,51 @@ carol:
   name: Carol
   pronouns: they/them
   description: Carol here. Nice to meet you!
+
+stray:
+  user: three
+  uuid: abc10000-0000-0000-0000-000000000001
+  name: Stray
+  description: In rogue_pack — should NOT appear in alpha_clan.
+
+ember:
+  user: three
+  uuid: abc10000-0000-0000-0000-000000000002
+  name: Ember
+  description: In prism_circle — SHOULD appear in alpha_clan.
+
+drift:
+  user: three
+  uuid: abc10000-0000-0000-0000-000000000003
+  name: Drift
+  description: In flux (direct) — should NOT appear in delta_clan.
+
+ripple:
+  user: three
+  uuid: abc10000-0000-0000-0000-000000000004
+  name: Ripple
+  description: In flux (direct) — should NOT appear in delta_clan.
+
+grove:
+  user: three
+  uuid: abc10000-0000-0000-0000-000000000005
+  name: Grove
+  description: Direct member of alpha_clan.
+
+shadow:
+  user: three
+  uuid: abc10000-0000-0000-0000-000000000006
+  name: Shadow
+  description: Direct member of delta_clan.
+
+mirage:
+  user: three
+  uuid: abc10000-0000-0000-0000-000000000007
+  name: Mirage
+  description: In echo_shard — SHOULD appear in delta_clan via flux.
+
+spark:
+  user: three
+  uuid: abc10000-0000-0000-0000-000000000008
+  name: Spark
+  description: In static_burst — should NOT appear in delta_clan.

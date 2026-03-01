@@ -107,6 +107,73 @@ bin/rails test && bin/rails test:system
 
 Both are run automatically on pull requests via GitHub Actions CI (the `test` and `system-test` jobs).
 
+### Test data
+
+Fixtures live in `test/fixtures/`. Three users are defined:
+
+| Fixture | Email             | Purpose                                                    |
+| ------- | ----------------- | ---------------------------------------------------------- |
+| `one`   | one@example.com   | Primary user for most existing tests                       |
+| `two`   | two@example.com   | Secondary user (isolation tests, cross-account validation) |
+| `three` | three@example.com | Phase 1 deep-inclusion scenario (see below)                |
+
+All fixture accounts share the password `Plur4l!Pr0files#2026`.
+
+#### User `one`
+
+Two groups and two profiles:
+
+- **Friends** — contains Alice
+- **Everyone** — contains Friends (via a nested group relationship)
+- Profile **Alice** (she/her) and **Bob** (he/him)
+
+#### User `two`
+
+One group and one profile:
+
+- **Family** — contains Carol
+- Profile **Carol** (they/them)
+
+#### User `three` — deep-inclusion scenario
+
+Nine groups and eight profiles, arranged to demonstrate and test the deep-inclusion override features planned in `docs/plan-deep-inclusion-overrides.md`.
+
+**Alpha Clan tree** (deep-exclusion test):
+
+```
+Alpha Clan  ← Grove (direct)
+  └── Spectrum (all)
+        └── Prism Circle (all)  ← Ember, Stray
+              └── Rogue Pack (all)  ← Stray (again — repeated profile test)
+```
+
+Stray appears in both Prism Circle and Rogue Pack (repeated profile). The goal of the upcoming override feature is to be able to exclude Rogue Pack from Alpha Clan's view, without removing it from Spectrum's view.
+
+**Delta Clan tree** (selected sub-groups + direct profile exclusion):
+
+```
+Delta Clan  ← Shadow (direct)
+  ├── Flux [selected: echo_shard only]
+  │     ├── Echo Shard (all)  ← Mirage
+  │     └── Static Burst (all)  ← Spark  [excluded from Delta Clan — not selected]
+  └── Delta Flux (all)
+```
+
+Flux has `inclusion_mode: selected` with only Echo Shard in `included_subgroup_ids`. This means:
+- Mirage (in Echo Shard) **should** appear in Delta Clan
+- Drift and Ripple (direct Flux members) currently appear but **should not** once `include_direct_profiles` is implemented
+- Spark (in Static Burst) **should not** appear in Delta Clan
+
+#### Seeding the development database
+
+To create the Phase 1 scenario in your local development database under user id 1:
+
+```sh
+bin/rails runner script/phase1_seed.rb
+```
+
+The script is safe to re-run — it checks for an existing Alpha Clan group first and exits early if found.
+
 ### Linting
 
 This project uses [RuboCop](https://rubocop.org/) with the [Rails Omakase](https://github.com/rails/rubocop-rails-omakase/) style guide:
