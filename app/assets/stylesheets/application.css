@@ -1622,13 +1622,14 @@ details[open] .details-close {
   width: 56px;
   height: 56px;
   padding: 4px;
+  border: 2px solid transparent;
   border-radius: 0.5rem;
   background: none;
   cursor: pointer;
   transition: opacity 0.15s, border-color 0.15s, transform 0.15s;
 }
 
-.heart-picker__heart[aria-pressed="true"] {
+.heart-picker__heart:has(input:checked) {
   opacity: 1;
   border-color: var(--link);
   box-shadow: 0 0 0 2px var(--link);
@@ -1636,6 +1637,17 @@ details[open] .details-close {
 
 .heart-picker__heart img {
   pointer-events: none;
+}
+
+/* When JS is active, visually hide checkboxes */
+.heart-picker--enhanced .heart-picker__checkbox {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
 }
 
 .heart-display__heart {
@@ -1654,12 +1666,12 @@ details[open] .details-close {
 
 @media (forced-colors: active) {
   .heart-picker__heart {
-    border: none;
+    border: 2px solid transparent;
     opacity: 1;
     background: Canvas;
   }
 
-  .heart-picker__heart[aria-pressed="true"] {
+  .heart-picker__heart:has(input:checked) {
     border-color: CanvasText;
     box-shadow: 0 0 0 2px CanvasText;
     background: Canvas;

@@ -43,10 +43,11 @@
   %fieldset.form-group
     %legend Heart emojis
     .heart-picker{data: {controller: "heart-picker"}}
-      = hidden_field_tag "profile[heart_emojis][]", "", data: {heart_picker_target: "input"}
+      = hidden_field_tag "profile[heart_emojis][]", ""
       .heart-picker__grid
         - Profile::HEART_EMOJIS.each do |heart|
-          %button.heart-picker__heart{type: "button", data: {heart: heart, heart_picker_target: "button", action: "heart-picker#toggle"}, "aria-pressed": profile.heart_emojis.include?(heart).to_s, "aria-label": profile.heart_emoji_display_name(heart), title: profile.heart_emoji_display_name(heart)}
+          %label.heart-picker__heart{title: profile.heart_emoji_display_name(heart)}
+            %input.heart-picker__checkbox{type: "checkbox", name: "profile[heart_emojis][]", value: heart, checked: profile.heart_emojis.include?(heart) || nil, "aria-label": profile.heart_emoji_display_name(heart)}
             = image_tag "/images/hearts/#{heart}.webp", width: 48, height: 48, alt: "", loading: "lazy"
 
   - if profile.persisted?
