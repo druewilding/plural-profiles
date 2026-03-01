@@ -168,4 +168,115 @@ class ApplicationHelperTest < ActionView::TestCase
     assert_includes result, 'aria-expanded="false"'
     assert_includes result, 'aria-label="Hidden content, click to reveal"'
   end
+
+  # -- Heart emoji inline replacement --
+
+  test "replaces a valid heart emoji code regardless of case" do
+    text = "I love this :11_AQUA_HEART: so much"
+    result = formatted_description(text)
+    assert_includes result, '<img src="/images/hearts/11_aqua_heart.webp"'
+    assert_includes result, 'title="aqua heart"'
+    assert_includes result, 'alt="aqua heart"'
+    assert_includes result, 'class="heart-inline"'
+    assert_not_includes result, ":11_AQUA_HEART:"
+  end
+
+  test "replaces a valid heart emoji code with an image" do
+    text = "I love this :11_aqua_heart: so much"
+    result = formatted_description(text)
+    assert_includes result, '<img src="/images/hearts/11_aqua_heart.webp"'
+    assert_includes result, 'title="aqua heart"'
+    assert_includes result, 'alt="aqua heart"'
+    assert_includes result, 'class="heart-inline"'
+    assert_not_includes result, ":11_aqua_heart:"
+  end
+
+  test "replaces multiple adjacent heart emojis" do
+    text = ":11_aqua_heart::12_ocean_heart::13_storm_heart:"
+    result = formatted_description(text)
+    assert_includes result, '<img src="/images/hearts/11_aqua_heart.webp"'
+    assert_includes result, '<img src="/images/hearts/12_ocean_heart.webp"'
+    assert_includes result, '<img src="/images/hearts/13_storm_heart.webp"'
+  end
+
+  test "leaves unknown heart codes as plain text" do
+    text = "look :99_fake_heart: here"
+    result = formatted_description(text)
+    assert_includes result, ":99_fake_heart:"
+    assert_not_includes result, "<img"
+  end
+
+  test "leaves non-heart colon expressions as plain text" do
+    text = "time is :noon: already"
+    result = formatted_description(text)
+    assert_includes result, ":noon:"
+    assert_not_includes result, "<img"
+  end
+
+  test "mixes heart emojis with regular text and spoilers" do
+    text = "hello :36_red_heart: and ||secret|| bye"
+    result = formatted_description(text)
+    assert_includes result, '<img src="/images/hearts/36_red_heart.webp"'
+    assert_includes result, SPOILER_OPEN
+  end
+
+  test "heart emoji alt text strips number prefix and uses spaces" do
+    text = ":01_dewdrop_heart:"
+    result = formatted_description(text)
+    assert_includes result, 'alt="dewdrop heart"'
+  end
+
+  test "heart emoji alt text handles cadbury style prefix" do
+    text = ":50cadbury_heart:"
+    result = formatted_description(text)
+    assert_includes result, 'alt="cadbury heart"'
+  end
+
+  test "replaces short alias heart code without number prefix" do
+    text = "I love this :aqua_heart: so much"
+    result = formatted_description(text)
+    assert_includes result, '<img src="/images/hearts/11_aqua_heart.webp"'
+    assert_includes result, 'title="aqua heart"'
+    assert_includes result, 'alt="aqua heart"'
+    assert_not_includes result, ":aqua_heart:"
+  end
+
+  test "replaces cadbury alias without number prefix" do
+    text = "here is :cadbury_heart: for you"
+    result = formatted_description(text)
+    assert_includes result, '<img src="/images/hearts/50cadbury_heart.webp"'
+    assert_includes result, 'alt="cadbury heart"'
+    assert_not_includes result, ":cadbury_heart:"
+  end
+
+  test "replaces short alias case-insensitively" do
+    text = ":AQUA_HEART:"
+    result = formatted_description(text)
+    assert_includes result, '<img src="/images/hearts/11_aqua_heart.webp"'
+    assert_not_includes result, ":AQUA_HEART:"
+  end
+
+  test "does not convert heart emoji code inside a code block" do
+    text = "Use <code>:11_aqua_heart:</code> to show a heart"
+    result = formatted_description(text)
+    assert_includes result, "<code>:11_aqua_heart:</code>"
+    assert_not_includes result, '<img src="/images/hearts/11_aqua_heart.webp"'
+  end
+
+  test "converts hearts outside code but not inside" do
+    text = ":36_red_heart: and <code>:11_aqua_heart:</code> and :13_storm_heart:"
+    result = formatted_description(text)
+    assert_includes result, '<img src="/images/hearts/36_red_heart.webp"'
+    assert_includes result, '<img src="/images/hearts/13_storm_heart.webp"'
+    assert_includes result, "<code>:11_aqua_heart:</code>"
+    assert_not_includes result, '<img src="/images/hearts/11_aqua_heart.webp"'
+  end
+
+  test "does not replace heart emoji codes inside HTML tag attributes" do
+    text = '<span class="spoiler" aria-label=":11_aqua_heart:">:36_red_heart:</span>'
+    result = formatted_description(text)
+    assert_includes result, 'aria-label=":11_aqua_heart:"'
+    assert_includes result, '<img src="/images/hearts/36_red_heart.webp"'
+    assert_not_includes result, '<img src="/images/hearts/11_aqua_heart.webp"'
+  end
 end

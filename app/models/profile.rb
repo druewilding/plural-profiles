@@ -46,6 +46,13 @@ class Profile < ApplicationRecord
     "50sunshine_heart"
   ].freeze
 
+  # Maps short names (without number prefix) to canonical names,
+  # so :cadbury_heart: works as well as :50cadbury_heart:
+  HEART_EMOJI_ALIASES = HEART_EMOJIS.each_with_object({}) do |name, map|
+    short = name.sub(/\A\d+_?/, "")
+    map[short] = name unless short == name
+  end.freeze
+
   belongs_to :user
   has_many :group_profiles, dependent: :destroy
   has_many :groups, through: :group_profiles
@@ -61,8 +68,19 @@ class Profile < ApplicationRecord
     uuid
   end
 
-  def heart_emoji_display_name(heart)
+  def self.heart_emoji_display_name(heart)
     heart.sub(/\A\d+_?/, "").tr("_", " ")
+  end
+
+  # Resolve a heart name to its canonical HEART_EMOJIS entry.
+  # Accepts both full names ("11_aqua_heart") and short aliases ("aqua_heart").
+  def self.resolve_heart_emoji(name)
+    return name if HEART_EMOJIS.include?(name)
+    HEART_EMOJI_ALIASES[name]
+  end
+
+  def heart_emoji_display_name(heart)
+    self.class.heart_emoji_display_name(heart)
   end
 
   private

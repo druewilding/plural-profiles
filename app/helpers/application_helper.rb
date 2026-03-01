@@ -3,10 +3,12 @@ module ApplicationHelper
   DESCRIPTION_EXTRA_ATTRIBUTES = %w[open class role tabindex aria-label aria-expanded].to_set.freeze
 
   SPOILER_PATTERN = /\|\|(.+?)\|\|/m
-  CODE_BLOCK_PATTERN = /<code>.*?<\/code>/m
+  CODE_BLOCK_PATTERN = /<code(?:\s[^>]*)?>.*?<\/code>/m
 
   SPOILER_REPLACEMENT = '<span class="spoiler" role="button" tabindex="0" ' \
     'aria-expanded="false" aria-label="Hidden content, click to reveal">\1</span>'
+
+  HEART_EMOJI_PATTERN = /:([a-z0-9_]+_heart):/i
 
   def formatted_description(text)
     safe_list_class = self.class.safe_list_sanitizer.class
@@ -14,7 +16,9 @@ module ApplicationHelper
     attrs = safe_list_class.allowed_attributes + DESCRIPTION_EXTRA_ATTRIBUTES
     text = convert_spoilers_outside_code(text)
     html = simple_format(text, {}, sanitize_options: { tags: tags, attributes: attrs })
-    html.gsub("</details>", '<button type="button" class="details-close" aria-label="Close details">(click to close)</button></details>').html_safe
+    html = html.gsub("</details>", '<button type="button" class="details-close" aria-label="Close details">(click to close)</button></details>')
+    html = replace_heart_emojis(html)
+    html.html_safe
   end
 
   def relative_time(time)
@@ -27,6 +31,29 @@ module ApplicationHelper
   end
 
   private
+
+  def replace_heart_emojis(html)
+    # Only replace hearts in text nodes — skip <code>...</code> blocks and HTML tags
+    # so that heart codes inside attributes (e.g. title=":11_aqua_heart:") are preserved
+    skip_pattern = /#{CODE_BLOCK_PATTERN}|<[^>]*>/m
+    parts = html.split(skip_pattern)
+    non_text = html.scan(skip_pattern)
+
+    result = parts.map do |part|
+      part.gsub(HEART_EMOJI_PATTERN) do |match|
+        name = Regexp.last_match(1).downcase
+        canonical = Profile.resolve_heart_emoji(name)
+        if canonical
+          display = Profile.heart_emoji_display_name(canonical)
+          '<img src="/images/hearts/%s.webp" title="%s" alt="%s" class="heart-inline" width="24" height="24" loading="lazy">' % [ canonical, display, display ]
+        else
+          match
+        end
+      end
+    end
+    non_text.each_with_index { |segment, i| result.insert((i * 2) + 1, segment) }
+    result.join
+  end
 
   def convert_spoilers_outside_code(text)
     # Split on <code>...</code> blocks so we only convert ||text|| outside them

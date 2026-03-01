@@ -110,4 +110,27 @@ class ProfileTest < ActiveSupport::TestCase
     assert_includes Profile::HEART_EMOJIS, "36_red_heart"
     assert_equal 42, Profile::HEART_EMOJIS.size
   end
+
+  test "resolve_heart_emoji returns canonical name for full name" do
+    assert_equal "11_aqua_heart", Profile.resolve_heart_emoji("11_aqua_heart")
+    assert_equal "50cadbury_heart", Profile.resolve_heart_emoji("50cadbury_heart")
+  end
+
+  test "resolve_heart_emoji returns canonical name for short alias" do
+    assert_equal "11_aqua_heart", Profile.resolve_heart_emoji("aqua_heart")
+    assert_equal "50cadbury_heart", Profile.resolve_heart_emoji("cadbury_heart")
+    assert_equal "01_dewdrop_heart", Profile.resolve_heart_emoji("dewdrop_heart")
+    assert_equal "36_red_heart", Profile.resolve_heart_emoji("red_heart")
+  end
+
+  test "resolve_heart_emoji returns nil for unknown name" do
+    assert_nil Profile.resolve_heart_emoji("fake_heart")
+    assert_nil Profile.resolve_heart_emoji("99_fake_heart")
+  end
+
+  test "HEART_EMOJI_ALIASES maps every short name to its canonical entry" do
+    assert_equal "11_aqua_heart", Profile::HEART_EMOJI_ALIASES["aqua_heart"]
+    assert_equal "50cadbury_heart", Profile::HEART_EMOJI_ALIASES["cadbury_heart"]
+    assert_equal 42, Profile::HEART_EMOJI_ALIASES.size
+  end
 end

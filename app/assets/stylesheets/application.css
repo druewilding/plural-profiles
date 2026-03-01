@@ -1612,7 +1612,7 @@ details[open] .details-close {
 .heart-display__grid {
   display: flex;
   flex-wrap: wrap;
-  gap: 0.5rem;
+  gap: 0.25rem;
 }
 
 .heart-picker__heart {
@@ -1723,6 +1723,14 @@ details[open] .details-close {
   .form-divider {
     border-top-color: GrayText;
   }
+}
+
+/* ── Inline heart emojis in descriptions ────────────────── */
+
+.heart-inline {
+  display: inline;
+  vertical-align: -0.35em;
+  width: auto;
 }
 
 /* ── Utilities ─────────────────────────────────────────── */
