@@ -216,6 +216,23 @@ class Our::GroupsControllerTest < ActionDispatch::IntegrationTest
     assert_match "Coworkers", response.body
   end
 
+  test "manage_groups allows adding a group that is already an indirect descendant" do
+    user_three = users(:three)
+    sign_in_as user_three
+    delta_clan = groups(:delta_clan)
+    delta_flux = groups(:delta_flux)
+
+    # Create a new top-level group and add Delta Clan to it
+    test_group = user_three.groups.create!(name: "Test Group")
+    test_group.child_links.create!(child_group: delta_clan)
+
+    # Delta Flux is a descendant of Delta Clan, but it should still be
+    # available to add directly to test_group
+    get manage_groups_our_group_path(test_group)
+    assert_response :success
+    assert_match "Delta Flux", response.body
+  end
+
   test "add_group adds a sub-group" do
     sign_in_as @user
     everyone = groups(:everyone)
