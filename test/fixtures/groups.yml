@@ -15,3 +15,57 @@ family:
   uuid: def22222-2222-2222-2222-222222222222
   name: Family
   description: Family members.
+
+alpha_clan:
+  user: three
+  uuid: def10000-0000-0000-0000-000000000001
+  name: Alpha Clan
+  description: A clan at the top of the tree.
+
+delta_clan:
+  user: three
+  uuid: def10000-0000-0000-0000-000000000002
+  name: Delta Clan
+  description: Another clan.
+
+spectrum:
+  user: three
+  uuid: def10000-0000-0000-0000-000000000003
+  name: Spectrum
+  description: Overarching category spanning clans.
+
+prism_circle:
+  user: three
+  uuid: def10000-0000-0000-0000-000000000004
+  name: Prism Circle
+  description: Sub-category inside Spectrum.
+
+rogue_pack:
+  user: three
+  uuid: def10000-0000-0000-0000-000000000005
+  name: Rogue Pack
+  description: Sub-group of Prism Circle; its own independent clan.
+
+flux:
+  user: three
+  uuid: def10000-0000-0000-0000-000000000006
+  name: Flux
+  description: Category spanning multiple clans.
+
+echo_shard:
+  user: three
+  uuid: def10000-0000-0000-0000-000000000007
+  name: Echo Shard
+  description: Sub-group of Flux.
+
+static_burst:
+  user: three
+  uuid: def10000-0000-0000-0000-000000000008
+  name: Static Burst
+  description: Another sub-group of Flux.
+
+delta_flux:
+  user: three
+  uuid: def10000-0000-0000-0000-000000000009
+  name: Delta Flux
+  description: Flux section specific to Delta Clan.

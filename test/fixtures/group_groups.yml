@@ -1,3 +1,39 @@
 friends_in_everyone:
   parent_group: everyone
   child_group: friends
+
+spectrum_in_alpha:
+  parent_group: alpha_clan
+  child_group: spectrum
+  inclusion_mode: all
+
+prism_in_spectrum:
+  parent_group: spectrum
+  child_group: prism_circle
+  inclusion_mode: all
+
+rogue_in_prism:
+  parent_group: prism_circle
+  child_group: rogue_pack
+  inclusion_mode: all
+
+flux_in_delta:
+  parent_group: delta_clan
+  child_group: flux
+  inclusion_mode: selected
+  included_subgroup_ids: <%= [ActiveRecord::FixtureSet.identify(:echo_shard)].to_json %>
+
+echo_in_flux:
+  parent_group: flux
+  child_group: echo_shard
+  inclusion_mode: all
+
+static_in_flux:
+  parent_group: flux
+  child_group: static_burst
+  inclusion_mode: all
+
+delta_flux_in_delta:
+  parent_group: delta_clan
+  child_group: delta_flux
+  inclusion_mode: all

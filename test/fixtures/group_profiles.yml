@@ -5,3 +5,39 @@ alice_in_friends:
 carol_in_family:
   group: family
   profile: carol
+
+stray_in_rogue_pack:
+  group: rogue_pack
+  profile: stray
+
+stray_in_prism_circle:
+  group: prism_circle
+  profile: stray
+
+ember_in_prism_circle:
+  group: prism_circle
+  profile: ember
+
+drift_in_flux:
+  group: flux
+  profile: drift
+
+ripple_in_flux:
+  group: flux
+  profile: ripple
+
+grove_in_alpha_clan:
+  group: alpha_clan
+  profile: grove
+
+shadow_in_delta_clan:
+  group: delta_clan
+  profile: shadow
+
+mirage_in_echo_shard:
+  group: echo_shard
+  profile: mirage
+
+spark_in_static_burst:
+  group: static_burst
+  profile: spark
