@@ -298,9 +298,7 @@ class GroupTest < ActiveSupport::TestCase
   end
 
   test "descendant_tree seen_profile_ids set is populated for root-level tracking" do
-    user = users(:one)
     everyone = groups(:everyone)
-    friends = groups(:friends)
     alice = profiles(:alice)
 
     seen = Set.new
@@ -311,7 +309,6 @@ class GroupTest < ActiveSupport::TestCase
   end
 
   test "descendant_tree profiles appearing only once are not marked as repeated" do
-    user = users(:one)
     everyone = groups(:everyone)
 
     tree = everyone.descendant_tree
