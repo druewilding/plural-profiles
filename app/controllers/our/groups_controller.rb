@@ -118,14 +118,10 @@ class Our::GroupsController < ApplicationController
         valid_included = []
       end
 
-      # Determine include_direct_profiles:
-      # - Explicit param takes precedence
-      # - Auto-default to false when switching to "selected"
-      # - Otherwise keep existing value
+      # Determine include_direct_profiles from the submitted param, falling
+      # back to the existing value if not present (e.g. form without the field).
       include_profiles = if params.key?(:include_direct_profiles)
         params[:include_direct_profiles] == "1"
-      elsif mode == "selected" && link.inclusion_mode != "selected"
-        false
       else
         link.include_direct_profiles
       end
