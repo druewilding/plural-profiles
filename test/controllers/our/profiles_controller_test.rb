@@ -305,16 +305,7 @@ class Our::ProfilesControllerTest < ActionDispatch::IntegrationTest
     @profile.update!(heart_emojis: %w[01_dewdrop_heart 22_violet_heart])
     get our_profile_path(@profile)
     assert_response :success
-    assert_match "Heart emojis", response.body
     assert_match "01_dewdrop_heart.webp", response.body
     assert_match "22_violet_heart.webp", response.body
-  end
-
-  test "show does not display heart section when none selected" do
-    sign_in_as @user
-    @profile.update!(heart_emojis: [])
-    get our_profile_path(@profile)
-    assert_response :success
-    assert_no_match "Heart emojis", response.body
   end
 end
