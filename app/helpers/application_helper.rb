@@ -33,9 +33,11 @@ module ApplicationHelper
   private
 
   def replace_heart_emojis(html)
-    # Only replace hearts outside <code>...</code> blocks
-    parts = html.split(CODE_BLOCK_PATTERN)
-    code_blocks = html.scan(CODE_BLOCK_PATTERN)
+    # Only replace hearts in text nodes — skip <code>...</code> blocks and HTML tags
+    # so that heart codes inside attributes (e.g. title=":11_aqua_heart:") are preserved
+    skip_pattern = /#{CODE_BLOCK_PATTERN}|<[^>]*>/m
+    parts = html.split(skip_pattern)
+    non_text = html.scan(skip_pattern)
 
     result = parts.map do |part|
       part.gsub(HEART_EMOJI_PATTERN) do |match|
@@ -48,7 +50,7 @@ module ApplicationHelper
         end
       end
     end
-    code_blocks.each_with_index { |block, i| result.insert((i * 2) + 1, block) }
+    non_text.each_with_index { |segment, i| result.insert((i * 2) + 1, segment) }
     result.join
   end
 

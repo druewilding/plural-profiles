@@ -237,4 +237,12 @@ class ApplicationHelperTest < ActionView::TestCase
     assert_includes result, "<code>:11_aqua_heart:</code>"
     assert_not_includes result, '<img src="/images/hearts/11_aqua_heart.webp"'
   end
+
+  test "does not replace heart emoji codes inside HTML tag attributes" do
+    text = '<span class="spoiler" aria-label=":11_aqua_heart:">:36_red_heart:</span>'
+    result = formatted_description(text)
+    assert_includes result, 'aria-label=":11_aqua_heart:"'
+    assert_includes result, '<img src="/images/hearts/36_red_heart.webp"'
+    assert_not_includes result, '<img src="/images/hearts/11_aqua_heart.webp"'
+  end
 end
