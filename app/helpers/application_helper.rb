@@ -3,7 +3,7 @@ module ApplicationHelper
   DESCRIPTION_EXTRA_ATTRIBUTES = %w[open class role tabindex aria-label aria-expanded].to_set.freeze
 
   SPOILER_PATTERN = /\|\|(.+?)\|\|/m
-  CODE_BLOCK_PATTERN = /<code>.*?<\/code>/m
+  CODE_BLOCK_PATTERN = /<code(?:\s[^>]*)?>.*?<\/code>/m
 
   SPOILER_REPLACEMENT = '<span class="spoiler" role="button" tabindex="0" ' \
     'aria-expanded="false" aria-label="Hidden content, click to reveal">\1</span>'
