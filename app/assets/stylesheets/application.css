@@ -461,12 +461,14 @@ input[type="datetime-local"]::-webkit-calendar-picker-indicator {
 }
 
 fieldset.inclusion-radios,
-fieldset.inclusion-checkboxes {
+fieldset.inclusion-checkboxes,
+fieldset.inclusion-profiles {
   border: 1px solid rgba(255,255,255,0.04);
   background-color: rgba(255,255,255,0.02);
   padding: 0.5rem 0.75rem;
   border-radius: 8px;
-  min-width: 0;
+  min-width: 150px;
+  max-width: 200px;
 }
 
 fieldset.inclusion-radios {
@@ -480,7 +482,8 @@ fieldset.inclusion-checkboxes {
 }
 
 fieldset.inclusion-radios legend,
-fieldset.inclusion-checkboxes legend {
+fieldset.inclusion-checkboxes legend,
+fieldset.inclusion-profiles legend {
   color: var(--heading);
   font-size: 0.85rem;
   margin-bottom: 0.35rem;
@@ -490,7 +493,8 @@ fieldset.inclusion-checkboxes legend {
   .inclusion-row { flex-direction: column !important; }
   fieldset.inclusion-radios { flex: none !important; }
   fieldset.inclusion-radios,
-  fieldset.inclusion-checkboxes {
+  fieldset.inclusion-checkboxes,
+  fieldset.inclusion-profiles {
     min-width: 0 !important;
     width: 100% !important;
   }
@@ -1442,7 +1446,8 @@ details[open] .details-close {
   /* Fieldset borders */
   fieldset.form-group,
   fieldset.inclusion-radios,
-  fieldset.inclusion-checkboxes {
+  fieldset.inclusion-checkboxes,
+  fieldset.inclusion-profiles {
     border-color: CanvasText;
   }
 

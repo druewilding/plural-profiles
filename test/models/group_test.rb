@@ -438,7 +438,7 @@ class GroupTest < ActiveSupport::TestCase
       "Delta (not in Beta's included_subgroup_ids) must not appear under Beta"
   end
 
-  test "descendant_sections: selected sub-group with all sub-edge appears but deeper children are limited by CTE depth" do
+  test "descendant_sections: selected sub-group with all sub-edge includes deeper children" do
     user = users(:one)
     root     = user.groups.create!(name: "Root")
     a        = user.groups.create!(name: "Alpha")
@@ -450,15 +450,295 @@ class GroupTest < ActiveSupport::TestCase
                        inclusion_mode: "selected", included_subgroup_ids: [ b.id ])
     # a →(all)→ b  — b is in the selected list and its sub-edge is "all"
     GroupGroup.create!(parent_group: a, child_group: b, inclusion_mode: "all")
-    # b →(all)→ b_child  — one level deeper than the CTE pre-loads for selected paths
+    # b →(all)→ b_child
     GroupGroup.create!(parent_group: b, child_group: b_child, inclusion_mode: "all")
 
     names = root.descendant_sections.map(&:name)
-    assert_includes names, "Alpha", "Alpha should appear"
-    assert_includes names, "Beta",  "Beta (all sub-edge, in selected list) should appear"
-    # BetaChild sits one level below the effective CTE pre-load boundary for
-    # selected paths, so it is not present in groups_by_id and must not appear.
-    assert_not_includes names, "BetaChild",
-      "BetaChild is beyond the CTE pre-load depth for selected paths and must not appear"
+    assert_includes names, "Alpha",     "Alpha should appear"
+    assert_includes names, "Beta",      "Beta (all sub-edge, in selected list) should appear"
+    assert_includes names, "BetaChild", "BetaChild should appear — Beta is included and has an all sub-edge"
+  end
+
+  # -- include_direct_profiles flag --
+  #
+  # include_direct_profiles controls whether a child group's own direct profiles
+  # are pulled into the parent's visible set. Sub-groups and their profiles are
+  # unaffected — only the immediate profiles of the child group are suppressed.
+  #
+  # The fixtures already encode this scenario via delta_clan → flux:
+  #   inclusion_mode: selected, included_subgroup_ids: [echo_shard], include_direct_profiles: false
+  # drift and ripple are direct flux members; mirage is in echo_shard.
+
+  test "all_profiles excludes direct profiles of child when include_direct_profiles is false" do
+    delta = groups(:delta_clan)
+    assert_not_includes delta.all_profiles, profiles(:drift),
+      "Drift (direct flux member) should be excluded because include_direct_profiles is false"
+    assert_not_includes delta.all_profiles, profiles(:ripple),
+      "Ripple (direct flux member) should be excluded because include_direct_profiles is false"
+  end
+
+  test "all_profiles still includes sub-group profiles when include_direct_profiles is false" do
+    # echo_shard is in flux's selected list and has include_direct_profiles defaulting to true;
+    # mirage (in echo_shard) must be visible from delta_clan even though flux's own profiles aren't
+    delta = groups(:delta_clan)
+    assert_includes delta.all_profiles, profiles(:mirage),
+      "Mirage (in echo_shard, a selected sub-group of flux) should be visible from delta_clan"
+  end
+
+  test "descendant_tree shows empty profiles array for node with include_direct_profiles false" do
+    delta = groups(:delta_clan)
+    tree = delta.descendant_tree
+    flux_node = tree.find { |n| n[:group].name == "Flux" }
+    assert flux_node, "Flux should appear in delta_clan's tree"
+    assert_empty flux_node[:profiles],
+      "Flux's profiles should be empty when include_direct_profiles is false on the edge"
+  end
+
+  test "descendant_tree still recurses into children when include_direct_profiles is false" do
+    # include_direct_profiles only suppresses the node's own profiles; sub-group children are unaffected
+    delta = groups(:delta_clan)
+    tree = delta.descendant_tree
+    flux_node = tree.find { |n| n[:group].name == "Flux" }
+    assert flux_node, "Flux should appear in delta_clan's tree"
+    child_names = flux_node[:children].map { |n| n[:group].name }
+    assert_includes child_names, "Echo Shard",
+      "Echo Shard (in included_subgroup_ids) should still appear as a child of Flux"
+  end
+
+  test "descendant_tree includes profiles in sub-groups of a node with include_direct_profiles false" do
+    delta = groups(:delta_clan)
+    tree = delta.descendant_tree
+    flux_node = tree.find { |n| n[:group].name == "Flux" }
+    echo_node = flux_node&.dig(:children)&.find { |n| n[:group].name == "Echo Shard" }
+    assert echo_node, "Echo Shard should appear under Flux in delta_clan's tree"
+    profile_names = echo_node[:profiles].map { |e| e[:profile].name }
+    assert_includes profile_names, "Mirage",
+      "Mirage (in echo_shard) should be visible even though Flux has include_direct_profiles false"
+  end
+
+  test "descendant_tree shows profiles when include_direct_profiles is true (default)" do
+    # everyone → friends has no explicit include_direct_profiles (defaults to true)
+    everyone = groups(:everyone)
+    tree = everyone.descendant_tree
+    friends_node = tree.find { |n| n[:group].name == "Friends" }
+    assert friends_node, "Friends should appear in everyone's tree"
+    profile_names = friends_node[:profiles].map { |e| e[:profile].name }
+    assert_includes profile_names, "Alice",
+      "Alice should appear in Friends' profiles when include_direct_profiles is true"
+  end
+
+  test "all_profiles respects include_direct_profiles false on an all-mode edge" do
+    user = users(:one)
+    parent = user.groups.create!(name: "Parent Group")
+    child  = user.groups.create!(name: "Child Group")
+    grandchild = user.groups.create!(name: "Grandchild Group")
+    child_profile = user.profiles.create!(name: "Child Profile")
+    grandchild_profile = user.profiles.create!(name: "Grandchild Profile")
+    child.profiles << child_profile
+    grandchild.profiles << grandchild_profile
+    GroupGroup.create!(parent_group: parent, child_group: child,
+                       inclusion_mode: "all", include_direct_profiles: false)
+    GroupGroup.create!(parent_group: child, child_group: grandchild, inclusion_mode: "all")
+
+    assert_not_includes parent.all_profiles, child_profile,
+      "Child's own profiles should be excluded when include_direct_profiles is false"
+    assert_includes parent.all_profiles, grandchild_profile,
+      "Grandchild's profiles should still be visible (include_direct_profiles only affects the direct child)"
+  end
+
+  # -- InclusionOverride-driven traversal --
+  #
+  # An InclusionOverride lives on a specific edge (GroupGroup) and targets a
+  # group deeper in the subtree. When traversal passes through that edge, the
+  # override's settings replace the target group's own edge settings — but only
+  # for that context. Viewing the target group directly, or through a different
+  # ancestor edge, is unaffected.
+
+  test "override changes inclusion_mode all→none: stops recursion for deep group in that context" do
+    # root →(all)→ mid →(all)→ deep →(all)→ leaf
+    # Override on root→mid edge targeting deep with inclusion_mode "none"
+    # → deep appears from root, but leaf does not (recursion stopped)
+    # → viewing mid directly still shows both deep and leaf
+    user = users(:one)
+    root = user.groups.create!(name: "Root")
+    mid  = user.groups.create!(name: "Mid")
+    deep = user.groups.create!(name: "Deep")
+    leaf = user.groups.create!(name: "Leaf")
+    root_mid  = GroupGroup.create!(parent_group: root, child_group: mid,  inclusion_mode: "all")
+    GroupGroup.create!(parent_group: mid,  child_group: deep, inclusion_mode: "all")
+    GroupGroup.create!(parent_group: deep, child_group: leaf, inclusion_mode: "all")
+
+    # Without override, root sees all three descendants
+    assert_equal %w[Deep Leaf Mid], root.descendant_sections.map(&:name).sort
+
+    # Add an override on root→mid targeting deep: change to "none"
+    InclusionOverride.create!(group_group: root_mid, target_group: deep, inclusion_mode: "none")
+
+    root_sections = root.descendant_sections.map(&:name)
+    assert_includes     root_sections, "Mid",  "Mid should still appear"
+    assert_includes     root_sections, "Deep", "Deep should appear (the override targets it, not hides it)"
+    assert_not_includes root_sections, "Leaf",
+      "Leaf must be hidden — override stops recursion at Deep when traversing via root→mid"
+
+    # Viewing mid directly still sees both deep and leaf (override is edge-contextual)
+    mid_sections = mid.descendant_sections.map(&:name)
+    assert_includes mid_sections, "Deep"
+    assert_includes mid_sections, "Leaf"
+  end
+
+  test "override changes inclusion_mode none→all: enables recursion into previously-stopped group" do
+    # root →(all)→ mid →(none)→ deep →(all)→ leaf
+    # Without override: deep appears from root as overlapping; leaf invisible
+    # Override on root→mid edge targeting deep with inclusion_mode "all"
+    # → deep now recursed into; leaf becomes visible
+    user = users(:one)
+    root = user.groups.create!(name: "Root")
+    mid  = user.groups.create!(name: "Mid")
+    deep = user.groups.create!(name: "Deep")
+    leaf = user.groups.create!(name: "Leaf")
+    root_mid = GroupGroup.create!(parent_group: root, child_group: mid,  inclusion_mode: "all")
+    GroupGroup.create!(parent_group: mid,  child_group: deep, inclusion_mode: "none")
+    GroupGroup.create!(parent_group: deep, child_group: leaf, inclusion_mode: "all")
+
+    # Without override, leaf is invisible from root
+    assert_not_includes root.descendant_sections.map(&:name), "Leaf"
+
+    # Add an override on root→mid targeting deep: change to "all"
+    InclusionOverride.create!(group_group: root_mid, target_group: deep, inclusion_mode: "all")
+
+    root_sections = root.descendant_sections.map(&:name)
+    assert_includes root_sections, "Deep"
+    assert_includes root_sections, "Leaf",
+      "Leaf should now be visible — override opens up recursion through Deep in this context"
+
+    # mid still sees deep as none (no override active for mid's own traversal)
+    mid_tree = mid.descendant_tree
+    deep_node = mid_tree.find { |n| n[:group].name == "Deep" }
+    assert deep_node[:overlapping], "Deep should still be overlapping when viewed from mid directly"
+  end
+
+  test "override suppresses direct profiles of a deep group (include_direct_profiles false)" do
+    # root →(all)→ mid →(all, include_direct_profiles: true)→ deep
+    # deep has a direct profile (target_profile)
+    # Override on root→mid edge targeting deep: include_direct_profiles false
+    # → target_profile invisible from root, but visible from mid
+    user = users(:one)
+    root = user.groups.create!(name: "Root")
+    mid  = user.groups.create!(name: "Mid")
+    deep = user.groups.create!(name: "Deep")
+    target_profile = user.profiles.create!(name: "Target Profile")
+    deep.profiles << target_profile
+    root_mid = GroupGroup.create!(parent_group: root, child_group: mid, inclusion_mode: "all")
+    GroupGroup.create!(parent_group: mid, child_group: deep, inclusion_mode: "all",
+                       include_direct_profiles: true)
+
+    # Without override, root sees the profile
+    assert_includes root.all_profiles, target_profile
+
+    # Add override: suppress direct profiles of deep in root→mid context
+    InclusionOverride.create!(group_group: root_mid, target_group: deep,
+                              inclusion_mode: "all", include_direct_profiles: false)
+
+    assert_not_includes root.all_profiles, target_profile,
+      "Target profile should be hidden from root via the include_direct_profiles override"
+
+    # mid's own view is unaffected
+    assert_includes mid.all_profiles, target_profile,
+      "Target profile should still appear when viewing mid directly"
+  end
+
+  test "override on descendant_tree suppresses profiles and is reflected in :profiles key" do
+    user = users(:one)
+    root = user.groups.create!(name: "Root")
+    mid  = user.groups.create!(name: "Mid")
+    deep = user.groups.create!(name: "Deep")
+    deep_profile = user.profiles.create!(name: "Deep Profile")
+    deep.profiles << deep_profile
+    root_mid = GroupGroup.create!(parent_group: root, child_group: mid, inclusion_mode: "all")
+    GroupGroup.create!(parent_group: mid, child_group: deep, inclusion_mode: "all")
+
+    # Without override: deep_profile appears in deep's tree node
+    tree = root.descendant_tree
+    mid_node  = tree.find { |n| n[:group].name == "Mid" }
+    deep_node = mid_node[:children].find { |n| n[:group].name == "Deep" }
+    assert_includes deep_node[:profiles].map { |e| e[:profile] }, deep_profile
+
+    # Add override: suppress deep's direct profiles
+    InclusionOverride.create!(group_group: root_mid, target_group: deep,
+                              inclusion_mode: "all", include_direct_profiles: false)
+
+    tree = root.descendant_tree
+    mid_node  = tree.find { |n| n[:group].name == "Mid" }
+    deep_node = mid_node[:children].find { |n| n[:group].name == "Deep" }
+    assert_empty deep_node[:profiles],
+      "Deep's :profiles key must be empty after applying the include_direct_profiles override"
+  end
+
+  test "override changes inclusion_mode and descendant_tree marks node correctly" do
+    # After a none→all override, the node should no longer be marked :overlapping
+    user = users(:one)
+    root = user.groups.create!(name: "Root")
+    mid  = user.groups.create!(name: "Mid")
+    deep = user.groups.create!(name: "Deep")
+    root_mid = GroupGroup.create!(parent_group: root, child_group: mid, inclusion_mode: "all")
+    GroupGroup.create!(parent_group: mid, child_group: deep, inclusion_mode: "none")
+
+    # Without override: deep is overlapping from root
+    tree = root.descendant_tree
+    mid_node  = tree.find { |n| n[:group].name == "Mid" }
+    deep_node = mid_node[:children].find { |n| n[:group].name == "Deep" }
+    assert deep_node[:overlapping], "Deep should be overlapping before the override is applied"
+
+    # Override: change deep's mode to "all" when traversed via root→mid
+    InclusionOverride.create!(group_group: root_mid, target_group: deep, inclusion_mode: "all")
+
+    tree = root.descendant_tree
+    mid_node  = tree.find { |n| n[:group].name == "Mid" }
+    deep_node = mid_node[:children].find { |n| n[:group].name == "Deep" }
+    assert_not deep_node[:overlapping],
+      "Deep should no longer be marked :overlapping when the override changes its mode to 'all'"
+  end
+
+  test "override is edge-contextual: only affects traversal through its specific ancestor edge" do
+    # group_a →(all)→ mid →(all)→ deep →(all)→ leaf
+    # group_b →(all)→ mid  (same mid group, same mid→deep edge)
+    # Override on group_a→mid edge, targeting deep with mode "none"
+    # → public page for group_a: deep appears as overlapping, leaf invisible, deep's profiles hidden
+    # → public page for group_b: deep's full subtree is visible, profiles intact
+    # The difference is which group's page is being rendered, not who is logged in.
+    user = users(:one)
+    group_a = user.groups.create!(name: "Group A")
+    group_b = user.groups.create!(name: "Group B")
+    mid  = user.groups.create!(name: "Mid")
+    deep = user.groups.create!(name: "Deep")
+    leaf = user.groups.create!(name: "Leaf")
+    deep_profile = user.profiles.create!(name: "Deep Profile")
+    deep.profiles << deep_profile
+
+    ga_mid = GroupGroup.create!(parent_group: group_a, child_group: mid, inclusion_mode: "all")
+    GroupGroup.create!(parent_group: group_b, child_group: mid, inclusion_mode: "all")
+    GroupGroup.create!(parent_group: mid,     child_group: deep, inclusion_mode: "all")
+    GroupGroup.create!(parent_group: deep,    child_group: leaf, inclusion_mode: "all")
+
+    # Override on group_a→mid edge targeting deep: stop recursion and hide its direct profiles
+    InclusionOverride.create!(group_group: ga_mid, target_group: deep,
+                              inclusion_mode: "none", include_direct_profiles: false)
+
+    # group_a's public page: mid and deep appear, leaf does not; deep's profiles are hidden
+    ga_sections = group_a.descendant_sections.map(&:name)
+    assert_includes     ga_sections, "Mid",  "Mid should appear on group_a's page"
+    assert_includes     ga_sections, "Deep", "Deep should appear on group_a's page (override targets it, not hides it)"
+    assert_not_includes ga_sections, "Leaf",
+      "Leaf must be hidden on group_a's page — override stops recursion at deep"
+    assert_not_includes group_a.all_profiles, deep_profile,
+      "Deep's direct profiles must be hidden on group_a's page — include_direct_profiles override"
+
+    # group_b's public page: full tree is visible (different ancestor edge, no override loaded)
+    gb_sections = group_b.descendant_sections.map(&:name)
+    assert_includes gb_sections, "Deep"
+    assert_includes gb_sections, "Leaf",
+      "Leaf should be visible on group_b's page — override on group_a→mid does not apply here"
+    assert_includes group_b.all_profiles, deep_profile,
+      "Deep Profile should be visible on group_b's page"
   end
 end

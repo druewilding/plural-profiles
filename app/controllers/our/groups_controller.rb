@@ -69,7 +69,7 @@ class Our::GroupsController < ApplicationController
   end
 
   def manage_groups
-    excluded_ids = @group.descendant_group_ids | @group.ancestor_group_ids
+    excluded_ids = @group.ancestor_group_ids | @group.child_group_ids | [ @group.id ]
     @available_groups = Current.user.groups
       .where.not(id: excluded_ids)
       .order(:name)
@@ -105,6 +105,8 @@ class Our::GroupsController < ApplicationController
     link = @group.child_links.find_by!(child_group_id: params[:group_id])
     allowed_modes = %w[all selected none]
 
+    attrs = {}
+
     if params[:inclusion_mode].present?
       mode = params[:inclusion_mode].to_s
       mode = "none" unless allowed_modes.include?(mode)
@@ -112,14 +114,22 @@ class Our::GroupsController < ApplicationController
       if mode == "selected"
         included = Array(params[:included_subgroup_ids]).map(&:to_i)
         # Only allow immediate sub-groups of the child to be included
-        valid_included = included & link.child_group.child_group_ids
+        attrs[:included_subgroup_ids] = included & link.child_group.child_group_ids
       else
         # For 'all' or 'none' we clear the explicit list to keep data consistent
-        valid_included = []
+        attrs[:included_subgroup_ids] = []
       end
 
-      link.update!(inclusion_mode: mode, included_subgroup_ids: valid_included)
+      attrs[:inclusion_mode] = mode
     end
+
+    # include_direct_profiles is only rendered when the child has direct profiles,
+    # so the param may be absent — only apply it when present.
+    if params.key?(:include_direct_profiles)
+      attrs[:include_direct_profiles] = params[:include_direct_profiles] == "1"
+    end
+
+    link.update!(attrs) if attrs.any?
 
     redirect_to manage_groups_our_group_path(@group), notice: "Relationship updated."
   rescue ActiveRecord::RecordNotFound
