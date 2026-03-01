@@ -166,7 +166,13 @@ Flux has `inclusion_mode: selected` with only Echo Shard in `included_subgroup_i
 
 #### Seeding the development database
 
-To create the Phase 1 scenario in your local development database under user id 1:
+To create the Phase 1 scenario in your local development database, pass the email address of the account you want to seed into:
+
+```sh
+bin/rails runner script/phase1_seed.rb "you@example.com"
+```
+
+If no email is given, it falls back to user id 1:
 
 ```sh
 bin/rails runner script/phase1_seed.rb
