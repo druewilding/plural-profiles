@@ -4,10 +4,22 @@
 # Creates the full Phase 1 group/profile hierarchy under user id 1.
 # Safe to re-run: wraps everything in a transaction and skips if alpha_clan already exists.
 
-user = User.find(1)
+FIXTURE_FILES = Rails.root.join("test/fixtures/files")
+
+def attach_avatar(record, path)
+  record.avatar.attach(
+    io: File.open(path),
+    filename: File.basename(path),
+    content_type: "image/png"
+  )
+end
+
+email = ARGV.first
+user = email ? User.find_by!(email_address: email) : User.find(1)
+puts "Seeding for #{user.email_address} (id #{user.id})."
 
 if user.groups.exists?(name: "Alpha Clan")
-  puts "Alpha Clan already exists for user 1 — skipping. Delete it first if you want to re-seed."
+  puts "Alpha Clan already exists for #{user.email_address} — skipping. Delete it first if you want to re-seed."
   exit
 end
 
@@ -23,6 +35,18 @@ ActiveRecord::Base.transaction do
   echo_shard   = user.groups.create!(name: "Echo Shard",   description: "Sub-group of Flux.")
   static_burst = user.groups.create!(name: "Static Burst", description: "Another sub-group of Flux.")
   delta_flux   = user.groups.create!(name: "Delta Flux",   description: "Flux section specific to Delta Clan.")
+
+  [
+    [ alpha_clan,   "alpha_clan" ],
+    [ delta_clan,   "delta_clan" ],
+    [ spectrum,     "spectrum" ],
+    [ prism_circle, "prism_circle" ],
+    [ rogue_pack,   "rogue_pack" ],
+    [ flux,         "flux" ],
+    [ echo_shard,   "echo_shard" ],
+    [ static_burst, "static_burst" ],
+    [ delta_flux,   "delta_flux" ]
+  ].each { |group, filename| attach_avatar(group, FIXTURE_FILES.join("groups/#{filename}.png")) }
 
   puts "Created 9 groups."
 
@@ -60,6 +84,17 @@ ActiveRecord::Base.transaction do
   shadow = user.profiles.create!(name: "Shadow", description: "Direct member of delta_clan.")
   mirage = user.profiles.create!(name: "Mirage", description: "In echo_shard — SHOULD appear in delta_clan via flux.")
   spark  = user.profiles.create!(name: "Spark",  description: "In static_burst — should NOT appear in delta_clan.")
+
+  [
+    [ stray,  "stray" ],
+    [ ember,  "ember" ],
+    [ drift,  "drift" ],
+    [ ripple, "ripple" ],
+    [ grove,  "grove" ],
+    [ shadow, "shadow" ],
+    [ mirage, "mirage" ],
+    [ spark,  "spark" ]
+  ].each { |profile, filename| attach_avatar(profile, FIXTURE_FILES.join("profiles/#{filename}.png")) }
 
   puts "Created 8 profiles."
 
