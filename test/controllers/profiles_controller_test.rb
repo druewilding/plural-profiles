@@ -19,4 +19,13 @@ class ProfilesControllerTest < ActionDispatch::IntegrationTest
     get profile_path(uuid: "nonexistent-uuid")
     assert_response :not_found
   end
+
+  test "show displays heart emojis on public profile" do
+    profile = profiles(:alice)
+    profile.update!(heart_emojis: %w[36_red_heart 22_violet_heart])
+    get profile_path(uuid: profile.uuid)
+    assert_response :success
+    assert_match "36_red_heart.webp", response.body
+    assert_match "22_violet_heart.webp", response.body
+  end
 end
