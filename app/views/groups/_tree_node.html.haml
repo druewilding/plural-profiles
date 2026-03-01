@@ -35,11 +35,8 @@
             - else
               %span.tree__label= profile.name
 - else
-  %li.tree__folder{role: "treeitem"}
-    .tree__row
-      %span.tree__arrow-btn{"aria-hidden": "true"}
-        %span.tree__arrow
-      = link_to group_path(group.uuid), class: "tree__item", "data-action": "click->tree#selectGroup", "data-panel-url": panel_group_path(group.uuid), "data-group-uuid": group.uuid do
-        - if group.avatar.attached?
-          = image_tag group.avatar.variant(resize_to_fill: [24, 24]), class: "tree__avatar", width: 24, height: 24, alt: ""
-        %span.tree__label= group.name
+  %li.tree__leaf{role: "treeitem"}
+    = link_to group_path(group.uuid), class: "tree__item", "data-action": "click->tree#selectGroup", "data-panel-url": panel_group_path(group.uuid), "data-group-uuid": group.uuid do
+      - if group.avatar.attached?
+        = image_tag group.avatar.variant(resize_to_fill: [24, 24]), class: "tree__avatar", width: 24, height: 24, alt: ""
+      %span.tree__label= group.name
