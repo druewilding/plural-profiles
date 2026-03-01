@@ -95,8 +95,10 @@ class Group < ApplicationRecord
   # Each group has its profiles and avatars eager-loaded.
   # Overlapping groups appear but their own children do not.
   # Inclusion overrides are applied during traversal.
+  # Uses reachable_group_ids (not descendant_group_ids) so that overrides
+  # making a "none" edge more permissive have the deeper descendants available.
   def descendant_sections
-    desc_ids = descendant_group_ids - [ id ]
+    desc_ids = reachable_group_ids - [ id ]
     return [] if desc_ids.empty?
 
     groups_by_id = Group.where(id: desc_ids)
@@ -115,8 +117,10 @@ class Group < ApplicationRecord
   # Each profile entry is a hash { profile:, repeated: } so the view can
   # visually distinguish profiles that appear more than once in the tree.
   # Inclusion overrides are applied during traversal.
+  # Uses reachable_group_ids (not descendant_group_ids) so that overrides
+  # making a "none" edge more permissive have the deeper descendants available.
   def descendant_tree(seen_profile_ids: nil)
-    desc_ids = descendant_group_ids - [ id ]
+    desc_ids = reachable_group_ids - [ id ]
     return [] if desc_ids.empty?
 
     groups_by_id = Group.where(id: desc_ids)
@@ -131,10 +135,11 @@ class Group < ApplicationRecord
   end
 
   # Override-aware set of group IDs whose profiles are visible from this group.
-  # Self is always included. Uses Ruby tree traversal for precise results
-  # (the CTE in descendant_group_ids is kept as a rough superset for preloading).
+  # Self is always included. Uses Ruby tree traversal for precise results.
+  # Uses reachable_group_ids for preloading so that overrides making a "none"
+  # edge more permissive have the deeper descendants available in children_map.
   def profile_visible_group_ids
-    desc_ids = descendant_group_ids - [ id ]
+    desc_ids = reachable_group_ids - [ id ]
     result = Set.new([ id ])
     return result.to_a if desc_ids.empty?
 

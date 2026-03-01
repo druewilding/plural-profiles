@@ -438,7 +438,7 @@ class GroupTest < ActiveSupport::TestCase
       "Delta (not in Beta's included_subgroup_ids) must not appear under Beta"
   end
 
-  test "descendant_sections: selected sub-group with all sub-edge appears but deeper children are limited by CTE depth" do
+  test "descendant_sections: selected sub-group with all sub-edge includes deeper children" do
     user = users(:one)
     root     = user.groups.create!(name: "Root")
     a        = user.groups.create!(name: "Alpha")
@@ -450,15 +450,12 @@ class GroupTest < ActiveSupport::TestCase
                        inclusion_mode: "selected", included_subgroup_ids: [ b.id ])
     # a →(all)→ b  — b is in the selected list and its sub-edge is "all"
     GroupGroup.create!(parent_group: a, child_group: b, inclusion_mode: "all")
-    # b →(all)→ b_child  — one level deeper than the CTE pre-loads for selected paths
+    # b →(all)→ b_child
     GroupGroup.create!(parent_group: b, child_group: b_child, inclusion_mode: "all")
 
     names = root.descendant_sections.map(&:name)
-    assert_includes names, "Alpha", "Alpha should appear"
-    assert_includes names, "Beta",  "Beta (all sub-edge, in selected list) should appear"
-    # BetaChild sits one level below the effective CTE pre-load boundary for
-    # selected paths, so it is not present in groups_by_id and must not appear.
-    assert_not_includes names, "BetaChild",
-      "BetaChild is beyond the CTE pre-load depth for selected paths and must not appear"
+    assert_includes names, "Alpha",     "Alpha should appear"
+    assert_includes names, "Beta",      "Beta (all sub-edge, in selected list) should appear"
+    assert_includes names, "BetaChild", "BetaChild should appear — Beta is included and has an all sub-edge"
   end
 end
