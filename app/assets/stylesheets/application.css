@@ -1622,17 +1622,10 @@ details[open] .details-close {
   width: 56px;
   height: 56px;
   padding: 4px;
-  border: 2px solid var(--input-border);
   border-radius: 0.5rem;
-  background: var(--input-bg);
+  background: none;
   cursor: pointer;
-  opacity: 0.5;
   transition: opacity 0.15s, border-color 0.15s, transform 0.15s;
-}
-
-.heart-picker__heart:hover {
-  opacity: 0.8;
-  transform: scale(1.08);
 }
 
 .heart-picker__heart[aria-pressed="true"] {
@@ -1661,14 +1654,14 @@ details[open] .details-close {
 
 @media (forced-colors: active) {
   .heart-picker__heart {
-    border: 2px solid ButtonText;
+    border: none;
     opacity: 1;
     background: Canvas;
   }
 
   .heart-picker__heart[aria-pressed="true"] {
-    border-color: Highlight;
-    box-shadow: 0 0 0 2px Highlight;
+    border-color: CanvasText;
+    box-shadow: 0 0 0 2px CanvasText;
     background: Canvas;
   }
 }
