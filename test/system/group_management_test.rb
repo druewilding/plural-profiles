@@ -226,6 +226,30 @@ class GroupManagementTest < ApplicationSystemTestCase
     end
   end
 
+  test "no-JS fallback profile links use root group context" do
+    alpha = groups(:alpha_clan)
+    ember = profiles(:ember)
+
+    # Ember is in Prism Circle (a descendant of Alpha Clan via Spectrum).
+    # The fallback renders profile cards with the root group UUID, so
+    # visiting this URL should work and link back to Alpha Clan.
+    visit group_profile_path(alpha.uuid, ember.uuid)
+
+    assert_text "Ember"
+    assert_text "Back to Alpha Clan"
+  end
+
+  test "no-JS fallback profile link blocks hidden profiles" do
+    castle = groups(:castle_clan)
+    drift = profiles(:drift)
+
+    # Drift is in Flux, but include_direct_profiles is false on the
+    # castle→flux edge. Accessing Drift through Castle Clan should 404.
+    visit group_profile_path(castle.uuid, drift.uuid)
+
+    assert_text "RecordNotFound"
+  end
+
   private
 
   def sign_in_via_browser
