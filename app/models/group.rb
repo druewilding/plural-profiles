@@ -194,10 +194,14 @@ class Group < ApplicationRecord
     end
 
     groups_by_id = Group.where(id: all_ids)
-                        .includes(profiles: { avatar_attachment: :blob }, avatar_attachment: :blob)
+                        .includes(avatar_attachment: :blob)
                         .index_by(&:id)
 
-    build_editor_nodes(id, children_map, groups_by_id, overrides_by_origin, nil, 0, [])
+    groups_with_profiles = Set.new(
+      GroupProfile.where(group_id: all_ids).distinct.pluck(:group_id)
+    )
+
+    build_editor_nodes(id, children_map, groups_by_id, overrides_by_origin, nil, 0, [], groups_with_profiles)
   end
 
   private
@@ -235,7 +239,7 @@ class Group < ApplicationRecord
   # Unlike build_tree (which filters by inclusion mode), this follows ALL edges
   # so the user can see and configure every descendant.
   # Each node carries:
-  #   group:, profiles:, children:, depth:,
+  #   group:, has_profiles:, children:, depth:,
   #   gg_id:          — the GroupGroup id for this specific physical edge
   #   origin_gg_id:   — the root's direct edge that leads to this subtree
   #   edge_mode:, edge_included_ids:, edge_include_profiles: — the physical edge settings
@@ -243,7 +247,7 @@ class Group < ApplicationRecord
   #   current_mode:, current_included_ids:, current_include_profiles: — effective settings
   #   hidden_from_public: — true when this node won't appear in the public view
   #     (because a parent's mode excludes it, or an ancestor is already hidden)
-  def build_editor_nodes(parent_id, children_map, groups_by_id, overrides_by_origin, origin_gg_id, depth, path,
+  def build_editor_nodes(parent_id, children_map, groups_by_id, overrides_by_origin, origin_gg_id, depth, path, groups_with_profiles,
                          parent_mode: nil, parent_included_ids: nil, ancestor_hidden: false)
     (children_map[parent_id] || [])
       .filter_map { |entry| groups_by_id[entry[:id]] ? [ groups_by_id[entry[:id]], entry ] : nil }
@@ -261,9 +265,9 @@ class Group < ApplicationRecord
 
         {
           group: g,
-          profiles: g.profiles.to_a,
+          has_profiles: groups_with_profiles.include?(g.id),
           children: build_editor_nodes(
-            g.id, children_map, groups_by_id, overrides_by_origin, current_origin, depth + 1, path + [ g.id ],
+            g.id, children_map, groups_by_id, overrides_by_origin, current_origin, depth + 1, path + [ g.id ], groups_with_profiles,
             parent_mode: eff_mode, parent_included_ids: eff_included_ids, ancestor_hidden: hidden
           ),
           depth: depth + 1,

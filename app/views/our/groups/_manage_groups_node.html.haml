@@ -2,7 +2,7 @@
 -# Locals: node (hash from Group#editor_tree), root_group (the group being edited)
 - group = node[:group]
 - has_children = node[:children].any?
-- has_profiles = node[:profiles].any?
+- has_profiles = node[:has_profiles]
 - is_direct = node[:depth] == 1
 - has_override = node[:override].present?
 - hidden = node[:hidden_from_public]
