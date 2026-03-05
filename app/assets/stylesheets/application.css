@@ -1215,20 +1215,9 @@ details[open] .details-close {
   white-space: nowrap;
 }
 
-.tree-editor__tag--direct {
-  background-color: color-mix(in srgb, var(--link) 25%, transparent);
-  color: var(--link);
-}
-
 .tree-editor__tag--override {
   background-color: color-mix(in srgb, var(--warning) 25%, transparent);
   color: var(--warning);
-}
-
-.tree-editor__tag--inherit {
-  background-color: color-mix(in srgb, var(--text) 15%, transparent);
-  color: var(--text);
-  opacity: 0.7;
 }
 
 .tree-editor__tag--hidden {
@@ -1242,17 +1231,6 @@ details[open] .details-close {
 
 .tree-editor__details--hidden[open] {
   opacity: 1;
-}
-
-.tree-editor__mode-label {
-  color: var(--text);
-  opacity: 0.7;
-  white-space: nowrap;
-}
-
-.tree-editor__mode-label::before {
-  content: "·";
-  margin-right: 0.35rem;
 }
 
 /* Controls area revealed on expand */
@@ -1287,12 +1265,6 @@ details[open] .details-close {
   color: var(--heading);
   font-size: 0.85rem;
   margin-bottom: 0.35rem;
-}
-
-.tree-editor__count {
-  font-weight: 400;
-  opacity: 0.7;
-  font-size: 0.8rem;
 }
 
 .tree-editor__radio-group {
@@ -1384,11 +1356,6 @@ details[open] .details-close {
     color: CanvasText;
   }
 
-  .tree-editor__mode-label {
-    color: CanvasText;
-    opacity: 1;
-  }
-
   .tree-editor__controls {
     border-top-color: CanvasText;
   }
@@ -1413,10 +1380,6 @@ details[open] .details-close {
   .tree-editor__override-note {
     opacity: 1;
     color: CanvasText;
-  }
-
-  .tree-editor__tag--inherit {
-    opacity: 1;
   }
 
   .tree-editor__tag--hidden {

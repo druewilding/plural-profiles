@@ -27,29 +27,8 @@
             %span.tree-editor__tag.tree-editor__tag--hidden{title: "This group won't appear when viewing #{root_group.name} publicly"} hidden
           - elsif profiles_only_hidden
             %span.tree-editor__tag.tree-editor__tag--hidden{title: "Profiles from this group won't appear when viewing #{root_group.name} publicly"} profiles hidden
-          - if is_direct
-            %span.tree-editor__tag.tree-editor__tag--direct direct child
-          - elsif has_override
+          - if !is_direct && has_override
             %span.tree-editor__tag.tree-editor__tag--override override
-          - else
-            %span.tree-editor__tag.tree-editor__tag--inherit inheriting
-          - if has_children
-            %span.tree-editor__mode-label
-              - case mode
-              - when "all"
-                all sub-groups
-              - when "selected"
-                - total = node[:children].size
-                - count = node[:current_included_ids].count { |cid| node[:children].any? { |c| c[:group].id == cid } }
-                = "#{count} of #{total} sub-groups"
-              - when "none"
-                no sub-groups
-          - if has_profiles
-            %span.tree-editor__mode-label
-              - if include_profiles
-                = "#{node[:profiles].size} #{node[:profiles].size == 1 ? 'profile' : 'profiles'}"
-              - else
-                no profiles
 
     .tree-editor__controls
       - if is_direct
@@ -79,9 +58,7 @@
 
             - if has_profiles
               %fieldset.tree-editor__fieldset
-                %legend
-                  Profiles
-                  %span.tree-editor__count= "(#{node[:profiles].size})"
+                %legend Profiles
                 .tree-editor__radio-group
                   %label{for: "#{uid}_profiles_all"}
                     = radio_button_tag "include_direct_profiles", "1", include_profiles, id: "#{uid}_profiles_all"
@@ -133,9 +110,7 @@
 
             - if has_profiles
               %fieldset.tree-editor__fieldset
-                %legend
-                  Profiles
-                  %span.tree-editor__count= "(#{node[:profiles].size})"
+                %legend Profiles
                 .tree-editor__radio-group
                   %label{for: "#{uid}_profiles_all"}
                     = radio_button_tag "include_direct_profiles", "1", include_profiles, id: "#{uid}_profiles_all"
