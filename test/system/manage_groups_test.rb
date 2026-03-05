@@ -236,7 +236,7 @@ class ManageGroupsTest < ApplicationSystemTestCase
     expand_node_exact("Castle Flux")
 
     within(node_details_exact("Castle Flux")) do
-      assert_text "Nothing to configure"
+      assert_text "Nothing to override since Castle Flux has no sub-groups or profiles."
       assert_no_button "Set override"
       assert_no_button "Save override"
     end

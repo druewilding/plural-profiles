@@ -75,7 +75,7 @@
         -# Deeper descendant: form creates/updates an InclusionOverride
         - if !has_children && !has_profiles
           -# Nothing to configure — don't offer a pointless override form
-          %p.tree-editor__override-note Nothing to configure — this group has no sub-groups or profiles.
+          %p.tree-editor__override-note Nothing to override since #{group.name} has no sub-groups or profiles.
           - if has_override
             .tree-editor__actions
               = link_to "Clear override", remove_override_our_group_path(root_group, edge_id: node[:origin_gg_id], target_group_id: group.id), data: { turbo_method: :delete, turbo_confirm: "Clear override for #{group.name}? It will go back to using the parent group's settings." }, class: "btn btn--danger btn--small"
