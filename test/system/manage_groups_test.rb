@@ -220,6 +220,28 @@ class ManageGroupsTest < ApplicationSystemTestCase
 
   # -- Configuring deeper descendants (depth 2+) via overrides --
 
+  test "deeper descendant with no sub-groups or profiles shows nothing to configure" do
+    alpha = groups(:alpha_clan)
+    castle = groups(:castle_clan)
+
+    # Add Castle Clan to Alpha Clan so Castle Flux becomes a deeper descendant
+    visit manage_groups_our_group_path(alpha)
+    within(".card-list") do
+      within(find(".card", text: castle.name)) { click_link "Add" }
+    end
+    assert_text "Group added."
+
+    # Expand down to Castle Flux (no sub-groups, no profiles)
+    expand_node_exact("Castle Clan")
+    expand_node_exact("Castle Flux")
+
+    within(node_details_exact("Castle Flux")) do
+      assert_text "Nothing to configure"
+      assert_no_button "Set override"
+      assert_no_button "Save override"
+    end
+  end
+
   test "set an override on a deeper descendant" do
     castle = groups(:castle_clan)
 
