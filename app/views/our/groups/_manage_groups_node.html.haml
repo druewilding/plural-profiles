@@ -127,4 +127,4 @@
   - if has_children
     %ul.tree-editor__children
       - node[:children].each do |child_node|
-        = render "our/groups/tree_editor_node", node: child_node, root_group: root_group
+        = render "our/groups/manage_groups_node", node: child_node, root_group: root_group

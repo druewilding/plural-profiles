@@ -232,7 +232,7 @@ class Group < ApplicationRecord
       end
   end
 
-  # -- Editor tree (tree_editor) ---------------------------------------------
+  # -- Editor tree (manage_groups) ---------------------------------------------
 
   # Build the full unfiltered tree for the editor UI.
   # Unlike build_tree (which filters by inclusion mode), this follows ALL edges

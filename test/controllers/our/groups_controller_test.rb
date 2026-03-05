@@ -195,7 +195,7 @@ class Our::GroupsControllerTest < ActionDispatch::IntegrationTest
     assert_difference("GroupGroup.count", 1) do
       post add_group_our_group_path(everyone), params: { group_id: new_group.id }
     end
-    assert_redirected_to tree_editor_our_group_path(everyone)
+    assert_redirected_to manage_groups_our_group_path(everyone)
     assert_includes everyone.reload.child_groups, new_group
   end
 
@@ -206,7 +206,7 @@ class Our::GroupsControllerTest < ActionDispatch::IntegrationTest
     assert_no_difference("GroupGroup.count") do
       post add_group_our_group_path(@group), params: { group_id: everyone.id }
     end
-    assert_redirected_to tree_editor_our_group_path(@group)
+    assert_redirected_to manage_groups_our_group_path(@group)
     follow_redirect!
     assert_match "circular", response.body
   end
@@ -219,7 +219,7 @@ class Our::GroupsControllerTest < ActionDispatch::IntegrationTest
     assert_difference("GroupGroup.count", -1) do
       delete remove_group_our_group_path(everyone), params: { group_id: @group.id }
     end
-    assert_redirected_to tree_editor_our_group_path(everyone)
+    assert_redirected_to manage_groups_our_group_path(everyone)
     assert_not_includes everyone.reload.child_groups, @group
   end
 
@@ -384,7 +384,7 @@ class Our::GroupsControllerTest < ActionDispatch::IntegrationTest
     assert link.all?
 
     patch update_relationship_our_group_path(everyone), params: { group_id: @group.id, inclusion_mode: "none" }
-    assert_redirected_to tree_editor_our_group_path(everyone)
+    assert_redirected_to manage_groups_our_group_path(everyone)
     assert link.reload.none?
   end
 
@@ -395,7 +395,7 @@ class Our::GroupsControllerTest < ActionDispatch::IntegrationTest
     link.update!(inclusion_mode: "none")
 
     patch update_relationship_our_group_path(everyone), params: { group_id: @group.id, inclusion_mode: "all" }
-    assert_redirected_to tree_editor_our_group_path(everyone)
+    assert_redirected_to manage_groups_our_group_path(everyone)
     assert link.reload.all?
   end
 
@@ -403,7 +403,7 @@ class Our::GroupsControllerTest < ActionDispatch::IntegrationTest
     sign_in_as @user
     everyone = groups(:everyone)
     patch update_relationship_our_group_path(everyone), params: { group_id: 999999 }
-    assert_redirected_to tree_editor_our_group_path(everyone)
+    assert_redirected_to manage_groups_our_group_path(everyone)
     follow_redirect!
     assert_match "Group not found", response.body
   end
@@ -433,7 +433,7 @@ class Our::GroupsControllerTest < ActionDispatch::IntegrationTest
     assert_not link.selected?
 
     patch update_relationship_our_group_path(everyone), params: { group_id: @group.id, inclusion_mode: "selected", included_subgroup_ids: [ sub.id ] }
-    assert_redirected_to tree_editor_our_group_path(everyone)
+    assert_redirected_to manage_groups_our_group_path(everyone)
     link.reload
     assert link.selected?
     assert_equal [ sub.id ], link.included_subgroup_ids.map(&:to_i)
@@ -546,7 +546,7 @@ class Our::GroupsControllerTest < ActionDispatch::IntegrationTest
       group_id: @group.id, include_direct_profiles: "1"
     }
 
-    assert_redirected_to tree_editor_our_group_path(everyone)
+    assert_redirected_to manage_groups_our_group_path(everyone)
     assert link.reload.include_direct_profiles, "include_direct_profiles should be updated even without inclusion_mode"
   end
 
@@ -582,28 +582,28 @@ class Our::GroupsControllerTest < ActionDispatch::IntegrationTest
     assert_equal old_uuid, @group.reload.uuid
   end
 
-  # -- Tree editor --
+  # -- Manage groups --
 
-  test "tree_editor renders for group with children" do
+  test "manage_groups renders for group with children" do
     user_three = users(:three)
     sign_in_as user_three
     alpha = groups(:alpha_clan)
-    get tree_editor_our_group_path(alpha)
+    get manage_groups_our_group_path(alpha)
     assert_response :success
     assert_match "Manage groups in", response.body
     assert_match "Spectrum", response.body
   end
 
-  test "tree_editor renders for group without children" do
+  test "manage_groups renders for group without children" do
     sign_in_as @user
-    get tree_editor_our_group_path(@group)
+    get manage_groups_our_group_path(@group)
     assert_response :success
     assert_match "no sub-groups yet", response.body
   end
 
-  test "tree_editor requires authentication" do
+  test "manage_groups requires authentication" do
     alpha = groups(:alpha_clan)
-    get tree_editor_our_group_path(alpha)
+    get manage_groups_our_group_path(alpha)
     assert_redirected_to new_session_path
   end
 
@@ -622,7 +622,7 @@ class Our::GroupsControllerTest < ActionDispatch::IntegrationTest
         include_direct_profiles: "0"
       }
     end
-    assert_redirected_to tree_editor_our_group_path(alpha)
+    assert_redirected_to manage_groups_our_group_path(alpha)
 
     override = InclusionOverride.last
     assert_equal "none", override.inclusion_mode
@@ -645,7 +645,7 @@ class Our::GroupsControllerTest < ActionDispatch::IntegrationTest
         include_direct_profiles: "1"
       }
     end
-    assert_redirected_to tree_editor_our_group_path(alpha)
+    assert_redirected_to manage_groups_our_group_path(alpha)
 
     override.reload
     assert_equal "all", override.inclusion_mode
@@ -665,6 +665,6 @@ class Our::GroupsControllerTest < ActionDispatch::IntegrationTest
         target_group_id: target.id
       }
     end
-    assert_redirected_to tree_editor_our_group_path(alpha)
+    assert_redirected_to manage_groups_our_group_path(alpha)
   end
 end

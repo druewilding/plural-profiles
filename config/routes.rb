@@ -20,7 +20,7 @@ Rails.application.routes.draw do
       delete :remove_group
       patch :update_relationship
       patch :regenerate_uuid
-      get :tree_editor
+      get :manage_groups
       patch :update_override
       delete :remove_override
     end

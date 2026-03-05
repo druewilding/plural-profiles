@@ -13,7 +13,7 @@
       that change their behaviour only in this tree.
     %ul.tree-editor__tree{"aria-label": "Group tree for #{@group.name}"}
       - @editor_tree.each do |node|
-        = render "our/groups/tree_editor_node", node: node, root_group: @group
+        = render "our/groups/manage_groups_node", node: node, root_group: @group
 - else
   .card
     %p This group has no sub-groups yet. Add one below.

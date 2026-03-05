@@ -1,6 +1,6 @@
 require "application_system_test_case"
 
-class TreeEditorTest < ApplicationSystemTestCase
+class ManageGroupsTest < ApplicationSystemTestCase
   setup do
     @user = users(:three)
     sign_in_via_browser
@@ -8,17 +8,17 @@ class TreeEditorTest < ApplicationSystemTestCase
 
   # -- Navigation & page rendering --
 
-  test "navigate to tree editor from group show page" do
+  test "navigate to manage groups from group show page" do
     visit our_group_path(groups(:alpha_clan))
     click_link "Manage groups"
 
-    assert_current_path tree_editor_our_group_path(groups(:alpha_clan))
+    assert_current_path manage_groups_our_group_path(groups(:alpha_clan))
     assert_text "Manage groups in"
     assert_text "Alpha Clan"
   end
 
-  test "tree editor shows full descendant tree regardless of inclusion modes" do
-    visit tree_editor_our_group_path(groups(:alpha_clan))
+  test "manage groups shows full descendant tree regardless of inclusion modes" do
+    visit manage_groups_our_group_path(groups(:alpha_clan))
 
     # Expand Spectrum to see its descendants
     expand_node("Spectrum")
@@ -31,8 +31,8 @@ class TreeEditorTest < ApplicationSystemTestCase
     assert_text "Rogue Pack"
   end
 
-  test "tree editor marks hidden nodes with tag" do
-    visit tree_editor_our_group_path(groups(:alpha_clan))
+  test "manage groups marks hidden nodes with tag" do
+    visit manage_groups_our_group_path(groups(:alpha_clan))
 
     # Expand ancestors to reveal Rogue Pack (hidden via override)
     expand_node("Spectrum")
@@ -44,8 +44,8 @@ class TreeEditorTest < ApplicationSystemTestCase
     end
   end
 
-  test "tree editor shows override tag on nodes with overrides" do
-    visit tree_editor_our_group_path(groups(:alpha_clan))
+  test "manage groups shows override tag on nodes with overrides" do
+    visit manage_groups_our_group_path(groups(:alpha_clan))
 
     # Prism Circle has an override — expand Spectrum to reveal it
     expand_node("Spectrum")
@@ -56,14 +56,14 @@ class TreeEditorTest < ApplicationSystemTestCase
     end
   end
 
-  test "tree editor shows empty state when group has no sub-groups" do
-    visit tree_editor_our_group_path(groups(:rogue_pack))
+  test "manage groups shows empty state when group has no sub-groups" do
+    visit manage_groups_our_group_path(groups(:rogue_pack))
 
     assert_text "This group has no sub-groups yet. Add one below."
   end
 
-  test "tree editor shows profiles hidden tag" do
-    visit tree_editor_our_group_path(groups(:castle_clan))
+  test "manage groups shows profiles hidden tag" do
+    visit manage_groups_our_group_path(groups(:castle_clan))
 
     # Flux has include_direct_profiles: false — its summary should have the profiles-hidden tag
     flux_summary = find_node_summary_exact("Flux")
@@ -74,11 +74,11 @@ class TreeEditorTest < ApplicationSystemTestCase
 
   # -- Adding a sub-group --
 
-  test "add a sub-group from tree editor" do
+  test "add a sub-group from manage groups" do
     alpha = groups(:alpha_clan)
     castle = groups(:castle_clan)
 
-    visit tree_editor_our_group_path(alpha)
+    visit manage_groups_our_group_path(alpha)
 
     assert_text "Add a group to"
 
@@ -87,7 +87,7 @@ class TreeEditorTest < ApplicationSystemTestCase
       within(card) { click_link "Add" }
     end
 
-    assert_current_path tree_editor_our_group_path(alpha)
+    assert_current_path manage_groups_our_group_path(alpha)
     assert_text "Group added."
 
     within(".tree-editor__tree") do
@@ -99,17 +99,17 @@ class TreeEditorTest < ApplicationSystemTestCase
     user = users(:one)
     sign_in_via_browser(user: user)
 
-    visit tree_editor_our_group_path(groups(:everyone))
+    visit manage_groups_our_group_path(groups(:everyone))
 
     assert_text "All your other groups are already in this tree."
   end
 
   # -- Removing a direct sub-group --
 
-  test "remove a direct sub-group from tree editor" do
+  test "remove a direct sub-group from manage groups" do
     alpha = groups(:alpha_clan)
 
-    visit tree_editor_our_group_path(alpha)
+    visit manage_groups_our_group_path(alpha)
 
     expand_node("Spectrum")
 
@@ -117,7 +117,7 @@ class TreeEditorTest < ApplicationSystemTestCase
       click_link "Remove from Alpha Clan"
     end
 
-    assert_current_path tree_editor_our_group_path(alpha)
+    assert_current_path manage_groups_our_group_path(alpha)
     assert_text "Group removed."
 
     # Spectrum was the only child — empty state should appear
@@ -129,7 +129,7 @@ class TreeEditorTest < ApplicationSystemTestCase
   test "change direct child inclusion mode from all to none" do
     alpha = groups(:alpha_clan)
 
-    visit tree_editor_our_group_path(alpha)
+    visit manage_groups_our_group_path(alpha)
 
     expand_node("Spectrum")
 
@@ -147,7 +147,7 @@ class TreeEditorTest < ApplicationSystemTestCase
   test "change direct child inclusion mode to selected" do
     alpha = groups(:alpha_clan)
 
-    visit tree_editor_our_group_path(alpha)
+    visit manage_groups_our_group_path(alpha)
 
     expand_node("Spectrum")
 
@@ -167,7 +167,7 @@ class TreeEditorTest < ApplicationSystemTestCase
   test "toggle include_direct_profiles on for direct child" do
     castle = groups(:castle_clan)
 
-    visit tree_editor_our_group_path(castle)
+    visit manage_groups_our_group_path(castle)
 
     # Flux has include_direct_profiles: false — switch to All
     expand_node_exact("Flux")
@@ -188,7 +188,7 @@ class TreeEditorTest < ApplicationSystemTestCase
   test "toggle include_direct_profiles off and on" do
     castle = groups(:castle_clan)
 
-    visit tree_editor_our_group_path(castle)
+    visit manage_groups_our_group_path(castle)
 
     # First toggle Flux profiles to All (currently false)
     expand_node_exact("Flux")
@@ -223,7 +223,7 @@ class TreeEditorTest < ApplicationSystemTestCase
   test "set an override on a deeper descendant" do
     castle = groups(:castle_clan)
 
-    visit tree_editor_our_group_path(castle)
+    visit manage_groups_our_group_path(castle)
 
     expand_node_exact("Flux")
     expand_node("Echo Shard")
@@ -233,7 +233,7 @@ class TreeEditorTest < ApplicationSystemTestCase
       click_button "Set override"
     end
 
-    assert_current_path tree_editor_our_group_path(castle)
+    assert_current_path manage_groups_our_group_path(castle)
     assert_text "Override saved."
 
     edge = group_groups(:flux_in_castle)
@@ -244,7 +244,7 @@ class TreeEditorTest < ApplicationSystemTestCase
   test "clear an existing override" do
     alpha = groups(:alpha_clan)
 
-    visit tree_editor_our_group_path(alpha)
+    visit manage_groups_our_group_path(alpha)
 
     expand_node("Spectrum")
     expand_node("Prism Circle")
@@ -256,7 +256,7 @@ class TreeEditorTest < ApplicationSystemTestCase
       end
     end
 
-    assert_current_path tree_editor_our_group_path(alpha)
+    assert_current_path manage_groups_our_group_path(alpha)
     assert_text "Override cleared."
 
     edge = group_groups(:spectrum_in_alpha)
@@ -266,7 +266,7 @@ class TreeEditorTest < ApplicationSystemTestCase
   test "saving override changes mode on deeper descendant" do
     alpha = groups(:alpha_clan)
 
-    visit tree_editor_our_group_path(alpha)
+    visit manage_groups_our_group_path(alpha)
 
     expand_node("Spectrum")
     expand_node("Prism Circle")
@@ -283,7 +283,7 @@ class TreeEditorTest < ApplicationSystemTestCase
     assert_equal "all", override.reload.inclusion_mode
   end
 
-  # -- Verifying public effects of tree editor changes --
+  # -- Verifying public effects of manage groups changes --
 
   test "clearing override makes previously hidden group visible publicly" do
     alpha = groups(:alpha_clan)
@@ -294,9 +294,9 @@ class TreeEditorTest < ApplicationSystemTestCase
       assert_no_text "Rogue Pack"
     end
 
-    # Change the override via tree editor
+    # Change the override via manage groups
     sign_in_via_browser
-    visit tree_editor_our_group_path(alpha)
+    visit manage_groups_our_group_path(alpha)
 
     expand_node("Spectrum")
     expand_node("Prism Circle")
@@ -318,7 +318,7 @@ class TreeEditorTest < ApplicationSystemTestCase
   test "setting direct child to none hides its descendants publicly" do
     alpha = groups(:alpha_clan)
 
-    visit tree_editor_our_group_path(alpha)
+    visit manage_groups_our_group_path(alpha)
 
     expand_node("Spectrum")
 
@@ -336,7 +336,7 @@ class TreeEditorTest < ApplicationSystemTestCase
     end
   end
 
-  test "removing sub-group via tree editor removes it from public view" do
+  test "removing sub-group via manage groups removes it from public view" do
     alpha = groups(:alpha_clan)
 
     # Verify visible publicly
@@ -346,7 +346,7 @@ class TreeEditorTest < ApplicationSystemTestCase
     end
 
     sign_in_via_browser
-    visit tree_editor_our_group_path(alpha)
+    visit manage_groups_our_group_path(alpha)
 
     expand_node("Spectrum")
 
@@ -363,10 +363,10 @@ class TreeEditorTest < ApplicationSystemTestCase
 
   # -- Castle Clan fixture: selected mode --
 
-  test "castle clan tree editor shows correct hidden state for flux children" do
+  test "castle clan manage groups shows correct hidden state for flux children" do
     castle = groups(:castle_clan)
 
-    visit tree_editor_our_group_path(castle)
+    visit manage_groups_our_group_path(castle)
 
     expand_node_exact("Flux")
 
@@ -387,7 +387,7 @@ class TreeEditorTest < ApplicationSystemTestCase
 
   test "back link returns to group show page" do
     alpha = groups(:alpha_clan)
-    visit tree_editor_our_group_path(alpha)
+    visit manage_groups_our_group_path(alpha)
 
     click_link "← Back to group"
 

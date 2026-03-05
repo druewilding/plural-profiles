@@ -2,7 +2,7 @@ class Our::GroupsController < ApplicationController
   include OurSidebar
   allow_unauthenticated_access only: :show
   before_action :resume_session, only: :show
-  before_action :set_group, only: %i[ show edit update destroy manage_profiles add_profile remove_profile add_group remove_group update_relationship regenerate_uuid tree_editor update_override remove_override ]
+  before_action :set_group, only: %i[ show edit update destroy manage_profiles add_profile remove_profile add_group remove_group update_relationship regenerate_uuid manage_groups update_override remove_override ]
 
   def index
     @groups = Current.user.groups.order(:name)
@@ -123,7 +123,7 @@ class Our::GroupsController < ApplicationController
     redirect_to group_management_path, alert: "Group not found."
   end
 
-  def tree_editor
+  def manage_groups
     @editor_tree = @group.editor_tree
     excluded_ids = @group.ancestor_group_ids | @group.child_group_ids | [ @group.id ]
     @available_groups = Current.user.groups
@@ -137,7 +137,7 @@ class Our::GroupsController < ApplicationController
     target_group = Current.user.groups.find(params[:target_group_id])
 
     unless edge.child_group.reachable_group_ids.include?(target_group.id)
-      return redirect_to tree_editor_our_group_path(@group), alert: "The target group is not within the selected group's subtree."
+      return redirect_to manage_groups_our_group_path(@group), alert: "The target group is not within the selected group's subtree."
     end
 
     override = edge.inclusion_overrides.find_or_initialize_by(target_group: target_group)
@@ -161,26 +161,26 @@ class Our::GroupsController < ApplicationController
     override.assign_attributes(attrs)
     override.save!
 
-    redirect_to tree_editor_our_group_path(@group), notice: "Override saved."
+    redirect_to manage_groups_our_group_path(@group), notice: "Override saved."
   rescue ActiveRecord::RecordInvalid => e
-    redirect_to tree_editor_our_group_path(@group), alert: e.record.errors.full_messages.to_sentence
+    redirect_to manage_groups_our_group_path(@group), alert: e.record.errors.full_messages.to_sentence
   rescue ActiveRecord::RecordNotFound
-    redirect_to tree_editor_our_group_path(@group), alert: "Group not found."
+    redirect_to manage_groups_our_group_path(@group), alert: "Group not found."
   end
 
   def remove_override
     edge = @group.child_links.find(params[:edge_id])
     override = edge.inclusion_overrides.find_by!(target_group_id: params[:target_group_id])
     override.destroy!
-    redirect_to tree_editor_our_group_path(@group), notice: "Override cleared."
+    redirect_to manage_groups_our_group_path(@group), notice: "Override cleared."
   rescue ActiveRecord::RecordNotFound
-    redirect_to tree_editor_our_group_path(@group), alert: "Override not found."
+    redirect_to manage_groups_our_group_path(@group), alert: "Override not found."
   end
 
   private
 
   def group_management_path
-    tree_editor_our_group_path(@group)
+    manage_groups_our_group_path(@group)
   end
 
   def set_group
