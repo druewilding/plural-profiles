@@ -1153,6 +1153,22 @@ details[open] .details-close {
   min-width: 0;
 }
 
+.tree-editor__summary-left::before {
+  content: "▶";
+  font-size: 0.7rem;
+  display: inline-block;
+  width: 1rem;
+  text-align: center;
+  line-height: 1;
+  flex-shrink: 0;
+  color: var(--text);
+  transition: transform 0.15s ease;
+}
+
+.tree-editor__details[open] > .tree-editor__summary .tree-editor__summary-left::before {
+  transform: rotate(90deg);
+}
+
 .tree-editor__summary-right {
   display: flex;
   align-items: center;
@@ -1357,6 +1373,10 @@ details[open] .details-close {
 
   .tree-editor__details--hidden .tree-editor__name {
     color: GrayText;
+  }
+
+  .tree-editor__summary-left::before {
+    color: CanvasText;
   }
 }
 
