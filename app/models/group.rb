@@ -156,6 +156,17 @@ class Group < ApplicationRecord
     result.to_a
   end
 
+  # Cached variant for repeated reads within a single browsing session
+  # (e.g. sidebar panel requests). Keyed by id + updated_at so a management
+  # change to this group immediately busts the cache; the short TTL provides
+  # an extra safety net for subtree changes (child groups / edges) that do not
+  # touch the root group's own updated_at.
+  def cached_profile_visible_group_ids
+    Rails.cache.fetch("group_profile_visible_ids/#{id}/#{updated_at.to_i}", expires_in: 10.minutes) do
+      profile_visible_group_ids
+    end
+  end
+
   # Collect all profiles from this group and all descendant groups,
   # respecting inclusion overrides and include_direct_profiles flags.
   # Profiles may appear in multiple sub-groups; the result is de-duplicated.

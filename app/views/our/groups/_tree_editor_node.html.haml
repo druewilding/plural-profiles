@@ -74,8 +74,8 @@
       - else
         -# Deeper descendant: form creates/updates an InclusionOverride
         = form_with url: update_override_our_group_path(root_group), method: :patch, class: "tree-editor__form", data: { controller: "inclusion", action: "change->inclusion#change" } do |f|
-          = hidden_field_tag :edge_id, node[:origin_gg_id]
-          = hidden_field_tag :target_group_id, group.id
+          = hidden_field_tag :edge_id, node[:origin_gg_id], id: nil
+          = hidden_field_tag :target_group_id, group.id, id: nil
 
           - if has_override
             %p.tree-editor__override-note

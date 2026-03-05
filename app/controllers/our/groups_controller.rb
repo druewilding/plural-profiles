@@ -136,6 +136,10 @@ class Our::GroupsController < ApplicationController
     edge = @group.child_links.find(params[:edge_id])
     target_group = Current.user.groups.find(params[:target_group_id])
 
+    unless edge.child_group.reachable_group_ids.include?(target_group.id)
+      return redirect_to tree_editor_our_group_path(@group), alert: "The target group is not within the selected group's subtree."
+    end
+
     override = edge.inclusion_overrides.find_or_initialize_by(target_group: target_group)
 
     mode = params[:inclusion_mode].to_s
