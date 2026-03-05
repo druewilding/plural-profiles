@@ -1,3 +1,10 @@
-# No inclusion_overrides fixtures yet — tests create them dynamically.
-# This file exists so Rails knows about the table for fixture loading.
---- {}
+# Demonstrates deep exclusion (Phase 3):
+# When traversing Alpha Clan via the spectrum_in_alpha edge, Prism Circle is
+# overridden to selected+[] — so Rogue Pack is excluded from Alpha Clan's tree.
+# Spectrum's own tree is unaffected (this override is edge-contextual).
+rogue_pack_excluded_from_alpha:
+  group_group: spectrum_in_alpha
+  target_group: prism_circle
+  inclusion_mode: selected
+  included_subgroup_ids: "[]"
+  include_direct_profiles: true

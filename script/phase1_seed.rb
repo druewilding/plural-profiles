@@ -74,6 +74,27 @@ ActiveRecord::Base.transaction do
 
   puts "Created 7 group relationships."
 
+  # ── Inclusion overrides ───────────────────────────────────────────────────
+  #
+  # Demonstrates Phase 3: deep exclusion without touching the intermediate group.
+  #
+  #   Override on the alpha_clan → spectrum edge, targeting prism_circle:
+  #     inclusion_mode: "selected", included_subgroup_ids: []
+  #
+  #   Effect: from Alpha Clan's perspective, Prism Circle exposes no sub-groups,
+  #   so Rogue Pack is excluded. Spectrum's own tree is unaffected — Rogue Pack
+  #   still appears when you view Spectrum directly.
+
+  spectrum_in_alpha_edge = GroupGroup.find_by!(parent_group: alpha_clan, child_group: spectrum)
+  InclusionOverride.create!(
+    group_group: spectrum_in_alpha_edge,
+    target_group: prism_circle,
+    inclusion_mode: "selected",
+    included_subgroup_ids: []
+  )
+
+  puts "Created 1 inclusion override."
+
   # ── Profiles ──────────────────────────────────────────────────────────────
 
   stray  = user.profiles.create!(name: "Stray",  pronouns: "they/them", heart_emojis: %w[13_storm_heart 25_shadow_heart],               description: "In Rogue Pack — should NOT appear in Alpha Clan.")
@@ -121,7 +142,8 @@ puts "  Alpha Clan → Spectrum → Prism Circle → Rogue Pack"
 puts "    Grove is a direct member of Alpha Clan."
 puts "    Ember is in Prism Circle (should appear in Alpha Clan tree)."
 puts "    Stray is in Rogue Pack AND Prism Circle (repeated profile; should appear in Alpha Clan)."
-puts "    [Future] override: exclude Rogue Pack from Alpha Clan's view without touching Spectrum."
+puts "    Override on alpha→spectrum edge targets Prism Circle with selected+[] —"
+puts "      Rogue Pack excluded from Alpha Clan's tree; Spectrum's own tree unaffected."
 puts ""
 puts "  Castle Clan → Flux [selected: echo_shard only] → Echo Shard / Static Burst"
 puts "  Castle Clan → Castle Flux"

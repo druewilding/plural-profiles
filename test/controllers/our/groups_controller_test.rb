@@ -669,7 +669,7 @@ class Our::GroupsControllerTest < ActionDispatch::IntegrationTest
     sign_in_as user_three
     alpha = groups(:alpha_clan)
     edge = alpha.child_links.find_by(child_group: groups(:spectrum))
-    target = groups(:prism_circle)
+    target = groups(:rogue_pack)
 
     assert_difference "InclusionOverride.count", 1 do
       patch update_override_our_group_path(alpha), params: {
@@ -692,13 +692,7 @@ class Our::GroupsControllerTest < ActionDispatch::IntegrationTest
     alpha = groups(:alpha_clan)
     edge = alpha.child_links.find_by(child_group: groups(:spectrum))
     target = groups(:prism_circle)
-
-    # Create the override first
-    override = edge.inclusion_overrides.create!(
-      target_group: target,
-      inclusion_mode: "none",
-      include_direct_profiles: false
-    )
+    override = inclusion_overrides(:rogue_pack_excluded_from_alpha)
 
     assert_no_difference "InclusionOverride.count" do
       patch update_override_our_group_path(alpha), params: {
@@ -721,12 +715,6 @@ class Our::GroupsControllerTest < ActionDispatch::IntegrationTest
     alpha = groups(:alpha_clan)
     edge = alpha.child_links.find_by(child_group: groups(:spectrum))
     target = groups(:prism_circle)
-
-    edge.inclusion_overrides.create!(
-      target_group: target,
-      inclusion_mode: "none",
-      include_direct_profiles: false
-    )
 
     assert_difference "InclusionOverride.count", -1 do
       delete remove_override_our_group_path(alpha), params: {
