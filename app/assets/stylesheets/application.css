@@ -1772,6 +1772,7 @@ input[type="submit"].btn--small,
 
   .share-url {
     flex-direction: column;
+    align-items: center;
   }
 
   .dashboard-grid {
