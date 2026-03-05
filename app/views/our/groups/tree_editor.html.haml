@@ -1,7 +1,7 @@
-- content_for(:title) { "Tree editor for #{@group.name} — Plural Profiles" }
+- content_for(:title) { "Manage groups in #{@group.name} — Plural Profiles" }
 
 %h1
-  Tree editor for
+  Manage groups in
   = @group.name
 
 - if @editor_tree.any?
@@ -18,7 +18,9 @@
   .card
     %p This group has no sub-groups yet. Add one below.
 
-%h2 Add a group
+%h2
+  Add a group to
+  = @group.name
 
 - if @available_groups.any?
   .card-list

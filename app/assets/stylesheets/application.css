@@ -1125,6 +1125,10 @@ details[open] .details-close {
 
 /* ── Tree editor (authenticated group management) ──────── */
 
+.tree-editor {
+  margin-bottom: 2rem;
+}
+
 .tree-editor__hint {
   font-size: 0.9rem;
   opacity: 0.8;
