@@ -199,6 +199,33 @@ class GroupManagementTest < ApplicationSystemTestCase
     end
   end
 
+  test "content panel hides profiles excluded by include_direct_profiles override" do
+    castle = groups(:castle_clan)
+    flux = groups(:flux)
+
+    visit group_path(castle.uuid)
+
+    # The sidebar should show Flux and Echo Shard but NOT Drift/Ripple
+    within(".explorer__sidebar") do
+      assert_text "Flux"
+      assert_text "Echo Shard"
+      assert_no_text "Drift"
+      assert_no_text "Ripple"
+    end
+
+    # Click Flux in the tree to load its content panel
+    within(".explorer__sidebar") do
+      find(".tree__item[data-group-uuid='#{flux.uuid}']").click
+    end
+
+    # The content panel should show Flux's name but NOT its direct profiles
+    within(".explorer__content") do
+      assert_text "Flux"
+      assert_no_text "Drift"
+      assert_no_text "Ripple"
+    end
+  end
+
   private
 
   def sign_in_via_browser
