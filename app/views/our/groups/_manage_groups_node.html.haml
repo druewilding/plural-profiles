@@ -7,7 +7,7 @@
 - has_override = node[:override].present?
 - hidden = node[:hidden_from_public]
 - profiles_only_hidden = !hidden && !node[:current_include_profiles] && has_profiles
-- uid = "te_#{node[:origin_gg_id]}_#{group.id}"
+- uid = "te_#{node[:gg_id]}_#{group.id}"
 - mode = node[:current_mode]
 - include_profiles = node[:current_include_profiles]
 

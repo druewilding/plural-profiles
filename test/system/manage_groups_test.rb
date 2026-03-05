@@ -84,7 +84,7 @@ class ManageGroupsTest < ApplicationSystemTestCase
 
     within(".card-list") do
       card = find(".card", text: castle.name)
-      within(card) { click_link "Add" }
+      within(card) { click_link "Add to #{alpha.name}" }
     end
 
     assert_current_path manage_groups_our_group_path(alpha)
@@ -227,7 +227,7 @@ class ManageGroupsTest < ApplicationSystemTestCase
     # Add Castle Clan to Alpha Clan so Castle Flux becomes a deeper descendant
     visit manage_groups_our_group_path(alpha)
     within(".card-list") do
-      within(find(".card", text: castle.name)) { click_link "Add" }
+      within(find(".card", text: castle.name)) { click_link "Add to #{alpha.name}" }
     end
     assert_text "Group added."
 

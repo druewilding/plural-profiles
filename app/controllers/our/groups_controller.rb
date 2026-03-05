@@ -143,7 +143,7 @@ class Our::GroupsController < ApplicationController
     override = edge.inclusion_overrides.find_or_initialize_by(target_group: target_group)
 
     mode = params[:inclusion_mode].to_s
-    mode = "all" unless %w[all selected none].include?(mode)
+    mode = "none" unless %w[all selected none].include?(mode)
 
     attrs = { inclusion_mode: mode }
 
