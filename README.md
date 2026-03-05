@@ -148,26 +148,26 @@ Nine groups and eight profiles, arranged to demonstrate and test the deep-inclus
 ```
 Alpha Clan  ← Grove (direct)
   └── Spectrum (all)
-        └── Prism Circle (all)  ← Ember, Stray
-              └── Rogue Pack (all)  ← Stray (again — repeated profile test)
+        └── Prism Circle [override: selected+[] from Alpha's context]  ← Ember, Stray
+              └── Rogue Pack  [excluded from Alpha Clan — override stops recursion here]
 ```
 
-Stray appears in both Prism Circle and Rogue Pack (repeated profile). The goal of the upcoming override feature is to be able to exclude Rogue Pack from Alpha Clan's view, without removing it from Spectrum's view.
+An `InclusionOverride` on the Alpha Clan → Spectrum edge targets Prism Circle with `inclusion_mode: selected, included_subgroup_ids: []`. From Alpha Clan's perspective, Rogue Pack is excluded. Viewing Spectrum directly still shows Rogue Pack. Stray appears in both Prism Circle and Rogue Pack (repeated profile marker test).
 
-**Delta Clan tree** (selected sub-groups + direct profile exclusion):
+**Castle Clan tree** (selected sub-groups + direct profile exclusion):
 
 ```
-Delta Clan  ← Shadow (direct)
+Castle Clan  ← Shadow (direct)
   ├── Flux [selected: echo_shard only]
   │     ├── Echo Shard (all)  ← Mirage
-  │     └── Static Burst (all)  ← Spark  [excluded from Delta Clan — not selected]
-  └── Delta Flux (all)
+  │     └── Static Burst (all)  ← Spark  [excluded from Castle Clan — not selected]
+  └── Castle Flux (all)
 ```
 
 Flux has `inclusion_mode: selected` with only Echo Shard in `included_subgroup_ids`. The `include_direct_profiles` flag on the edge controls whether Flux's own direct profiles are pulled in. This means:
-- Mirage (in Echo Shard) **should** appear in Delta Clan
+- Mirage (in Echo Shard) **should** appear in Castle Clan
 - Drift and Ripple (direct Flux members) appear only when `include_direct_profiles: true` on the edge; setting it to `false` excludes them
-- Spark (in Static Burst) **should not** appear in Delta Clan (not in selected list)
+- Spark (in Static Burst) **should not** appear in Castle Clan (not in selected list)
 
 #### Seeding the development database
 

@@ -45,75 +45,6 @@ class GroupManagementTest < ApplicationSystemTestCase
     assert_text "Bob"   # available to add
   end
 
-  test "update relationship type from all to none" do
-    everyone = groups(:everyone)
-    link = group_groups(:friends_in_everyone)
-    # Ensure child group has a sub-group
-    child_group = link.child_group
-    sub_group = Group.create!(name: "Subgroup", description: "A sub-group", user: @user)
-    GroupGroup.create!(parent_group: child_group, child_group: sub_group)
-    # Determine an example sub-group checkbox id
-    visit manage_groups_our_group_path(everyone)
-
-    # Starts as all — checkboxes for immediate sub-groups should be checked
-    assert_text "Include sub-groups"
-    sub = child_group.child_groups.order(:name).first
-    checkbox_id = "included_#{link.id}_#{sub.id}"
-    assert find("##{checkbox_id}", visible: :all).checked?
-
-    # Switch to 'none' mode via radio and submit
-    find("#inclusion_#{link.id}_none").click
-    click_button "Save"
-    assert_text "Relationship updated."
-
-    # Page has reloaded — checkbox should now be unchecked
-    assert_not find("##{checkbox_id}", visible: :all).checked?
-    assert link.reload.none?
-  end
-
-  test "toggle relationship type from none to all" do
-    everyone = groups(:everyone)
-    link = group_groups(:friends_in_everyone)
-    link.update!(inclusion_mode: "none")
-    # Ensure child group has a sub-group
-    child_group = link.child_group
-    sub_group = Group.create!(name: "Subgroup", description: "A sub-group", user: @user)
-    GroupGroup.create!(parent_group: child_group, child_group: sub_group)
-    visit manage_groups_our_group_path(everyone)
-
-    # Starts as none — immediate sub-group checkboxes should be unchecked
-    child_group = link.child_group
-    sub = child_group.child_groups.order(:name).first
-    checkbox_id = "included_#{link.id}_#{sub.id}"
-    assert_not find("##{checkbox_id}", visible: :all).checked?
-
-    # Switch to 'all' mode via radio and submit
-    find("#inclusion_#{link.id}_all").click
-    click_button "Save"
-    assert_text "Relationship updated."
-
-    # Page has reloaded — checkbox should now be checked
-    assert find("##{checkbox_id}", visible: :all).checked?
-    assert link.reload.all?
-  end
-
-  test "checkbox does not appear if child group has no sub-groups" do
-    everyone = groups(:everyone)
-    link = group_groups(:friends_in_everyone)
-    child_group = link.child_group
-    # Ensure child group has no sub-groups
-    child_group.child_links.destroy_all
-    checkbox_id = "toggle_#{link.id}"
-
-    visit manage_groups_our_group_path(everyone)
-
-    # Toggle should not be present
-    assert_no_text "Include sub-groups"
-    assert_raises(Capybara::ElementNotFound) do
-      find("##{checkbox_id}", visible: :all)
-    end
-  end
-
   test "public page shows all sub-group's profiles but hides none sub-group's profiles" do
     user = users(:one)
     everyone = groups(:everyone)
@@ -266,6 +197,57 @@ class GroupManagementTest < ApplicationSystemTestCase
       repeated_labels = all(".tree__label--repeated", text: "Alice")
       assert_equal 1, repeated_labels.length, "Exactly one Alice should be marked as repeated"
     end
+  end
+
+  test "content panel hides profiles excluded by include_direct_profiles override" do
+    castle = groups(:castle_clan)
+    flux = groups(:flux)
+
+    visit group_path(castle.uuid)
+
+    # The sidebar should show Flux and Echo Shard but NOT Drift/Ripple
+    within(".explorer__sidebar") do
+      assert_text "Flux"
+      assert_text "Echo Shard"
+      assert_no_text "Drift"
+      assert_no_text "Ripple"
+    end
+
+    # Click Flux in the tree to load its content panel
+    within(".explorer__sidebar") do
+      find(".tree__item[data-group-uuid='#{flux.uuid}']").click
+    end
+
+    # The content panel should show Flux's name but NOT its direct profiles
+    within(".explorer__content") do
+      assert_text "Flux"
+      assert_no_text "Drift"
+      assert_no_text "Ripple"
+    end
+  end
+
+  test "no-JS fallback profile links use root group context" do
+    alpha = groups(:alpha_clan)
+    ember = profiles(:ember)
+
+    # Ember is in Prism Circle (a descendant of Alpha Clan via Spectrum).
+    # The fallback renders profile cards with the root group UUID, so
+    # visiting this URL should work and link back to Alpha Clan.
+    visit group_profile_path(alpha.uuid, ember.uuid)
+
+    assert_text "Ember"
+    assert_text "Back to Alpha Clan"
+  end
+
+  test "no-JS fallback profile link blocks hidden profiles" do
+    castle = groups(:castle_clan)
+    drift = profiles(:drift)
+
+    # Drift is in Flux, but include_direct_profiles is false on the
+    # castle→flux edge. Accessing Drift through Castle Clan should 404.
+    visit group_profile_path(castle.uuid, drift.uuid)
+
+    assert_text "RecordNotFound"
   end
 
   private

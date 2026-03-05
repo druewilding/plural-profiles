@@ -453,53 +453,6 @@ input[type="datetime-local"]::-webkit-calendar-picker-indicator {
   cursor: pointer;
 }
 
-/* Inclusion fieldsets (manage groups) */
-.inclusion-row {
-  display: flex;
-  gap: 0.75rem;
-  align-items: flex-start;
-}
-
-fieldset.inclusion-radios,
-fieldset.inclusion-checkboxes,
-fieldset.inclusion-profiles {
-  border: 1px solid rgba(255,255,255,0.04);
-  background-color: rgba(255,255,255,0.02);
-  padding: 0.5rem 0.75rem;
-  border-radius: 8px;
-  min-width: 150px;
-  max-width: 200px;
-}
-
-fieldset.inclusion-radios {
-  flex: 0 0 220px;
-  min-width: 180px;
-}
-
-fieldset.inclusion-checkboxes {
-  flex: 1 1 auto;
-  min-width: 220px;
-}
-
-fieldset.inclusion-radios legend,
-fieldset.inclusion-checkboxes legend,
-fieldset.inclusion-profiles legend {
-  color: var(--heading);
-  font-size: 0.85rem;
-  margin-bottom: 0.35rem;
-}
-
-@media (max-width: 1024px) {
-  .inclusion-row { flex-direction: column !important; }
-  fieldset.inclusion-radios { flex: none !important; }
-  fieldset.inclusion-radios,
-  fieldset.inclusion-checkboxes,
-  fieldset.inclusion-profiles {
-    min-width: 0 !important;
-    width: 100% !important;
-  }
-}
-
 input:focus,
 textarea:focus,
 select:focus {
@@ -580,12 +533,6 @@ button,
   cursor: pointer;
   text-decoration: none;
   transition: background-color 0.2s;
-}
-
-/* Space around Save button inside inclusion forms */
-.inclusion-form input[type="submit"],
-.inclusion-form .btn {
-  margin-top: 0.5rem;
 }
 
 .form-group input[type="submit"] + .btn,
@@ -1123,6 +1070,316 @@ details[open] .details-close {
   cursor: help;
 }
 
+/* ── Tree editor (authenticated group management) ──────── */
+
+.tree-editor {
+  margin-bottom: 2rem;
+}
+
+.tree-editor__hint {
+  font-size: 0.9rem;
+  opacity: 0.8;
+  margin-bottom: 1.25rem;
+}
+
+.tree-editor__tree {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.tree-editor__children {
+  list-style: none;
+  margin: 0;
+  padding: 0 0 0 1.5rem;
+  border-left: 1px solid var(--tree-guide);
+}
+
+.tree-editor__node {
+  margin-bottom: 0.25rem;
+}
+
+.tree-editor__details {
+  background-color: var(--bg-contrast);
+  border: 1px solid color-mix(in srgb, var(--input-border) 50%, transparent);
+  border-radius: 6px;
+  overflow: hidden;
+}
+
+.tree-editor__details[open] {
+  border-color: var(--input-border);
+}
+
+.tree-editor__summary {
+  cursor: pointer;
+  padding: 0.5rem 0.75rem;
+  list-style: none;
+  user-select: none;
+  outline: none;
+}
+
+.tree-editor__summary:focus-visible .tree-editor__summary-row {
+  outline: 2px solid var(--link);
+  outline-offset: 3px;
+  border-radius: 4px;
+}
+
+@media (forced-colors: active) {
+  .tree-editor__summary:focus-visible .tree-editor__summary-row {
+    outline: 2px solid CanvasText;
+  }
+}
+
+.tree-editor__summary::-webkit-details-marker {
+  display: none;
+}
+
+.tree-editor__summary::marker {
+  content: "";
+}
+
+.tree-editor__summary-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+}
+
+.tree-editor__summary-left {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  min-width: 0;
+}
+
+.tree-editor__summary-left::before {
+  content: "▶";
+  font-size: 0.7rem;
+  display: inline-block;
+  width: 1rem;
+  text-align: center;
+  line-height: 1;
+  flex-shrink: 0;
+  color: var(--text);
+  transition: transform 0.15s ease;
+}
+
+.tree-editor__details[open] > .tree-editor__summary .tree-editor__summary-left::before {
+  transform: rotate(90deg);
+}
+
+.tree-editor__summary-right {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+  font-size: 0.8rem;
+}
+
+.tree-editor__name {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  color: var(--heading);
+}
+
+.tree-editor__tag {
+  display: inline-block;
+  padding: 0.1rem 0.45rem;
+  border-radius: 4px;
+  font-size: 0.7rem;
+  font-weight: 600;
+  letter-spacing: 0.03em;
+  white-space: nowrap;
+}
+
+.tree-editor__tag--override {
+  background-color: color-mix(in srgb, var(--warning) 25%, transparent);
+  color: var(--warning);
+}
+
+.tree-editor__tag--hidden {
+  background-color: color-mix(in srgb, var(--error) 20%, transparent);
+  color: var(--error);
+}
+
+.tree-editor__details--hidden {
+  opacity: 0.55;
+}
+
+.tree-editor__details--hidden[open] {
+  opacity: 1;
+}
+
+/* Controls area revealed on expand */
+.tree-editor__controls {
+  padding: 0.75rem;
+  border-top: 1px solid color-mix(in srgb, var(--input-border) 40%, transparent);
+}
+
+.tree-editor__form {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.tree-editor__fieldsets {
+  display: flex;
+  gap: 0.75rem;
+  align-items: flex-start;
+  flex-wrap: wrap;
+}
+
+.tree-editor__fieldset {
+  border: 1px solid rgba(255,255,255,0.04);
+  background-color: rgba(255,255,255,0.02);
+  padding: 0.5rem 0.75rem;
+  border-radius: 8px;
+  min-width: 150px;
+  flex: 1 1 200px;
+}
+
+.tree-editor__fieldset legend {
+  color: var(--heading);
+  font-size: 0.85rem;
+  margin-bottom: 0.35rem;
+}
+
+.tree-editor__radio-group {
+  display: flex;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+  margin-bottom: 0.35rem;
+}
+
+.tree-editor__radio-group label {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+  font-size: 0.9rem;
+  color: var(--text);
+  cursor: pointer;
+  margin-bottom: 0;
+}
+
+.tree-editor__checkbox-list {
+  margin-top: 0.35rem;
+}
+
+/* Visually dim checkboxes when mode is not "selected" — pure CSS, no JS */
+.tree-editor__fieldset:has(input[name="inclusion_mode"][value="all"]:checked) .tree-editor__checkbox-list {
+  opacity: 0.4;
+  pointer-events: none;
+}
+
+.tree-editor__fieldset:has(input[name="inclusion_mode"][value="none"]:checked) .tree-editor__checkbox-list {
+  opacity: 0.4;
+  pointer-events: none;
+}
+
+.tree-editor__override-note {
+  font-size: 0.8rem;
+  opacity: 0.7;
+  margin: 0 0 0.5rem;
+  font-style: italic;
+}
+
+.tree-editor__actions {
+  display: flex;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+  align-items: center;
+}
+
+@media (max-width: 600px) {
+  .tree-editor__fieldsets {
+    flex-direction: column;
+  }
+
+  .tree-editor__fieldset {
+    min-width: 0;
+    width: 100%;
+    flex: none;
+  }
+
+  .tree-editor__summary-row {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .tree-editor__children {
+    padding-left: 0.75rem;
+  }
+}
+
+/* ── Forced-colors overrides for tree editor ───────────── */
+@media (forced-colors: active) {
+  .tree-editor__details {
+    border-color: CanvasText;
+  }
+
+  .tree-editor__name {
+    color: CanvasText;
+  }
+
+  .tree-editor__tag {
+    background-color: Canvas;
+    border: 1px solid CanvasText;
+    color: CanvasText;
+  }
+
+  .tree-editor__tag--override {
+    background-color: Canvas;
+    border-color: CanvasText;
+    color: CanvasText;
+  }
+
+  .tree-editor__controls {
+    border-top-color: CanvasText;
+  }
+
+  .tree-editor__fieldset {
+    border-color: CanvasText;
+    background-color: Canvas;
+  }
+
+  .tree-editor__fieldset legend {
+    color: CanvasText;
+  }
+
+  .tree-editor__radio-group label {
+    color: CanvasText;
+  }
+
+  .tree-editor__children {
+    border-left-color: CanvasText;
+  }
+
+  .tree-editor__override-note {
+    opacity: 1;
+    color: CanvasText;
+  }
+
+  .tree-editor__tag--hidden {
+    background-color: Canvas;
+    border-color: CanvasText;
+    color: CanvasText;
+  }
+
+  .tree-editor__details--hidden {
+    opacity: 1;
+  }
+
+  .tree-editor__details--hidden .tree-editor__name {
+    color: GrayText;
+  }
+
+  .tree-editor__summary-left::before {
+    color: CanvasText;
+  }
+}
+
 /* Timestamps */
 .timestamps {
   font-size: 0.85rem;
@@ -1195,6 +1452,7 @@ details[open] .details-close {
 }
 
 /* Button sizes */
+input[type="submit"].btn--small,
 .btn--small {
   padding: 0.35rem 0.75rem;
   font-size: 0.8rem;
@@ -1272,9 +1530,7 @@ details[open] .details-close {
 
   /* Labels & legends */
   label,
-  fieldset.form-group legend,
-  fieldset.inclusion-radios legend,
-  fieldset.inclusion-checkboxes legend {
+  fieldset.form-group legend {
     color: CanvasText;
   }
 
@@ -1549,6 +1805,7 @@ details[open] .details-close {
 
   .share-url {
     flex-direction: column;
+    align-items: center;
   }
 
   .dashboard-grid {

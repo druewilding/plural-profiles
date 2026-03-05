@@ -45,4 +45,35 @@ class GroupProfilesControllerTest < ActionDispatch::IntegrationTest
     get panel_group_profile_path(group_uuid: group.uuid, uuid: carol.uuid)
     assert_response :not_found
   end
+
+  test "show finds descendant profile through root group context" do
+    alpha = groups(:alpha_clan)
+    ember = profiles(:ember) # in prism_circle, descendant of alpha via spectrum
+    get group_profile_path(group_uuid: alpha.uuid, uuid: ember.uuid)
+    assert_response :success
+    assert_match "Ember", response.body
+    assert_match "Back to Alpha Clan", response.body
+  end
+
+  test "show returns 404 for profile hidden by inclusion override" do
+    castle = groups(:castle_clan)
+    drift = profiles(:drift) # in flux, but include_direct_profiles is false on castle→flux edge
+    get group_profile_path(group_uuid: castle.uuid, uuid: drift.uuid)
+    assert_response :not_found
+  end
+
+  test "panel finds descendant profile through root group context" do
+    alpha = groups(:alpha_clan)
+    ember = profiles(:ember)
+    get panel_group_profile_path(group_uuid: alpha.uuid, uuid: ember.uuid)
+    assert_response :success
+    assert_match "Ember", response.body
+  end
+
+  test "panel returns 404 for profile hidden by inclusion override" do
+    castle = groups(:castle_clan)
+    drift = profiles(:drift)
+    get panel_group_profile_path(group_uuid: castle.uuid, uuid: drift.uuid)
+    assert_response :not_found
+  end
 end

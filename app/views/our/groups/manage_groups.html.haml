@@ -4,64 +4,23 @@
   Manage groups in
   = @group.name
 
-%h2 Current groups
-
-- if @child_links.any?
-  .card-list
-    - @child_links.each do |link|
-      - child = link.child_group
-      .card.card--row
-        .card__header
-          - if child.avatar.attached?
-            = image_tag child.avatar.variant(resize_to_fill: [40, 40]), class: "avatar avatar--small", width: 40, height: 40, alt: child.avatar_alt_text.presence || "", loading: "lazy"
-          - else
-            .avatar.avatar--small.avatar--placeholder
-              = render "shared/plural_pride_logo"
-          %div
-            %span= child.name
-            -# Inline form to configure this relationship link — only shown when there is something to configure
-            - if child.child_links.any? || child.group_profiles.any?
-              = form_with url: update_relationship_our_group_path(@group, group_id: child.id), method: :patch, local: false, class: "inclusion-form", data: { controller: "inclusion", action: "change->inclusion#change" } do |f|
-                .inclusion-row
-                  - if child.child_links.any?
-                    %fieldset.inclusion-radios
-                      %legend Include sub-groups?
-                      %label
-                        = radio_button_tag "inclusion_mode", "all", link.all?, id: "inclusion_#{link.id}_all"
-                        All
-                      %label
-                        = radio_button_tag "inclusion_mode", "none", link.none?, id: "inclusion_#{link.id}_none"
-                        None
-                      %label
-                        = radio_button_tag "inclusion_mode", "selected", link.selected?, id: "inclusion_#{link.id}_selected"
-                        Selected
-
-                    %fieldset.inclusion-checkboxes
-                      %legend Select sub-groups
-                      .checkbox-list
-                        - child.child_groups.order(:name).each do |sub|
-                          - checked = if link.all? then true elsif link.none? then false else Array(link.included_subgroup_ids).map(&:to_i).include?(sub.id) end
-                          %label.checkbox{for: "included_#{link.id}_#{sub.id}"}
-                            = check_box_tag "included_subgroup_ids[]", sub.id, checked, id: "included_#{link.id}_#{sub.id}", data: { inclusion_target: "checkbox" }
-                            %span= sub.name
-
-                  - if child.group_profiles.any?
-                    %fieldset.inclusion-profiles
-                      %legend Include profiles?
-                      %label
-                        = radio_button_tag "include_direct_profiles", "1", link.include_direct_profiles, id: "include_direct_profiles_#{link.id}_all"
-                        All
-                      %label
-                        = radio_button_tag "include_direct_profiles", "0", !link.include_direct_profiles, id: "include_direct_profiles_#{link.id}_none"
-                        None
-
-                = f.submit "Save", class: "btn btn--small"
-        = link_to "Remove", remove_group_our_group_path(@group, group_id: child.id), data: { turbo_method: :delete }, class: "btn btn--danger btn--small"
+- if @editor_tree.any?
+  .tree-editor
+    %p.tree-editor__hint
+      Expand each group to configure how it appears when viewing
+      %strong= link_to @group.name, group_path(@group.uuid), target: "_blank", rel: "noopener noreferrer"
+      publicly. Direct children can be added or removed. Deeper descendants can have overrides
+      that change their behaviour only in this tree.
+    %ul.tree-editor__tree{"aria-label": "Group tree for #{@group.name}"}
+      - @editor_tree.each do |node|
+        = render "our/groups/manage_groups_node", node: node, root_group: @group
 - else
   .card
-    %p No groups have been added to this group.
+    %p This group has no sub-groups yet. Add one below.
 
-%h2 Add a group
+%h2
+  Add a group to
+  = @group.name
 
 - if @available_groups.any?
   .card-list
@@ -74,12 +33,12 @@
             .avatar.avatar--small.avatar--placeholder
               = render "shared/plural_pride_logo"
           %span= group.name
-        = link_to "Add", add_group_our_group_path(@group, group_id: group.id), data: { turbo_method: :post }, class: "btn btn--small"
+        = link_to "Add to #{@group.name}", add_group_our_group_path(@group, group_id: group.id), data: { turbo_method: :post }, class: "btn btn--small"
 - else
   .card
     %p
       - if Current.user.groups.count > 1
-        All your other groups are already in this group.
+        All your other groups are already in this tree.
       - else
         You need to
         = link_to "create more groups", new_our_group_path

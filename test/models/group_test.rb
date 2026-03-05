@@ -465,52 +465,52 @@ class GroupTest < ActiveSupport::TestCase
   # are pulled into the parent's visible set. Sub-groups and their profiles are
   # unaffected — only the immediate profiles of the child group are suppressed.
   #
-  # The fixtures already encode this scenario via delta_clan → flux:
+  # The fixtures already encode this scenario via castle_clan → flux:
   #   inclusion_mode: selected, included_subgroup_ids: [echo_shard], include_direct_profiles: false
   # drift and ripple are direct flux members; mirage is in echo_shard.
 
   test "all_profiles excludes direct profiles of child when include_direct_profiles is false" do
-    delta = groups(:delta_clan)
-    assert_not_includes delta.all_profiles, profiles(:drift),
+    castle = groups(:castle_clan)
+    assert_not_includes castle.all_profiles, profiles(:drift),
       "Drift (direct flux member) should be excluded because include_direct_profiles is false"
-    assert_not_includes delta.all_profiles, profiles(:ripple),
+    assert_not_includes castle.all_profiles, profiles(:ripple),
       "Ripple (direct flux member) should be excluded because include_direct_profiles is false"
   end
 
   test "all_profiles still includes sub-group profiles when include_direct_profiles is false" do
     # echo_shard is in flux's selected list and has include_direct_profiles defaulting to true;
-    # mirage (in echo_shard) must be visible from delta_clan even though flux's own profiles aren't
-    delta = groups(:delta_clan)
-    assert_includes delta.all_profiles, profiles(:mirage),
-      "Mirage (in echo_shard, a selected sub-group of flux) should be visible from delta_clan"
+    # mirage (in echo_shard) must be visible from castle_clan even though flux's own profiles aren't
+    castle = groups(:castle_clan)
+    assert_includes castle.all_profiles, profiles(:mirage),
+      "Mirage (in echo_shard, a selected sub-group of flux) should be visible from castle_clan"
   end
 
   test "descendant_tree shows empty profiles array for node with include_direct_profiles false" do
-    delta = groups(:delta_clan)
-    tree = delta.descendant_tree
+    castle = groups(:castle_clan)
+    tree = castle.descendant_tree
     flux_node = tree.find { |n| n[:group].name == "Flux" }
-    assert flux_node, "Flux should appear in delta_clan's tree"
+    assert flux_node, "Flux should appear in castle_clan's tree"
     assert_empty flux_node[:profiles],
       "Flux's profiles should be empty when include_direct_profiles is false on the edge"
   end
 
   test "descendant_tree still recurses into children when include_direct_profiles is false" do
     # include_direct_profiles only suppresses the node's own profiles; sub-group children are unaffected
-    delta = groups(:delta_clan)
-    tree = delta.descendant_tree
+    castle = groups(:castle_clan)
+    tree = castle.descendant_tree
     flux_node = tree.find { |n| n[:group].name == "Flux" }
-    assert flux_node, "Flux should appear in delta_clan's tree"
+    assert flux_node, "Flux should appear in castle_clan's tree"
     child_names = flux_node[:children].map { |n| n[:group].name }
     assert_includes child_names, "Echo Shard",
       "Echo Shard (in included_subgroup_ids) should still appear as a child of Flux"
   end
 
   test "descendant_tree includes profiles in sub-groups of a node with include_direct_profiles false" do
-    delta = groups(:delta_clan)
-    tree = delta.descendant_tree
+    castle = groups(:castle_clan)
+    tree = castle.descendant_tree
     flux_node = tree.find { |n| n[:group].name == "Flux" }
     echo_node = flux_node&.dig(:children)&.find { |n| n[:group].name == "Echo Shard" }
-    assert echo_node, "Echo Shard should appear under Flux in delta_clan's tree"
+    assert echo_node, "Echo Shard should appear under Flux in castle_clan's tree"
     profile_names = echo_node[:profiles].map { |e| e[:profile].name }
     assert_includes profile_names, "Mirage",
       "Mirage (in echo_shard) should be visible even though Flux has include_direct_profiles false"
@@ -740,5 +740,112 @@ class GroupTest < ActiveSupport::TestCase
       "Leaf should be visible on group_b's page — override on group_a→mid does not apply here"
     assert_includes group_b.all_profiles, deep_profile,
       "Deep Profile should be visible on group_b's page"
+  end
+
+  # -- editor_tree hidden_from_public flag -----------------------------------
+
+  test "editor_tree marks direct children as not hidden" do
+    alpha = groups(:alpha_clan)
+    tree = alpha.editor_tree
+    spectrum_node = tree.find { |n| n[:group] == groups(:spectrum) }
+
+    assert_not spectrum_node[:hidden_from_public],
+      "Direct child Spectrum should not be hidden from public"
+  end
+
+  test "editor_tree marks sub-groups as hidden when parent mode is none" do
+    # Set Spectrum's edge in Alpha Clan to "none" (overlapping)
+    gg = group_groups(:spectrum_in_alpha)
+    gg.update!(inclusion_mode: "none")
+
+    alpha = groups(:alpha_clan)
+    tree = alpha.editor_tree
+    spectrum_node = tree.find { |n| n[:group] == groups(:spectrum) }
+
+    # Spectrum itself is a direct child → not hidden
+    assert_not spectrum_node[:hidden_from_public],
+      "Direct child Spectrum should not be hidden even with mode none"
+
+    # Prism Circle is a child of Spectrum, but Spectrum has mode none → hidden
+    prism_node = spectrum_node[:children].find { |n| n[:group] == groups(:prism_circle) }
+    assert prism_node[:hidden_from_public],
+      "Prism Circle should be hidden when parent Spectrum has mode none"
+
+    # Rogue Pack is a grandchild of Spectrum → also hidden (ancestor hidden)
+    rogue_node = prism_node[:children].find { |n| n[:group] == groups(:rogue_pack) }
+    assert rogue_node[:hidden_from_public],
+      "Rogue Pack should be hidden when ancestor is hidden"
+  end
+
+  test "editor_tree marks unselected sub-groups as hidden with selected mode" do
+    # Castle Clan has Flux with mode "selected" including only Echo Shard
+    castle = groups(:castle_clan)
+    tree = castle.editor_tree
+    flux_node = tree.find { |n| n[:group] == groups(:flux) }
+
+    echo_node = flux_node[:children].find { |n| n[:group] == groups(:echo_shard) }
+    static_node = flux_node[:children].find { |n| n[:group] == groups(:static_burst) }
+
+    assert_not echo_node[:hidden_from_public],
+      "Echo Shard should not be hidden — it is in the selected list"
+    assert static_node[:hidden_from_public],
+      "Static Burst should be hidden — it is not in the selected list"
+  end
+
+  test "editor_tree propagates hidden status to deep descendants" do
+    # Castle Clan → Flux (selected, only Echo Shard) → Static Burst (hidden) → any children
+    castle = groups(:castle_clan)
+
+    # Add a child to Static Burst so we can test deep propagation
+    user = users(:three)
+    deep_child = user.groups.create!(name: "Deep Child")
+    GroupGroup.create!(parent_group: groups(:static_burst), child_group: deep_child, inclusion_mode: "all")
+
+    tree = castle.editor_tree
+    flux_node = tree.find { |n| n[:group] == groups(:flux) }
+    static_node = flux_node[:children].find { |n| n[:group] == groups(:static_burst) }
+    deep_node = static_node[:children].find { |n| n[:group] == deep_child }
+
+    assert static_node[:hidden_from_public], "Static Burst should be hidden"
+    assert deep_node[:hidden_from_public],
+      "Deep Child should be hidden because its ancestor Static Burst is hidden"
+  end
+
+  test "editor_tree marks nodes hidden when override sets mode to none" do
+    alpha = groups(:alpha_clan)
+
+    # Update the existing fixture override to "none" mode
+    override = inclusion_overrides(:rogue_pack_excluded_from_alpha)
+    override.update!(inclusion_mode: "none", included_subgroup_ids: [])
+
+    tree = alpha.editor_tree
+    spectrum_node = tree.find { |n| n[:group] == groups(:spectrum) }
+    prism_node = spectrum_node[:children].find { |n| n[:group] == groups(:prism_circle) }
+    rogue_node = prism_node[:children].find { |n| n[:group] == groups(:rogue_pack) }
+
+    # Prism Circle itself is not hidden (mode "none" = overlapping, still visible)
+    assert_not prism_node[:hidden_from_public],
+      "Prism Circle should not be hidden — it appears as overlapping"
+
+    # Rogue Pack is hidden because Prism Circle has mode none
+    assert rogue_node[:hidden_from_public],
+      "Rogue Pack should be hidden — Prism Circle's override sets mode to none"
+  end
+
+  test "editor_tree marks nodes hidden when override uses selected and excludes them" do
+    # The fixture already has this exact setup:
+    # spectrum_in_alpha edge with override on prism_circle:
+    #   inclusion_mode: "selected", included_subgroup_ids: []
+    alpha = groups(:alpha_clan)
+
+    tree = alpha.editor_tree
+    spectrum_node = tree.find { |n| n[:group] == groups(:spectrum) }
+    prism_node = spectrum_node[:children].find { |n| n[:group] == groups(:prism_circle) }
+    rogue_node = prism_node[:children].find { |n| n[:group] == groups(:rogue_pack) }
+
+    assert_not prism_node[:hidden_from_public],
+      "Prism Circle should not be hidden"
+    assert rogue_node[:hidden_from_public],
+      "Rogue Pack should be hidden — override selects no sub-groups"
   end
 end

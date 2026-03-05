@@ -23,14 +23,14 @@
             .tree__row
               %span.tree__arrow-btn{role: "button", tabindex: "0", "data-action": "click->tree#toggleFolder keydown->tree#toggleFolder", "aria-label": "Toggle #{@group.name}"}
                 %span.tree__arrow.tree__arrow--open{"aria-hidden": "true"} ▶
-              = link_to group_path(@group.uuid), class: "tree__item tree__item--active", "data-action": "click->tree#selectRoot", "data-panel-url": panel_group_path(@group.uuid), "data-group-uuid": @group.uuid do
+              = link_to group_path(@group.uuid), class: "tree__item tree__item--active", "data-action": "click->tree#selectRoot", "data-panel-url": panel_group_path(@group.uuid, root: @group.uuid), "data-group-uuid": @group.uuid do
                 - if @group.avatar.attached?
                   = image_tag @group.avatar.variant(resize_to_fill: [24, 24]), class: "tree__avatar", width: 24, height: 24, alt: ""
                 %span.tree__label= @group.name
             %ul.tree__children{role: "group"}
               -# Child groups (recursive)
               - @descendant_tree.each do |node|
-                = render "groups/tree_node", node: node
+                = render "groups/tree_node", node: node, root_uuid: @group.uuid
               -# Direct profiles at root level
               - @direct_profiles.each do |profile|
                 - repeated = @seen_profile_ids.include?(profile.id)
@@ -62,11 +62,11 @@
             %h2
               - if node[:group].avatar.attached?
                 = image_tag node[:group].avatar.variant(resize_to_fill: [32, 32]), class: "avatar avatar--inline", width: 32, height: 32, alt: ""
-              = link_to node[:group].name, group_path(node[:group].uuid)
+              = node[:group].name
             - if node[:profiles].any?
               .profile-grid
                 - node[:profiles].each do |entry|
-                  = render "groups/profile_card", group: node[:group], profile: entry[:profile]
+                  = render "groups/profile_card", group: @group, profile: entry[:profile]
             - render_flat.call(node[:children])
       - render_flat.call(@descendant_tree)
 

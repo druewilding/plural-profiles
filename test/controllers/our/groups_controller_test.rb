@@ -187,52 +187,6 @@ class Our::GroupsControllerTest < ActionDispatch::IntegrationTest
 
   # -- Manage groups (sub-groups) --
 
-  test "manage_groups shows available groups" do
-    sign_in_as @user
-    everyone = groups(:everyone)
-    get manage_groups_our_group_path(everyone)
-    assert_response :success
-  end
-
-  test "manage_groups excludes self and already-added groups" do
-    sign_in_as @user
-    everyone = groups(:everyone)
-    get manage_groups_our_group_path(everyone)
-    # User one only has friends + everyone, and friends is already a child,
-    # everyone is self, so the available list should be empty
-    assert_match "All your other groups are already in this group", response.body
-  end
-
-  test "manage_groups excludes ancestor groups to prevent cycles" do
-    sign_in_as @user
-    everyone = groups(:everyone)
-    # everyone → friends already exists in fixtures
-    coworkers = @user.groups.create!(name: "Coworkers")
-
-    # From friends' perspective, everyone is an ancestor — must be excluded
-    get manage_groups_our_group_path(@group)
-    assert_response :success
-    assert_no_match "everyone", response.body
-    assert_match "Coworkers", response.body
-  end
-
-  test "manage_groups allows adding a group that is already an indirect descendant" do
-    user_three = users(:three)
-    sign_in_as user_three
-    delta_clan = groups(:delta_clan)
-    delta_flux = groups(:delta_flux)
-
-    # Create a new top-level group and add Delta Clan to it
-    test_group = user_three.groups.create!(name: "Test Group")
-    test_group.child_links.create!(child_group: delta_clan)
-
-    # Delta Flux is a descendant of Delta Clan, but it should still be
-    # available to add directly to test_group
-    get manage_groups_our_group_path(test_group)
-    assert_response :success
-    assert_match "Delta Flux", response.body
-  end
-
   test "add_group adds a sub-group" do
     sign_in_as @user
     everyone = groups(:everyone)
@@ -331,11 +285,6 @@ class Our::GroupsControllerTest < ActionDispatch::IntegrationTest
     assert_redirected_to new_session_path
   end
 
-  test "manage_groups redirects logged-out user to sign in" do
-    get manage_groups_our_group_path(@group)
-    assert_redirected_to new_session_path
-  end
-
   test "add_group redirects logged-out user to sign in" do
     assert_no_difference("GroupGroup.count") do
       post add_group_our_group_path(@group), params: { group_id: groups(:everyone).id }
@@ -405,12 +354,6 @@ class Our::GroupsControllerTest < ActionDispatch::IntegrationTest
     assert_no_difference("GroupProfile.count") do
       delete remove_profile_our_group_path(@group), params: { profile_id: profiles(:alice).id }
     end
-    assert_redirected_to group_path(@group.uuid)
-  end
-
-  test "manage_groups redirects wrong user to public group" do
-    sign_in_as @other_user
-    get manage_groups_our_group_path(@group)
     assert_redirected_to group_path(@group.uuid)
   end
 
@@ -637,5 +580,91 @@ class Our::GroupsControllerTest < ActionDispatch::IntegrationTest
     patch regenerate_uuid_our_group_path(@group)
     assert_redirected_to group_path(@group.uuid)
     assert_equal old_uuid, @group.reload.uuid
+  end
+
+  # -- Manage groups --
+
+  test "manage_groups renders for group with children" do
+    user_three = users(:three)
+    sign_in_as user_three
+    alpha = groups(:alpha_clan)
+    get manage_groups_our_group_path(alpha)
+    assert_response :success
+    assert_match "Manage groups in", response.body
+    assert_match "Spectrum", response.body
+  end
+
+  test "manage_groups renders for group without children" do
+    sign_in_as @user
+    get manage_groups_our_group_path(@group)
+    assert_response :success
+    assert_match "no sub-groups yet", response.body
+  end
+
+  test "manage_groups requires authentication" do
+    alpha = groups(:alpha_clan)
+    get manage_groups_our_group_path(alpha)
+    assert_redirected_to new_session_path
+  end
+
+  test "update_override creates an override" do
+    user_three = users(:three)
+    sign_in_as user_three
+    alpha = groups(:alpha_clan)
+    edge = alpha.child_links.find_by(child_group: groups(:spectrum))
+    target = groups(:rogue_pack)
+
+    assert_difference "InclusionOverride.count", 1 do
+      patch update_override_our_group_path(alpha), params: {
+        edge_id: edge.id,
+        target_group_id: target.id,
+        inclusion_mode: "none",
+        include_direct_profiles: "0"
+      }
+    end
+    assert_redirected_to manage_groups_our_group_path(alpha)
+
+    override = InclusionOverride.last
+    assert_equal "none", override.inclusion_mode
+    assert_equal false, override.include_direct_profiles
+  end
+
+  test "update_override updates an existing override" do
+    user_three = users(:three)
+    sign_in_as user_three
+    alpha = groups(:alpha_clan)
+    edge = alpha.child_links.find_by(child_group: groups(:spectrum))
+    target = groups(:prism_circle)
+    override = inclusion_overrides(:rogue_pack_excluded_from_alpha)
+
+    assert_no_difference "InclusionOverride.count" do
+      patch update_override_our_group_path(alpha), params: {
+        edge_id: edge.id,
+        target_group_id: target.id,
+        inclusion_mode: "all",
+        include_direct_profiles: "1"
+      }
+    end
+    assert_redirected_to manage_groups_our_group_path(alpha)
+
+    override.reload
+    assert_equal "all", override.inclusion_mode
+    assert_equal true, override.include_direct_profiles
+  end
+
+  test "remove_override destroys an override" do
+    user_three = users(:three)
+    sign_in_as user_three
+    alpha = groups(:alpha_clan)
+    edge = alpha.child_links.find_by(child_group: groups(:spectrum))
+    target = groups(:prism_circle)
+
+    assert_difference "InclusionOverride.count", -1 do
+      delete remove_override_our_group_path(alpha), params: {
+        edge_id: edge.id,
+        target_group_id: target.id
+      }
+    end
+    assert_redirected_to manage_groups_our_group_path(alpha)
   end
 end
