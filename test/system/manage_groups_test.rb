@@ -65,7 +65,7 @@ class ManageGroupsTest < ApplicationSystemTestCase
   test "manage groups shows profiles hidden tag" do
     visit manage_groups_our_group_path(groups(:castle_clan))
 
-    # Flux has include_direct_profiles: false — its summary should have the profiles-hidden tag
+    # Flux has profile_inclusion_mode: "none" — its summary should have the profiles-hidden tag
     flux_summary = find_node_summary_exact("Flux")
     within(flux_summary) do
       assert_selector ".tree-editor__tag--hidden"
@@ -141,7 +141,7 @@ class ManageGroupsTest < ApplicationSystemTestCase
     assert_text "Relationship updated."
 
     link = group_groups(:spectrum_in_alpha)
-    assert_equal "none", link.reload.inclusion_mode
+    assert_equal "none", link.reload.subgroup_inclusion_mode
   end
 
   test "change direct child inclusion mode to selected" do
@@ -160,16 +160,16 @@ class ManageGroupsTest < ApplicationSystemTestCase
     assert_text "Relationship updated."
 
     link = group_groups(:spectrum_in_alpha)
-    assert_equal "selected", link.reload.inclusion_mode
+    assert_equal "selected", link.reload.subgroup_inclusion_mode
     assert_not_includes link.included_subgroup_ids, groups(:prism_circle).id
   end
 
-  test "toggle include_direct_profiles on for direct child" do
+  test "toggle profile_inclusion_mode on for direct child" do
     castle = groups(:castle_clan)
 
     visit manage_groups_our_group_path(castle)
 
-    # Flux has include_direct_profiles: false — switch to All
+    # Flux has profile_inclusion_mode: "none" — switch to All
     expand_node_exact("Flux")
 
     within(node_details_exact("Flux")) do
@@ -182,15 +182,15 @@ class ManageGroupsTest < ApplicationSystemTestCase
     assert_text "Relationship updated."
 
     link = group_groups(:flux_in_castle)
-    assert link.reload.include_direct_profiles
+    assert_equal "all", link.reload.profile_inclusion_mode
   end
 
-  test "toggle include_direct_profiles off and on" do
+  test "toggle profile_inclusion_mode off and on" do
     castle = groups(:castle_clan)
 
     visit manage_groups_our_group_path(castle)
 
-    # First toggle Flux profiles to All (currently false)
+    # First toggle Flux profiles to All (currently none)
     expand_node_exact("Flux")
 
     within(node_details_exact("Flux")) do
@@ -202,7 +202,7 @@ class ManageGroupsTest < ApplicationSystemTestCase
 
     assert_text "Relationship updated."
     link = group_groups(:flux_in_castle)
-    assert link.reload.include_direct_profiles
+    assert_equal "all", link.reload.profile_inclusion_mode
 
     # Now toggle back to None
     expand_node_exact("Flux")
@@ -215,7 +215,7 @@ class ManageGroupsTest < ApplicationSystemTestCase
     end
 
     assert_text "Relationship updated."
-    assert_not link.reload.include_direct_profiles
+    assert_equal "none", link.reload.profile_inclusion_mode
   end
 
   # -- Configuring deeper descendants (depth 2+) via overrides --
@@ -302,7 +302,7 @@ class ManageGroupsTest < ApplicationSystemTestCase
     assert_text "Override saved."
 
     override = inclusion_overrides(:rogue_pack_excluded_from_alpha)
-    assert_equal "all", override.reload.inclusion_mode
+    assert_equal "all", override.reload.subgroup_inclusion_mode
   end
 
   # -- Verifying public effects of manage groups changes --

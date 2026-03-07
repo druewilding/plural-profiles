@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_03_01_140100) do
+ActiveRecord::Schema[8.1].define(version: 2026_03_07_100355) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -45,10 +45,11 @@ ActiveRecord::Schema[8.1].define(version: 2026_03_01_140100) do
   create_table "group_groups", force: :cascade do |t|
     t.bigint "child_group_id", null: false
     t.datetime "created_at", null: false
-    t.boolean "include_direct_profiles", default: true, null: false
+    t.jsonb "included_profile_ids", default: [], null: false
     t.jsonb "included_subgroup_ids", default: [], null: false
-    t.string "inclusion_mode", default: "all", null: false
     t.bigint "parent_group_id", null: false
+    t.string "profile_inclusion_mode", default: "all", null: false
+    t.string "subgroup_inclusion_mode", default: "all", null: false
     t.datetime "updated_at", null: false
     t.index ["child_group_id"], name: "index_group_groups_on_child_group_id"
     t.index ["parent_group_id", "child_group_id"], name: "index_group_groups_on_parent_group_id_and_child_group_id", unique: true
@@ -80,9 +81,10 @@ ActiveRecord::Schema[8.1].define(version: 2026_03_01_140100) do
   create_table "inclusion_overrides", force: :cascade do |t|
     t.datetime "created_at", null: false
     t.bigint "group_group_id", null: false
-    t.boolean "include_direct_profiles", default: true, null: false
+    t.jsonb "included_profile_ids", default: [], null: false
     t.jsonb "included_subgroup_ids", default: [], null: false
-    t.string "inclusion_mode", default: "all", null: false
+    t.string "profile_inclusion_mode", default: "all", null: false
+    t.string "subgroup_inclusion_mode", default: "all", null: false
     t.bigint "target_group_id", null: false
     t.datetime "updated_at", null: false
     t.index ["group_group_id", "target_group_id"], name: "idx_on_group_group_id_target_group_id_bb02b96ff7", unique: true

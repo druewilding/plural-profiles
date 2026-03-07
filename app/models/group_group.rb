@@ -7,25 +7,38 @@ class GroupGroup < ApplicationRecord
   has_many :inclusion_overrides, dependent: :destroy
 
   validates :child_group_id, uniqueness: { scope: :parent_group_id }
-  validates :inclusion_mode, inclusion: { in: INCLUSION_MODES }
+  validates :subgroup_inclusion_mode, inclusion: { in: INCLUSION_MODES }
+  validates :profile_inclusion_mode, inclusion: { in: INCLUSION_MODES }
   validate :same_user
   validate :not_self_referencing
   validate :no_circular_reference
 
-  scope :all_mode, -> { where(inclusion_mode: "all") }
-  scope :none_mode, -> { where(inclusion_mode: "none") }
-  scope :selected, -> { where(inclusion_mode: "selected") }
+  scope :subgroup_all_mode, -> { where(subgroup_inclusion_mode: "all") }
+  scope :subgroup_none_mode, -> { where(subgroup_inclusion_mode: "none") }
+  scope :subgroup_selected, -> { where(subgroup_inclusion_mode: "selected") }
 
-  def all?
-    inclusion_mode == "all"
+  def subgroup_all?
+    subgroup_inclusion_mode == "all"
   end
 
-  def selected?
-    inclusion_mode == "selected"
+  def subgroup_selected?
+    subgroup_inclusion_mode == "selected"
   end
 
-  def none?
-    inclusion_mode == "none"
+  def subgroup_none?
+    subgroup_inclusion_mode == "none"
+  end
+
+  def profile_all?
+    profile_inclusion_mode == "all"
+  end
+
+  def profile_selected?
+    profile_inclusion_mode == "selected"
+  end
+
+  def profile_none?
+    profile_inclusion_mode == "none"
   end
 
   private

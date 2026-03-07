@@ -180,7 +180,7 @@ class GroupTest < ActiveSupport::TestCase
 
     # Now change friends to overlapping inside everyone
     link = GroupGroup.find_by(parent_group: everyone, child_group: friends)
-    link.update!(inclusion_mode: "none")
+    link.update!(subgroup_inclusion_mode: "none")
 
     ids = everyone.descendant_group_ids
     # Friends is still included (it's a direct child)
@@ -202,7 +202,7 @@ class GroupTest < ActiveSupport::TestCase
 
     # Change friends to overlapping
     link = GroupGroup.find_by(parent_group: everyone, child_group: friends)
-    link.update!(inclusion_mode: "none")
+    link.update!(subgroup_inclusion_mode: "none")
 
     # Now Bob (in Close Friends) is not visible from everyone
     assert_not_includes everyone.all_profiles, profiles(:bob)
@@ -224,7 +224,7 @@ class GroupTest < ActiveSupport::TestCase
 
     # Change friends to overlapping
     link = GroupGroup.find_by(parent_group: everyone, child_group: friends)
-    link.update!(inclusion_mode: "none")
+    link.update!(subgroup_inclusion_mode: "none")
 
     tree = everyone.descendant_tree
     friends_node = tree.first
@@ -247,7 +247,7 @@ class GroupTest < ActiveSupport::TestCase
 
     # Change friends to overlapping
     link = GroupGroup.find_by(parent_group: everyone, child_group: friends)
-    link.update!(inclusion_mode: "none")
+    link.update!(subgroup_inclusion_mode: "none")
 
     # Now only friends appears (close is behind the overlapping boundary)
     sections = everyone.descendant_sections
@@ -333,9 +333,9 @@ class GroupTest < ActiveSupport::TestCase
 
     # root →(selected, included=[])→ a  means: show a, but none of a's sub-groups
     GroupGroup.create!(parent_group: root, child_group: a,
-                       inclusion_mode: "selected", included_subgroup_ids: [])
+                       subgroup_inclusion_mode: "selected", included_subgroup_ids: [])
     # a →(all)→ x  but x is not in root→a's included list
-    GroupGroup.create!(parent_group: a, child_group: x, inclusion_mode: "all")
+    GroupGroup.create!(parent_group: a, child_group: x, subgroup_inclusion_mode: "all")
 
     names = root.descendant_sections.map(&:name)
     assert_includes     names, "Alpha",    "Alpha (the selected child) should appear"
@@ -351,11 +351,11 @@ class GroupTest < ActiveSupport::TestCase
 
     # root →(selected, included=[b])→ a
     GroupGroup.create!(parent_group: root, child_group: a,
-                       inclusion_mode: "selected", included_subgroup_ids: [ b.id ])
+                       subgroup_inclusion_mode: "selected", included_subgroup_ids: [ b.id ])
     # a →(none)→ b  — b is in the selected list, but its own edge is "none"
-    GroupGroup.create!(parent_group: a, child_group: b, inclusion_mode: "none")
+    GroupGroup.create!(parent_group: a, child_group: b, subgroup_inclusion_mode: "none")
     # b →(all)→ b_child  — would normally recurse, but the "none" edge stops it
-    GroupGroup.create!(parent_group: b, child_group: b_child, inclusion_mode: "all")
+    GroupGroup.create!(parent_group: b, child_group: b_child, subgroup_inclusion_mode: "all")
 
     names = root.descendant_sections.map(&:name)
     assert_includes     names, "Alpha",     "Alpha should appear"
@@ -371,9 +371,9 @@ class GroupTest < ActiveSupport::TestCase
     b_child = user.groups.create!(name: "BetaChild")
 
     GroupGroup.create!(parent_group: root, child_group: a,
-                       inclusion_mode: "selected", included_subgroup_ids: [ b.id ])
-    GroupGroup.create!(parent_group: a, child_group: b, inclusion_mode: "none")
-    GroupGroup.create!(parent_group: b, child_group: b_child, inclusion_mode: "all")
+                       subgroup_inclusion_mode: "selected", included_subgroup_ids: [ b.id ])
+    GroupGroup.create!(parent_group: a, child_group: b, subgroup_inclusion_mode: "none")
+    GroupGroup.create!(parent_group: b, child_group: b_child, subgroup_inclusion_mode: "all")
 
     tree = root.descendant_tree
     alpha_node = tree.find { |n| n[:group].name == "Alpha" }
@@ -395,12 +395,12 @@ class GroupTest < ActiveSupport::TestCase
 
     # root →(selected, included=[b])→ a
     GroupGroup.create!(parent_group: root, child_group: a,
-                       inclusion_mode: "selected", included_subgroup_ids: [ b.id ])
+                       subgroup_inclusion_mode: "selected", included_subgroup_ids: [ b.id ])
     # a →(selected, included=[charlie])→ b  — b's own edge is also "selected"
     GroupGroup.create!(parent_group: a, child_group: b,
-                       inclusion_mode: "selected", included_subgroup_ids: [ charlie.id ])
-    GroupGroup.create!(parent_group: b, child_group: charlie, inclusion_mode: "all")
-    GroupGroup.create!(parent_group: b, child_group: delta,   inclusion_mode: "all")
+                       subgroup_inclusion_mode: "selected", included_subgroup_ids: [ charlie.id ])
+    GroupGroup.create!(parent_group: b, child_group: charlie, subgroup_inclusion_mode: "all")
+    GroupGroup.create!(parent_group: b, child_group: delta,   subgroup_inclusion_mode: "all")
 
     names = root.descendant_sections.map(&:name)
     assert_includes     names, "Alpha", "Alpha should appear"
@@ -419,11 +419,11 @@ class GroupTest < ActiveSupport::TestCase
     delta   = user.groups.create!(name: "Delta")
 
     GroupGroup.create!(parent_group: root, child_group: a,
-                       inclusion_mode: "selected", included_subgroup_ids: [ b.id ])
+                       subgroup_inclusion_mode: "selected", included_subgroup_ids: [ b.id ])
     GroupGroup.create!(parent_group: a, child_group: b,
-                       inclusion_mode: "selected", included_subgroup_ids: [ charlie.id ])
-    GroupGroup.create!(parent_group: b, child_group: charlie, inclusion_mode: "all")
-    GroupGroup.create!(parent_group: b, child_group: delta,   inclusion_mode: "all")
+                       subgroup_inclusion_mode: "selected", included_subgroup_ids: [ charlie.id ])
+    GroupGroup.create!(parent_group: b, child_group: charlie, subgroup_inclusion_mode: "all")
+    GroupGroup.create!(parent_group: b, child_group: delta,   subgroup_inclusion_mode: "all")
 
     tree = root.descendant_tree
     alpha_node = tree.find { |n| n[:group].name == "Alpha" }
@@ -447,11 +447,11 @@ class GroupTest < ActiveSupport::TestCase
 
     # root →(selected, included=[b])→ a
     GroupGroup.create!(parent_group: root, child_group: a,
-                       inclusion_mode: "selected", included_subgroup_ids: [ b.id ])
+                       subgroup_inclusion_mode: "selected", included_subgroup_ids: [ b.id ])
     # a →(all)→ b  — b is in the selected list and its sub-edge is "all"
-    GroupGroup.create!(parent_group: a, child_group: b, inclusion_mode: "all")
+    GroupGroup.create!(parent_group: a, child_group: b, subgroup_inclusion_mode: "all")
     # b →(all)→ b_child
-    GroupGroup.create!(parent_group: b, child_group: b_child, inclusion_mode: "all")
+    GroupGroup.create!(parent_group: b, child_group: b_child, subgroup_inclusion_mode: "all")
 
     names = root.descendant_sections.map(&:name)
     assert_includes names, "Alpha",     "Alpha should appear"
@@ -459,43 +459,43 @@ class GroupTest < ActiveSupport::TestCase
     assert_includes names, "BetaChild", "BetaChild should appear — Beta is included and has an all sub-edge"
   end
 
-  # -- include_direct_profiles flag --
+  # -- profile_inclusion_mode --
   #
-  # include_direct_profiles controls whether a child group's own direct profiles
+  # profile_inclusion_mode controls whether a child group's own direct profiles
   # are pulled into the parent's visible set. Sub-groups and their profiles are
   # unaffected — only the immediate profiles of the child group are suppressed.
   #
   # The fixtures already encode this scenario via castle_clan → flux:
-  #   inclusion_mode: selected, included_subgroup_ids: [echo_shard], include_direct_profiles: false
+  #   subgroup_inclusion_mode: selected, included_subgroup_ids: [echo_shard], profile_inclusion_mode: none
   # drift and ripple are direct flux members; mirage is in echo_shard.
 
-  test "all_profiles excludes direct profiles of child when include_direct_profiles is false" do
+  test "all_profiles excludes direct profiles of child when profile_inclusion_mode is none" do
     castle = groups(:castle_clan)
     assert_not_includes castle.all_profiles, profiles(:drift),
-      "Drift (direct flux member) should be excluded because include_direct_profiles is false"
+      "Drift (direct flux member) should be excluded because profile_inclusion_mode is none"
     assert_not_includes castle.all_profiles, profiles(:ripple),
-      "Ripple (direct flux member) should be excluded because include_direct_profiles is false"
+      "Ripple (direct flux member) should be excluded because profile_inclusion_mode is none"
   end
 
-  test "all_profiles still includes sub-group profiles when include_direct_profiles is false" do
-    # echo_shard is in flux's selected list and has include_direct_profiles defaulting to true;
+  test "all_profiles still includes sub-group profiles when profile_inclusion_mode is none" do
+    # echo_shard is in flux's selected list and has profile_inclusion_mode defaulting to all;
     # mirage (in echo_shard) must be visible from castle_clan even though flux's own profiles aren't
     castle = groups(:castle_clan)
     assert_includes castle.all_profiles, profiles(:mirage),
       "Mirage (in echo_shard, a selected sub-group of flux) should be visible from castle_clan"
   end
 
-  test "descendant_tree shows empty profiles array for node with include_direct_profiles false" do
+  test "descendant_tree shows empty profiles array for node with profile_inclusion_mode none" do
     castle = groups(:castle_clan)
     tree = castle.descendant_tree
     flux_node = tree.find { |n| n[:group].name == "Flux" }
     assert flux_node, "Flux should appear in castle_clan's tree"
     assert_empty flux_node[:profiles],
-      "Flux's profiles should be empty when include_direct_profiles is false on the edge"
+      "Flux's profiles should be empty when profile_inclusion_mode is none on the edge"
   end
 
-  test "descendant_tree still recurses into children when include_direct_profiles is false" do
-    # include_direct_profiles only suppresses the node's own profiles; sub-group children are unaffected
+  test "descendant_tree still recurses into children when profile_inclusion_mode is none" do
+    # profile_inclusion_mode only suppresses the node's own profiles; sub-group children are unaffected
     castle = groups(:castle_clan)
     tree = castle.descendant_tree
     flux_node = tree.find { |n| n[:group].name == "Flux" }
@@ -505,7 +505,7 @@ class GroupTest < ActiveSupport::TestCase
       "Echo Shard (in included_subgroup_ids) should still appear as a child of Flux"
   end
 
-  test "descendant_tree includes profiles in sub-groups of a node with include_direct_profiles false" do
+  test "descendant_tree includes profiles in sub-groups of a node with profile_inclusion_mode none" do
     castle = groups(:castle_clan)
     tree = castle.descendant_tree
     flux_node = tree.find { |n| n[:group].name == "Flux" }
@@ -513,21 +513,21 @@ class GroupTest < ActiveSupport::TestCase
     assert echo_node, "Echo Shard should appear under Flux in castle_clan's tree"
     profile_names = echo_node[:profiles].map { |e| e[:profile].name }
     assert_includes profile_names, "Mirage",
-      "Mirage (in echo_shard) should be visible even though Flux has include_direct_profiles false"
+      "Mirage (in echo_shard) should be visible even though Flux has profile_inclusion_mode none"
   end
 
-  test "descendant_tree shows profiles when include_direct_profiles is true (default)" do
-    # everyone → friends has no explicit include_direct_profiles (defaults to true)
+  test "descendant_tree shows profiles when profile_inclusion_mode is all (default)" do
+    # everyone → friends has no explicit profile_inclusion_mode (defaults to all)
     everyone = groups(:everyone)
     tree = everyone.descendant_tree
     friends_node = tree.find { |n| n[:group].name == "Friends" }
     assert friends_node, "Friends should appear in everyone's tree"
     profile_names = friends_node[:profiles].map { |e| e[:profile].name }
     assert_includes profile_names, "Alice",
-      "Alice should appear in Friends' profiles when include_direct_profiles is true"
+      "Alice should appear in Friends' profiles when profile_inclusion_mode is all"
   end
 
-  test "all_profiles respects include_direct_profiles false on an all-mode edge" do
+  test "all_profiles respects profile_inclusion_mode none on an all-mode edge" do
     user = users(:one)
     parent = user.groups.create!(name: "Parent Group")
     child  = user.groups.create!(name: "Child Group")
@@ -537,13 +537,51 @@ class GroupTest < ActiveSupport::TestCase
     child.profiles << child_profile
     grandchild.profiles << grandchild_profile
     GroupGroup.create!(parent_group: parent, child_group: child,
-                       inclusion_mode: "all", include_direct_profiles: false)
-    GroupGroup.create!(parent_group: child, child_group: grandchild, inclusion_mode: "all")
+                       subgroup_inclusion_mode: "all", profile_inclusion_mode: "none")
+    GroupGroup.create!(parent_group: child, child_group: grandchild, subgroup_inclusion_mode: "all")
 
     assert_not_includes parent.all_profiles, child_profile,
-      "Child's own profiles should be excluded when include_direct_profiles is false"
+      "Child's own profiles should be excluded when profile_inclusion_mode is none"
     assert_includes parent.all_profiles, grandchild_profile,
-      "Grandchild's profiles should still be visible (include_direct_profiles only affects the direct child)"
+      "Grandchild's profiles should still be visible (profile_inclusion_mode only affects the direct child)"
+  end
+
+  test "all_profiles includes only selected profiles when profile_inclusion_mode is selected" do
+    user = users(:one)
+    parent = user.groups.create!(name: "Parent Group")
+    child  = user.groups.create!(name: "Child Group")
+    profile_a = user.profiles.create!(name: "Profile A")
+    profile_b = user.profiles.create!(name: "Profile B")
+    child.profiles << profile_a
+    child.profiles << profile_b
+    GroupGroup.create!(parent_group: parent, child_group: child,
+                       subgroup_inclusion_mode: "all", profile_inclusion_mode: "selected",
+                       included_profile_ids: [ profile_a.id ])
+
+    assert_includes parent.all_profiles, profile_a,
+      "Profile A should be visible because it is in included_profile_ids"
+    assert_not_includes parent.all_profiles, profile_b,
+      "Profile B should be excluded because it is not in included_profile_ids"
+  end
+
+  test "descendant_tree shows only selected profiles when profile_inclusion_mode is selected" do
+    user = users(:one)
+    parent = user.groups.create!(name: "Parent Group")
+    child  = user.groups.create!(name: "Child Group")
+    profile_a = user.profiles.create!(name: "Profile A")
+    profile_b = user.profiles.create!(name: "Profile B")
+    child.profiles << profile_a
+    child.profiles << profile_b
+    GroupGroup.create!(parent_group: parent, child_group: child,
+                       subgroup_inclusion_mode: "all", profile_inclusion_mode: "selected",
+                       included_profile_ids: [ profile_a.id ])
+
+    tree = parent.descendant_tree
+    child_node = tree.find { |n| n[:group].name == "Child Group" }
+    assert child_node, "Child Group should appear in tree"
+    profile_names = child_node[:profiles].map { |e| e[:profile].name }
+    assert_includes profile_names, "Profile A"
+    assert_not_includes profile_names, "Profile B"
   end
 
   # -- InclusionOverride-driven traversal --
@@ -564,15 +602,15 @@ class GroupTest < ActiveSupport::TestCase
     mid  = user.groups.create!(name: "Mid")
     deep = user.groups.create!(name: "Deep")
     leaf = user.groups.create!(name: "Leaf")
-    root_mid  = GroupGroup.create!(parent_group: root, child_group: mid,  inclusion_mode: "all")
-    GroupGroup.create!(parent_group: mid,  child_group: deep, inclusion_mode: "all")
-    GroupGroup.create!(parent_group: deep, child_group: leaf, inclusion_mode: "all")
+    root_mid  = GroupGroup.create!(parent_group: root, child_group: mid,  subgroup_inclusion_mode: "all")
+    GroupGroup.create!(parent_group: mid,  child_group: deep, subgroup_inclusion_mode: "all")
+    GroupGroup.create!(parent_group: deep, child_group: leaf, subgroup_inclusion_mode: "all")
 
     # Without override, root sees all three descendants
     assert_equal %w[Deep Leaf Mid], root.descendant_sections.map(&:name).sort
 
     # Add an override on root→mid targeting deep: change to "none"
-    InclusionOverride.create!(group_group: root_mid, target_group: deep, inclusion_mode: "none")
+    InclusionOverride.create!(group_group: root_mid, target_group: deep, subgroup_inclusion_mode: "none")
 
     root_sections = root.descendant_sections.map(&:name)
     assert_includes     root_sections, "Mid",  "Mid should still appear"
@@ -596,15 +634,15 @@ class GroupTest < ActiveSupport::TestCase
     mid  = user.groups.create!(name: "Mid")
     deep = user.groups.create!(name: "Deep")
     leaf = user.groups.create!(name: "Leaf")
-    root_mid = GroupGroup.create!(parent_group: root, child_group: mid,  inclusion_mode: "all")
-    GroupGroup.create!(parent_group: mid,  child_group: deep, inclusion_mode: "none")
-    GroupGroup.create!(parent_group: deep, child_group: leaf, inclusion_mode: "all")
+    root_mid = GroupGroup.create!(parent_group: root, child_group: mid,  subgroup_inclusion_mode: "all")
+    GroupGroup.create!(parent_group: mid,  child_group: deep, subgroup_inclusion_mode: "none")
+    GroupGroup.create!(parent_group: deep, child_group: leaf, subgroup_inclusion_mode: "all")
 
     # Without override, leaf is invisible from root
     assert_not_includes root.descendant_sections.map(&:name), "Leaf"
 
     # Add an override on root→mid targeting deep: change to "all"
-    InclusionOverride.create!(group_group: root_mid, target_group: deep, inclusion_mode: "all")
+    InclusionOverride.create!(group_group: root_mid, target_group: deep, subgroup_inclusion_mode: "all")
 
     root_sections = root.descendant_sections.map(&:name)
     assert_includes root_sections, "Deep"
@@ -617,10 +655,10 @@ class GroupTest < ActiveSupport::TestCase
     assert deep_node[:overlapping], "Deep should still be overlapping when viewed from mid directly"
   end
 
-  test "override suppresses direct profiles of a deep group (include_direct_profiles false)" do
-    # root →(all)→ mid →(all, include_direct_profiles: true)→ deep
+  test "override suppresses direct profiles of a deep group (profile_inclusion_mode none)" do
+    # root →(all)→ mid →(all, profile_inclusion_mode: all)→ deep
     # deep has a direct profile (target_profile)
-    # Override on root→mid edge targeting deep: include_direct_profiles false
+    # Override on root→mid edge targeting deep: profile_inclusion_mode none
     # → target_profile invisible from root, but visible from mid
     user = users(:one)
     root = user.groups.create!(name: "Root")
@@ -628,19 +666,19 @@ class GroupTest < ActiveSupport::TestCase
     deep = user.groups.create!(name: "Deep")
     target_profile = user.profiles.create!(name: "Target Profile")
     deep.profiles << target_profile
-    root_mid = GroupGroup.create!(parent_group: root, child_group: mid, inclusion_mode: "all")
-    GroupGroup.create!(parent_group: mid, child_group: deep, inclusion_mode: "all",
-                       include_direct_profiles: true)
+    root_mid = GroupGroup.create!(parent_group: root, child_group: mid, subgroup_inclusion_mode: "all")
+    GroupGroup.create!(parent_group: mid, child_group: deep, subgroup_inclusion_mode: "all",
+                       profile_inclusion_mode: "all")
 
     # Without override, root sees the profile
     assert_includes root.all_profiles, target_profile
 
     # Add override: suppress direct profiles of deep in root→mid context
     InclusionOverride.create!(group_group: root_mid, target_group: deep,
-                              inclusion_mode: "all", include_direct_profiles: false)
+                              subgroup_inclusion_mode: "all", profile_inclusion_mode: "none")
 
     assert_not_includes root.all_profiles, target_profile,
-      "Target profile should be hidden from root via the include_direct_profiles override"
+      "Target profile should be hidden from root via the profile_inclusion_mode override"
 
     # mid's own view is unaffected
     assert_includes mid.all_profiles, target_profile,
@@ -654,8 +692,8 @@ class GroupTest < ActiveSupport::TestCase
     deep = user.groups.create!(name: "Deep")
     deep_profile = user.profiles.create!(name: "Deep Profile")
     deep.profiles << deep_profile
-    root_mid = GroupGroup.create!(parent_group: root, child_group: mid, inclusion_mode: "all")
-    GroupGroup.create!(parent_group: mid, child_group: deep, inclusion_mode: "all")
+    root_mid = GroupGroup.create!(parent_group: root, child_group: mid, subgroup_inclusion_mode: "all")
+    GroupGroup.create!(parent_group: mid, child_group: deep, subgroup_inclusion_mode: "all")
 
     # Without override: deep_profile appears in deep's tree node
     tree = root.descendant_tree
@@ -665,13 +703,13 @@ class GroupTest < ActiveSupport::TestCase
 
     # Add override: suppress deep's direct profiles
     InclusionOverride.create!(group_group: root_mid, target_group: deep,
-                              inclusion_mode: "all", include_direct_profiles: false)
+                              subgroup_inclusion_mode: "all", profile_inclusion_mode: "none")
 
     tree = root.descendant_tree
     mid_node  = tree.find { |n| n[:group].name == "Mid" }
     deep_node = mid_node[:children].find { |n| n[:group].name == "Deep" }
     assert_empty deep_node[:profiles],
-      "Deep's :profiles key must be empty after applying the include_direct_profiles override"
+      "Deep's :profiles key must be empty after applying the profile_inclusion_mode override"
   end
 
   test "override changes inclusion_mode and descendant_tree marks node correctly" do
@@ -680,8 +718,8 @@ class GroupTest < ActiveSupport::TestCase
     root = user.groups.create!(name: "Root")
     mid  = user.groups.create!(name: "Mid")
     deep = user.groups.create!(name: "Deep")
-    root_mid = GroupGroup.create!(parent_group: root, child_group: mid, inclusion_mode: "all")
-    GroupGroup.create!(parent_group: mid, child_group: deep, inclusion_mode: "none")
+    root_mid = GroupGroup.create!(parent_group: root, child_group: mid, subgroup_inclusion_mode: "all")
+    GroupGroup.create!(parent_group: mid, child_group: deep, subgroup_inclusion_mode: "none")
 
     # Without override: deep is overlapping from root
     tree = root.descendant_tree
@@ -690,7 +728,7 @@ class GroupTest < ActiveSupport::TestCase
     assert deep_node[:overlapping], "Deep should be overlapping before the override is applied"
 
     # Override: change deep's mode to "all" when traversed via root→mid
-    InclusionOverride.create!(group_group: root_mid, target_group: deep, inclusion_mode: "all")
+    InclusionOverride.create!(group_group: root_mid, target_group: deep, subgroup_inclusion_mode: "all")
 
     tree = root.descendant_tree
     mid_node  = tree.find { |n| n[:group].name == "Mid" }
@@ -715,14 +753,14 @@ class GroupTest < ActiveSupport::TestCase
     deep_profile = user.profiles.create!(name: "Deep Profile")
     deep.profiles << deep_profile
 
-    ga_mid = GroupGroup.create!(parent_group: group_a, child_group: mid, inclusion_mode: "all")
-    GroupGroup.create!(parent_group: group_b, child_group: mid, inclusion_mode: "all")
-    GroupGroup.create!(parent_group: mid,     child_group: deep, inclusion_mode: "all")
-    GroupGroup.create!(parent_group: deep,    child_group: leaf, inclusion_mode: "all")
+    ga_mid = GroupGroup.create!(parent_group: group_a, child_group: mid, subgroup_inclusion_mode: "all")
+    GroupGroup.create!(parent_group: group_b, child_group: mid, subgroup_inclusion_mode: "all")
+    GroupGroup.create!(parent_group: mid,     child_group: deep, subgroup_inclusion_mode: "all")
+    GroupGroup.create!(parent_group: deep,    child_group: leaf, subgroup_inclusion_mode: "all")
 
     # Override on group_a→mid edge targeting deep: stop recursion and hide its direct profiles
     InclusionOverride.create!(group_group: ga_mid, target_group: deep,
-                              inclusion_mode: "none", include_direct_profiles: false)
+                              subgroup_inclusion_mode: "none", profile_inclusion_mode: "none")
 
     # group_a's public page: mid and deep appear, leaf does not; deep's profiles are hidden
     ga_sections = group_a.descendant_sections.map(&:name)
@@ -731,7 +769,7 @@ class GroupTest < ActiveSupport::TestCase
     assert_not_includes ga_sections, "Leaf",
       "Leaf must be hidden on group_a's page — override stops recursion at deep"
     assert_not_includes group_a.all_profiles, deep_profile,
-      "Deep's direct profiles must be hidden on group_a's page — include_direct_profiles override"
+      "Deep's direct profiles must be hidden on group_a's page — profile_inclusion_mode override"
 
     # group_b's public page: full tree is visible (different ancestor edge, no override loaded)
     gb_sections = group_b.descendant_sections.map(&:name)
@@ -756,7 +794,7 @@ class GroupTest < ActiveSupport::TestCase
   test "editor_tree marks sub-groups as hidden when parent mode is none" do
     # Set Spectrum's edge in Alpha Clan to "none" (overlapping)
     gg = group_groups(:spectrum_in_alpha)
-    gg.update!(inclusion_mode: "none")
+    gg.update!(subgroup_inclusion_mode: "none")
 
     alpha = groups(:alpha_clan)
     tree = alpha.editor_tree
@@ -799,7 +837,7 @@ class GroupTest < ActiveSupport::TestCase
     # Add a child to Static Burst so we can test deep propagation
     user = users(:three)
     deep_child = user.groups.create!(name: "Deep Child")
-    GroupGroup.create!(parent_group: groups(:static_burst), child_group: deep_child, inclusion_mode: "all")
+    GroupGroup.create!(parent_group: groups(:static_burst), child_group: deep_child, subgroup_inclusion_mode: "all")
 
     tree = castle.editor_tree
     flux_node = tree.find { |n| n[:group] == groups(:flux) }
@@ -816,7 +854,7 @@ class GroupTest < ActiveSupport::TestCase
 
     # Update the existing fixture override to "none" mode
     override = inclusion_overrides(:rogue_pack_excluded_from_alpha)
-    override.update!(inclusion_mode: "none", included_subgroup_ids: [])
+    override.update!(subgroup_inclusion_mode: "none", included_subgroup_ids: [])
 
     tree = alpha.editor_tree
     spectrum_node = tree.find { |n| n[:group] == groups(:spectrum) }
@@ -835,7 +873,7 @@ class GroupTest < ActiveSupport::TestCase
   test "editor_tree marks nodes hidden when override uses selected and excludes them" do
     # The fixture already has this exact setup:
     # spectrum_in_alpha edge with override on prism_circle:
-    #   inclusion_mode: "selected", included_subgroup_ids: []
+    #   subgroup_inclusion_mode: "selected", included_subgroup_ids: []
     alpha = groups(:alpha_clan)
 
     tree = alpha.editor_tree

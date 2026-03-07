@@ -31,7 +31,7 @@ class Group < ApplicationRecord
         SELECT CAST(:root_id AS bigint) AS id, true AS recurse_further
         UNION ALL
          SELECT gg.child_group_id AS id,
-           (gg.inclusion_mode = 'all') AS recurse_further
+           (gg.subgroup_inclusion_mode = 'all') AS recurse_further
         FROM group_groups gg
         INNER JOIN tree t ON t.id = gg.parent_group_id
         WHERE t.recurse_further = true
@@ -41,7 +41,7 @@ class Group < ApplicationRecord
       SELECT DISTINCT (jsonb_array_elements_text(gg.included_subgroup_ids))::bigint AS id
       FROM group_groups gg
       INNER JOIN tree t ON t.id = gg.parent_group_id
-      WHERE gg.inclusion_mode = 'selected' AND t.recurse_further = true
+      WHERE gg.subgroup_inclusion_mode = 'selected' AND t.recurse_further = true
     SQL
     Group.connection.select_values(
       Group.sanitize_sql([ sql, root_id: id ])
@@ -140,37 +140,45 @@ class Group < ApplicationRecord
     build_tree(id, children_map, groups_by_id, seen_profile_ids, overrides_by_edge, {})
   end
 
-  # Override-aware set of group IDs whose profiles are visible from this group.
-  # Self is always included. Uses Ruby tree traversal for precise results.
+  # Override-aware profile visibility from this group.
+  # Self always includes all its own profiles. Returns a hash with:
+  #   all_group_ids:        group IDs where all profiles are visible
+  #   selected_profile_ids: individual profile IDs from "selected" mode groups
   # Uses reachable_group_ids for preloading so that overrides making a "none"
   # edge more permissive have the deeper descendants available in children_map.
-  def profile_visible_group_ids
+  def profile_visibility
     desc_ids = reachable_group_ids - [ id ]
-    result = Set.new([ id ])
-    return result.to_a if desc_ids.empty?
+    all_groups = Set.new([ id ])
+    selected_profiles = Set.new
+    return { all_group_ids: all_groups.to_a, selected_profile_ids: selected_profiles.to_a } if desc_ids.empty?
 
     children_map = build_children_map([ id ] + desc_ids)
     overrides_by_edge = build_overrides_by_edge(children_map)
 
-    collect_profile_group_ids(id, children_map, result, overrides_by_edge, {})
-    result.to_a
+    collect_profile_visibility(id, children_map, all_groups, selected_profiles, overrides_by_edge, {})
+    { all_group_ids: all_groups.to_a, selected_profile_ids: selected_profiles.to_a }
   end
 
   # Memoized variant for repeated reads during a single request
   # (e.g. sidebar panel partials rendered off the same loaded group).
   # Uses per-instance memoization rather than a cross-request cache so that
   # changes to edges / overrides are always reflected on the next request.
-  def cached_profile_visible_group_ids
-    @cached_profile_visible_group_ids ||= profile_visible_group_ids
+  def cached_profile_visibility
+    @cached_profile_visibility ||= profile_visibility
   end
 
   # Collect all profiles from this group and all descendant groups,
-  # respecting inclusion overrides and include_direct_profiles flags.
+  # respecting inclusion overrides and profile_inclusion_mode settings.
   # Profiles may appear in multiple sub-groups; the result is de-duplicated.
   def all_profiles
-    Profile.where(
-      id: GroupProfile.where(group_id: profile_visible_group_ids).select(:profile_id)
-    )
+    vis = profile_visibility
+    group_profile_ids = GroupProfile.where(group_id: vis[:all_group_ids]).select(:profile_id)
+
+    if vis[:selected_profile_ids].any?
+      Profile.where(id: group_profile_ids).or(Profile.where(id: vis[:selected_profile_ids]))
+    else
+      Profile.where(id: group_profile_ids)
+    end
   end
 
   # Build a tree for the tree editor. Shows ALL physical edges unfiltered
@@ -197,39 +205,46 @@ class Group < ApplicationRecord
                         .includes(avatar_attachment: :blob)
                         .index_by(&:id)
 
-    groups_with_profiles = Set.new(
-      GroupProfile.where(group_id: all_ids).distinct.pluck(:group_id)
-    )
+    # Preload profiles per group for the editor UI (needed for profile checkboxes)
+    gp_data = GroupProfile.where(group_id: all_ids).pluck(:group_id, :profile_id)
+    all_profile_ids = gp_data.map(&:last).uniq
+    profiles_by_id = all_profile_ids.any? ? Profile.where(id: all_profile_ids).order(:name).index_by(&:id) : {}
+    profiles_by_group = Hash.new { |h, k| h[k] = [] }
+    gp_data.each do |gid, pid|
+      profiles_by_group[gid] << profiles_by_id[pid] if profiles_by_id[pid]
+    end
+    profiles_by_group.each_value { |profs| profs.sort_by!(&:name) }
+    groups_with_profiles = Set.new(profiles_by_group.keys)
 
-    build_editor_nodes(id, children_map, groups_by_id, overrides_by_origin, nil, 0, [], groups_with_profiles)
+    build_editor_nodes(id, children_map, groups_by_id, overrides_by_origin, nil, 0, [], groups_with_profiles, profiles_by_group)
   end
 
   private
 
   # Build the children_map used by tree traversal methods.
-  # Includes the GroupGroup record id (gg_id) and include_direct_profiles flag
+  # Includes the GroupGroup record id (gg_id) and profile inclusion settings
   # so that override logic can look up and apply per-edge overrides.
-  # Returns { parent_group_id => [ { gg_id:, id:, inclusion_mode:, included_subgroup_ids:, include_direct_profiles: } ] }
+  # Returns { parent_group_id => [ { gg_id:, id:, subgroup_inclusion_mode:, included_subgroup_ids:, profile_inclusion_mode:, included_profile_ids: } ] }
   def build_children_map(parent_ids)
     GroupGroup.where(parent_group_id: parent_ids)
-      .pluck(:id, :parent_group_id, :child_group_id, :inclusion_mode, :included_subgroup_ids, :include_direct_profiles)
+      .pluck(:id, :parent_group_id, :child_group_id, :subgroup_inclusion_mode, :included_subgroup_ids, :profile_inclusion_mode, :included_profile_ids)
       .group_by { |r| r[1] }
       .transform_values do |rows|
-        rows.map { |r| { gg_id: r[0], id: r[2], inclusion_mode: r[3], included_subgroup_ids: Array(r[4]).map(&:to_i), include_direct_profiles: r[5] } }
+        rows.map { |r| { gg_id: r[0], id: r[2], subgroup_inclusion_mode: r[3], included_subgroup_ids: Array(r[4]).map(&:to_i), profile_inclusion_mode: r[5], included_profile_ids: Array(r[6]).map(&:to_i) } }
       end
   end
 
   # Preload inclusion overrides indexed by edge (group_group_id) then target_group_id.
-  # Returns { gg_id => { target_group_id => { inclusion_mode:, included_subgroup_ids:, include_direct_profiles: } } }
+  # Returns { gg_id => { target_group_id => { subgroup_inclusion_mode:, included_subgroup_ids:, profile_inclusion_mode:, included_profile_ids: } } }
   def build_overrides_by_edge(children_map)
     all_gg_ids = children_map.values.flatten.map { |e| e[:gg_id] }
     return {} if all_gg_ids.empty?
 
     InclusionOverride.where(group_group_id: all_gg_ids)
-      .pluck(:group_group_id, :target_group_id, :inclusion_mode, :included_subgroup_ids, :include_direct_profiles)
+      .pluck(:group_group_id, :target_group_id, :subgroup_inclusion_mode, :included_subgroup_ids, :profile_inclusion_mode, :included_profile_ids)
       .group_by(&:first)
       .transform_values do |rows|
-        rows.to_h { |r| [ r[1], { inclusion_mode: r[2], included_subgroup_ids: Array(r[3]).map(&:to_i), include_direct_profiles: r[4] } ] }
+        rows.to_h { |r| [ r[1], { subgroup_inclusion_mode: r[2], included_subgroup_ids: Array(r[3]).map(&:to_i), profile_inclusion_mode: r[4], included_profile_ids: Array(r[5]).map(&:to_i) } ] }
       end
   end
 
@@ -247,7 +262,7 @@ class Group < ApplicationRecord
   #   current_mode:, current_included_ids:, current_include_profiles: — effective settings
   #   hidden_from_public: — true when this node won't appear in the public view
   #     (because a parent's mode excludes it, or an ancestor is already hidden)
-  def build_editor_nodes(parent_id, children_map, groups_by_id, overrides_by_origin, origin_gg_id, depth, path, groups_with_profiles,
+  def build_editor_nodes(parent_id, children_map, groups_by_id, overrides_by_origin, origin_gg_id, depth, path, groups_with_profiles, profiles_by_group,
                          parent_mode: nil, parent_included_ids: nil, ancestor_hidden: false)
     (children_map[parent_id] || [])
       .filter_map { |entry| groups_by_id[entry[:id]] ? [ groups_by_id[entry[:id]], entry ] : nil }
@@ -257,29 +272,33 @@ class Group < ApplicationRecord
         current_origin = depth == 0 ? entry[:gg_id] : origin_gg_id
         override = depth > 0 ? overrides_by_origin.dig(current_origin, g.id) : nil
 
-        eff_mode = override ? override.inclusion_mode : entry[:inclusion_mode]
+        eff_mode = override ? override.subgroup_inclusion_mode : entry[:subgroup_inclusion_mode]
         eff_included_ids = override ? Array(override.included_subgroup_ids).map(&:to_i) : entry[:included_subgroup_ids]
-        eff_include_profiles = override.nil? ? entry[:include_direct_profiles] : override.include_direct_profiles
+        eff_profile_mode = override ? override.profile_inclusion_mode : entry[:profile_inclusion_mode]
+        eff_included_profile_ids = override ? Array(override.included_profile_ids).map(&:to_i) : entry[:included_profile_ids]
 
         hidden = node_hidden_from_public?(depth, ancestor_hidden, parent_mode, parent_included_ids, g.id)
 
         {
           group: g,
           has_profiles: groups_with_profiles.include?(g.id),
+          profiles_list: profiles_by_group[g.id] || [],
           children: build_editor_nodes(
-            g.id, children_map, groups_by_id, overrides_by_origin, current_origin, depth + 1, path + [ g.id ], groups_with_profiles,
+            g.id, children_map, groups_by_id, overrides_by_origin, current_origin, depth + 1, path + [ g.id ], groups_with_profiles, profiles_by_group,
             parent_mode: eff_mode, parent_included_ids: eff_included_ids, ancestor_hidden: hidden
           ),
           depth: depth + 1,
           gg_id: entry[:gg_id],
           origin_gg_id: current_origin,
-          edge_mode: entry[:inclusion_mode],
+          edge_mode: entry[:subgroup_inclusion_mode],
           edge_included_ids: entry[:included_subgroup_ids],
-          edge_include_profiles: entry[:include_direct_profiles],
+          edge_profile_mode: entry[:profile_inclusion_mode],
+          edge_included_profile_ids: entry[:included_profile_ids],
           override: override,
           current_mode: eff_mode,
           current_included_ids: eff_included_ids,
-          current_include_profiles: eff_include_profiles,
+          current_profile_mode: eff_profile_mode,
+          current_included_profile_ids: eff_included_profile_ids,
           hidden_from_public: hidden
         }
       end
@@ -300,13 +319,13 @@ class Group < ApplicationRecord
 
   # Resolve effective settings for a child group entry, accounting for any
   # override targeting this group in the current traversal context.
-  # Returns [inclusion_mode, included_subgroup_ids, include_direct_profiles].
+  # Returns [subgroup_inclusion_mode, included_subgroup_ids, profile_inclusion_mode, included_profile_ids].
   def effective_settings(entry, overrides_map)
     override = overrides_map[entry[:id]]
     if override
-      [ override[:inclusion_mode], override[:included_subgroup_ids], override[:include_direct_profiles] ]
+      [ override[:subgroup_inclusion_mode], override[:included_subgroup_ids], override[:profile_inclusion_mode], override[:included_profile_ids] ]
     else
-      [ entry[:inclusion_mode], entry[:included_subgroup_ids], entry[:include_direct_profiles] ]
+      [ entry[:subgroup_inclusion_mode], entry[:included_subgroup_ids], entry[:profile_inclusion_mode], entry[:included_profile_ids] ]
     end
   end
 
@@ -325,7 +344,7 @@ class Group < ApplicationRecord
       .sort_by { |g, _| g.name }
       .flat_map do |g, entry|
         merged_map = merge_overrides(entry, overrides_by_edge, overrides_map)
-        eff_mode, eff_subgroups, = effective_settings(entry, merged_map)
+        eff_mode, eff_subgroups, _eff_profile_mode, _eff_profile_ids = effective_settings(entry, merged_map)
 
         case eff_mode
         when "all"
@@ -348,7 +367,7 @@ class Group < ApplicationRecord
       .sort_by { |sg, _| sg.name }
       .flat_map do |sg, se|
         merged_map = merge_overrides(se, overrides_by_edge, overrides_map)
-        eff_mode, eff_subgroups, = effective_settings(se, merged_map)
+        eff_mode, eff_subgroups, _eff_profile_mode, _eff_profile_ids = effective_settings(se, merged_map)
 
         case eff_mode
         when "all"
@@ -369,7 +388,7 @@ class Group < ApplicationRecord
       .sort_by { |g, _| g.name }
       .map do |g, entry|
         merged_map = merge_overrides(entry, overrides_by_edge, overrides_map)
-        eff_mode, eff_subgroups, eff_include_profiles = effective_settings(entry, merged_map)
+        eff_mode, eff_subgroups, eff_profile_mode, eff_profile_ids = effective_settings(entry, merged_map)
 
         overlapping = eff_mode == "none"
         children = case eff_mode
@@ -381,9 +400,11 @@ class Group < ApplicationRecord
                      []
         end
 
+        visible_profiles = filter_profiles_by_mode(g.profiles.to_a, eff_profile_mode, eff_profile_ids)
+
         {
           group: g,
-          profiles: eff_include_profiles ? tag_profiles(g.profiles.to_a, seen_profile_ids) : [],
+          profiles: tag_profiles(visible_profiles, seen_profile_ids),
           children: children,
           overlapping: overlapping
         }
@@ -400,7 +421,7 @@ class Group < ApplicationRecord
         next unless child_group
 
         merged_map = merge_overrides(e, overrides_by_edge, overrides_map)
-        eff_mode, eff_subgroups, eff_include_profiles = effective_settings(e, merged_map)
+        eff_mode, eff_subgroups, eff_profile_mode, eff_profile_ids = effective_settings(e, merged_map)
 
         child_children = case eff_mode
         when "all"
@@ -411,47 +432,59 @@ class Group < ApplicationRecord
                            []
         end
 
+        visible_profiles = filter_profiles_by_mode(child_group.profiles.to_a, eff_profile_mode, eff_profile_ids)
+
         {
           group: child_group,
-          profiles: eff_include_profiles ? tag_profiles(child_group.profiles.to_a, seen_profile_ids) : [],
+          profiles: tag_profiles(visible_profiles, seen_profile_ids),
           children: child_children,
           overlapping: eff_mode == "none"
         }
       end
   end
 
-  # -- Profile-visible group ID collection (for all_profiles) ----------------
+  # -- Profile visibility collection (for all_profiles) ----------------
 
-  def collect_profile_group_ids(parent_id, children_map, result, overrides_by_edge, overrides_map)
+  def collect_profile_visibility(parent_id, children_map, all_groups, selected_profiles, overrides_by_edge, overrides_map)
     (children_map[parent_id] || []).each do |entry|
       merged_map = merge_overrides(entry, overrides_by_edge, overrides_map)
-      eff_mode, eff_subgroups, eff_include_profiles = effective_settings(entry, merged_map)
+      eff_mode, eff_subgroups, eff_profile_mode, eff_profile_ids = effective_settings(entry, merged_map)
 
-      result.add(entry[:id]) if eff_include_profiles
+      case eff_profile_mode
+      when "all"
+        all_groups.add(entry[:id])
+      when "selected"
+        eff_profile_ids.each { |pid| selected_profiles.add(pid) }
+      end
 
       case eff_mode
       when "all"
-        collect_profile_group_ids(entry[:id], children_map, result, overrides_by_edge, merged_map)
+        collect_profile_visibility(entry[:id], children_map, all_groups, selected_profiles, overrides_by_edge, merged_map)
       when "selected"
-        collect_selected_profile_group_ids(entry[:id], eff_subgroups, children_map, result, overrides_by_edge, merged_map)
+        collect_selected_profile_visibility(entry[:id], eff_subgroups, children_map, all_groups, selected_profiles, overrides_by_edge, merged_map)
       end
     end
   end
 
-  def collect_selected_profile_group_ids(parent_id, included_ids, children_map, result, overrides_by_edge, overrides_map)
+  def collect_selected_profile_visibility(parent_id, included_ids, children_map, all_groups, selected_profiles, overrides_by_edge, overrides_map)
     (children_map[parent_id] || [])
       .select { |e| included_ids.include?(e[:id]) }
       .each do |e|
         merged_map = merge_overrides(e, overrides_by_edge, overrides_map)
-        eff_mode, eff_subgroups, eff_include_profiles = effective_settings(e, merged_map)
+        eff_mode, eff_subgroups, eff_profile_mode, eff_profile_ids = effective_settings(e, merged_map)
 
-        result.add(e[:id]) if eff_include_profiles
+        case eff_profile_mode
+        when "all"
+          all_groups.add(e[:id])
+        when "selected"
+          eff_profile_ids.each { |pid| selected_profiles.add(pid) }
+        end
 
         case eff_mode
         when "all"
-          collect_profile_group_ids(e[:id], children_map, result, overrides_by_edge, merged_map)
+          collect_profile_visibility(e[:id], children_map, all_groups, selected_profiles, overrides_by_edge, merged_map)
         when "selected"
-          collect_selected_profile_group_ids(e[:id], eff_subgroups, children_map, result, overrides_by_edge, merged_map)
+          collect_selected_profile_visibility(e[:id], eff_subgroups, children_map, all_groups, selected_profiles, overrides_by_edge, merged_map)
         end
       end
   end
@@ -470,7 +503,7 @@ class Group < ApplicationRecord
   def collect_traversed_ids(parent_id, children_map, overrides_by_edge, overrides_map, result)
     (children_map[parent_id] || []).each do |entry|
       merged_map = merge_overrides(entry, overrides_by_edge, overrides_map)
-      eff_mode, eff_subgroups, = effective_settings(entry, merged_map)
+      eff_mode, eff_subgroups, _eff_profile_mode, _eff_profile_ids = effective_settings(entry, merged_map)
       result.add(entry[:id])
 
       case eff_mode
@@ -487,7 +520,7 @@ class Group < ApplicationRecord
       .select { |e| included_ids.include?(e[:id]) }
       .each do |e|
         merged_map = merge_overrides(e, overrides_by_edge, overrides_map)
-        eff_mode, eff_subgroups, = effective_settings(e, merged_map)
+        eff_mode, eff_subgroups, _eff_profile_mode, _eff_profile_ids = effective_settings(e, merged_map)
         result.add(e[:id])
 
         case eff_mode
@@ -500,6 +533,19 @@ class Group < ApplicationRecord
   end
 
   # -- Shared helpers -------------------------------------------------------
+
+  # Filter a group's profiles based on profile inclusion mode.
+  # Returns the filtered array of profiles.
+  def filter_profiles_by_mode(profiles, profile_mode, included_profile_ids)
+    case profile_mode
+    when "all"
+      profiles
+    when "selected"
+      profiles.select { |p| included_profile_ids.include?(p.id) }
+    else
+      []
+    end
+  end
 
   # Tag each profile with :repeated based on whether it has been seen before.
   # Mutates seen_profile_ids in place so later nodes see earlier occurrences.

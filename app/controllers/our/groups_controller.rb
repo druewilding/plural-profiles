@@ -94,8 +94,8 @@ class Our::GroupsController < ApplicationController
 
     attrs = {}
 
-    if params[:inclusion_mode].present?
-      mode = params[:inclusion_mode].to_s
+    if params[:subgroup_inclusion_mode].present?
+      mode = params[:subgroup_inclusion_mode].to_s
       mode = "none" unless allowed_modes.include?(mode)
 
       if mode == "selected"
@@ -107,13 +107,24 @@ class Our::GroupsController < ApplicationController
         attrs[:included_subgroup_ids] = []
       end
 
-      attrs[:inclusion_mode] = mode
+      attrs[:subgroup_inclusion_mode] = mode
     end
 
-    # include_direct_profiles is only rendered when the child has direct profiles,
+    # profile_inclusion_mode is only rendered when the child has direct profiles,
     # so the param may be absent — only apply it when present.
-    if params.key?(:include_direct_profiles)
-      attrs[:include_direct_profiles] = params[:include_direct_profiles] == "1"
+    if params[:profile_inclusion_mode].present?
+      profile_mode = params[:profile_inclusion_mode].to_s
+      profile_mode = "none" unless allowed_modes.include?(profile_mode)
+
+      if profile_mode == "selected"
+        included = Array(params[:included_profile_ids]).map(&:to_i)
+        # Only allow profiles that are direct members of the child group
+        attrs[:included_profile_ids] = included & link.child_group.profile_ids
+      else
+        attrs[:included_profile_ids] = []
+      end
+
+      attrs[:profile_inclusion_mode] = profile_mode
     end
 
     link.update!(attrs) if attrs.any?
@@ -142,10 +153,10 @@ class Our::GroupsController < ApplicationController
 
     override = edge.inclusion_overrides.find_or_initialize_by(target_group: target_group)
 
-    mode = params[:inclusion_mode].to_s
+    mode = params[:subgroup_inclusion_mode].to_s
     mode = "none" unless %w[all selected none].include?(mode)
 
-    attrs = { inclusion_mode: mode }
+    attrs = { subgroup_inclusion_mode: mode }
 
     if mode == "selected"
       included = Array(params[:included_subgroup_ids]).map(&:to_i)
@@ -154,8 +165,18 @@ class Our::GroupsController < ApplicationController
       attrs[:included_subgroup_ids] = []
     end
 
-    if params.key?(:include_direct_profiles)
-      attrs[:include_direct_profiles] = params[:include_direct_profiles] == "1"
+    if params[:profile_inclusion_mode].present?
+      profile_mode = params[:profile_inclusion_mode].to_s
+      profile_mode = "none" unless %w[all selected none].include?(profile_mode)
+
+      if profile_mode == "selected"
+        included = Array(params[:included_profile_ids]).map(&:to_i)
+        attrs[:included_profile_ids] = included & target_group.profile_ids
+      else
+        attrs[:included_profile_ids] = []
+      end
+
+      attrs[:profile_inclusion_mode] = profile_mode
     end
 
     override.assign_attributes(attrs)

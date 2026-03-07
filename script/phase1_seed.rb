@@ -63,14 +63,14 @@ ActiveRecord::Base.transaction do
   #     flux → static_burst (all)           ← excluded from castle_clan by selected mode
   #   castle_clan → castle_flux (all)
 
-  GroupGroup.create!(parent_group: alpha_clan,   child_group: spectrum,     inclusion_mode: "all")
-  GroupGroup.create!(parent_group: spectrum,     child_group: prism_circle, inclusion_mode: "all")
-  GroupGroup.create!(parent_group: prism_circle, child_group: rogue_pack,   inclusion_mode: "all")
-  GroupGroup.create!(parent_group: castle_clan,   child_group: flux,         inclusion_mode: "selected",
-                     included_subgroup_ids: [ echo_shard.id ], include_direct_profiles: false)
-  GroupGroup.create!(parent_group: flux,         child_group: echo_shard,   inclusion_mode: "all")
-  GroupGroup.create!(parent_group: flux,         child_group: static_burst, inclusion_mode: "all")
-  GroupGroup.create!(parent_group: castle_clan,   child_group: castle_flux,   inclusion_mode: "all")
+  GroupGroup.create!(parent_group: alpha_clan,   child_group: spectrum,     subgroup_inclusion_mode: "all")
+  GroupGroup.create!(parent_group: spectrum,     child_group: prism_circle, subgroup_inclusion_mode: "all")
+  GroupGroup.create!(parent_group: prism_circle, child_group: rogue_pack,   subgroup_inclusion_mode: "all")
+  GroupGroup.create!(parent_group: castle_clan,   child_group: flux,         subgroup_inclusion_mode: "selected",
+                     included_subgroup_ids: [ echo_shard.id ], profile_inclusion_mode: "none")
+  GroupGroup.create!(parent_group: flux,         child_group: echo_shard,   subgroup_inclusion_mode: "all")
+  GroupGroup.create!(parent_group: flux,         child_group: static_burst, subgroup_inclusion_mode: "all")
+  GroupGroup.create!(parent_group: castle_clan,   child_group: castle_flux,   subgroup_inclusion_mode: "all")
 
   puts "Created 7 group relationships."
 
@@ -79,7 +79,7 @@ ActiveRecord::Base.transaction do
   # Demonstrates Phase 3: deep exclusion without touching the intermediate group.
   #
   #   Override on the alpha_clan → spectrum edge, targeting prism_circle:
-  #     inclusion_mode: "selected", included_subgroup_ids: []
+  #     subgroup_inclusion_mode: "selected", included_subgroup_ids: []
   #
   #   Effect: from Alpha Clan's perspective, Prism Circle exposes no sub-groups,
   #   so Rogue Pack is excluded. Spectrum's own tree is unaffected — Rogue Pack
@@ -89,7 +89,7 @@ ActiveRecord::Base.transaction do
   InclusionOverride.create!(
     group_group: spectrum_in_alpha_edge,
     target_group: prism_circle,
-    inclusion_mode: "selected",
+    subgroup_inclusion_mode: "selected",
     included_subgroup_ids: []
   )
 
