@@ -23,13 +23,13 @@ stray:
   user: three
   uuid: abc10000-0000-0000-0000-000000000001
   name: Stray
-  description: In rogue_pack — should NOT appear in alpha_clan.
+  description: In prism_circle & rogue_pack — should NOT appear in alpha_clan (excluded by profile override).
 
 ember:
   user: three
   uuid: abc10000-0000-0000-0000-000000000002
   name: Ember
-  description: In prism_circle — SHOULD appear in alpha_clan.
+  description: In prism_circle — SHOULD appear in alpha_clan (selected in profile override).
 
 drift:
   user: three

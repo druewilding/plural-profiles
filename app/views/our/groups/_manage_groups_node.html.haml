@@ -6,10 +6,10 @@
 - is_direct = node[:depth] == 1
 - has_override = node[:override].present?
 - hidden = node[:hidden_from_public]
-- profiles_only_hidden = !hidden && !node[:current_include_profiles] && has_profiles
+- profiles_only_hidden = !hidden && node[:current_profile_mode] != "all" && has_profiles
 - uid = "te_#{node[:gg_id]}_#{group.id}"
-- mode = node[:current_mode]
-- include_profiles = node[:current_include_profiles]
+- subgroup_mode = node[:current_mode]
+- profile_mode = node[:current_profile_mode]
 
 %li.tree-editor__node
   %details.tree-editor__details{class: ("tree-editor__details--hidden" if hidden)}
@@ -40,20 +40,20 @@
                 %legend Sub-groups
                 .tree-editor__radio-group
                   %label{for: "#{uid}_mode_all"}
-                    = radio_button_tag "inclusion_mode", "all", mode == "all", id: "#{uid}_mode_all"
+                    = radio_button_tag "subgroup_inclusion_mode", "all", subgroup_mode == "all", id: "#{uid}_mode_all"
                     All
                   %label{for: "#{uid}_mode_selected"}
-                    = radio_button_tag "inclusion_mode", "selected", mode == "selected", id: "#{uid}_mode_selected"
+                    = radio_button_tag "subgroup_inclusion_mode", "selected", subgroup_mode == "selected", id: "#{uid}_mode_selected"
                     Selected
                   %label{for: "#{uid}_mode_none"}
-                    = radio_button_tag "inclusion_mode", "none", mode == "none", id: "#{uid}_mode_none"
+                    = radio_button_tag "subgroup_inclusion_mode", "none", subgroup_mode == "none", id: "#{uid}_mode_none"
                     None
                 .checkbox-list.tree-editor__checkbox-list
                   - node[:children].each do |child|
                     - child_id = child[:group].id
-                    - checked = mode == "all" || (mode == "selected" && node[:current_included_ids].include?(child_id))
+                    - checked = subgroup_mode == "all" || (subgroup_mode == "selected" && node[:current_included_ids].include?(child_id))
                     %label.checkbox-label{for: "#{uid}_sub_#{child_id}"}
-                      = check_box_tag "included_subgroup_ids[]", child_id, checked, id: "#{uid}_sub_#{child_id}", data: { inclusion_target: "checkbox" }
+                      = check_box_tag "included_subgroup_ids[]", child_id, checked, id: "#{uid}_sub_#{child_id}", data: { inclusion_target: "subgroupCheckbox" }
                       = child[:group].name
 
             - if has_profiles
@@ -61,11 +61,20 @@
                 %legend Profiles
                 .tree-editor__radio-group
                   %label{for: "#{uid}_profiles_all"}
-                    = radio_button_tag "include_direct_profiles", "1", include_profiles, id: "#{uid}_profiles_all"
+                    = radio_button_tag "profile_inclusion_mode", "all", profile_mode == "all", id: "#{uid}_profiles_all"
                     All
+                  %label{for: "#{uid}_profiles_selected"}
+                    = radio_button_tag "profile_inclusion_mode", "selected", profile_mode == "selected", id: "#{uid}_profiles_selected"
+                    Selected
                   %label{for: "#{uid}_profiles_none"}
-                    = radio_button_tag "include_direct_profiles", "0", !include_profiles, id: "#{uid}_profiles_none"
+                    = radio_button_tag "profile_inclusion_mode", "none", profile_mode == "none", id: "#{uid}_profiles_none"
                     None
+                .checkbox-list.tree-editor__checkbox-list
+                  - node[:profiles_list].each do |profile|
+                    - checked = profile_mode == "all" || (profile_mode == "selected" && node[:current_included_profile_ids].include?(profile.id))
+                    %label.checkbox-label{for: "#{uid}_prof_#{profile.id}"}
+                      = check_box_tag "included_profile_ids[]", profile.id, checked, id: "#{uid}_prof_#{profile.id}", data: { inclusion_target: "profileCheckbox" }
+                      = profile.name
 
           .tree-editor__actions
             = f.submit "Save", class: "btn btn--small"
@@ -99,20 +108,20 @@
                   %legend Sub-groups
                   .tree-editor__radio-group
                     %label{for: "#{uid}_mode_all"}
-                      = radio_button_tag "inclusion_mode", "all", mode == "all", id: "#{uid}_mode_all"
+                      = radio_button_tag "subgroup_inclusion_mode", "all", subgroup_mode == "all", id: "#{uid}_mode_all"
                       All
                     %label{for: "#{uid}_mode_selected"}
-                      = radio_button_tag "inclusion_mode", "selected", mode == "selected", id: "#{uid}_mode_selected"
+                      = radio_button_tag "subgroup_inclusion_mode", "selected", subgroup_mode == "selected", id: "#{uid}_mode_selected"
                       Selected
                     %label{for: "#{uid}_mode_none"}
-                      = radio_button_tag "inclusion_mode", "none", mode == "none", id: "#{uid}_mode_none"
+                      = radio_button_tag "subgroup_inclusion_mode", "none", subgroup_mode == "none", id: "#{uid}_mode_none"
                       None
                   .checkbox-list.tree-editor__checkbox-list
                     - node[:children].each do |child|
                       - child_id = child[:group].id
-                      - checked = mode == "all" || (mode == "selected" && node[:current_included_ids].include?(child_id))
+                      - checked = subgroup_mode == "all" || (subgroup_mode == "selected" && node[:current_included_ids].include?(child_id))
                       %label.checkbox-label{for: "#{uid}_sub_#{child_id}"}
-                        = check_box_tag "included_subgroup_ids[]", child_id, checked, id: "#{uid}_sub_#{child_id}", data: { inclusion_target: "checkbox" }
+                        = check_box_tag "included_subgroup_ids[]", child_id, checked, id: "#{uid}_sub_#{child_id}", data: { inclusion_target: "subgroupCheckbox" }
                         = child[:group].name
 
               - if has_profiles
@@ -120,11 +129,20 @@
                   %legend Profiles
                   .tree-editor__radio-group
                     %label{for: "#{uid}_profiles_all"}
-                      = radio_button_tag "include_direct_profiles", "1", include_profiles, id: "#{uid}_profiles_all"
+                      = radio_button_tag "profile_inclusion_mode", "all", profile_mode == "all", id: "#{uid}_profiles_all"
                       All
+                    %label{for: "#{uid}_profiles_selected"}
+                      = radio_button_tag "profile_inclusion_mode", "selected", profile_mode == "selected", id: "#{uid}_profiles_selected"
+                      Selected
                     %label{for: "#{uid}_profiles_none"}
-                      = radio_button_tag "include_direct_profiles", "0", !include_profiles, id: "#{uid}_profiles_none"
+                      = radio_button_tag "profile_inclusion_mode", "none", profile_mode == "none", id: "#{uid}_profiles_none"
                       None
+                  .checkbox-list.tree-editor__checkbox-list
+                    - node[:profiles_list].each do |profile|
+                      - checked = profile_mode == "all" || (profile_mode == "selected" && node[:current_included_profile_ids].include?(profile.id))
+                      %label.checkbox-label{for: "#{uid}_prof_#{profile.id}"}
+                        = check_box_tag "included_profile_ids[]", profile.id, checked, id: "#{uid}_prof_#{profile.id}", data: { inclusion_target: "profileCheckbox" }
+                        = profile.name
 
             .tree-editor__actions
               = f.submit has_override ? "Save override" : "Set override", class: "btn btn--small"

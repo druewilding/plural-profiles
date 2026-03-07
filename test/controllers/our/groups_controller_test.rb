@@ -8,6 +8,38 @@ class Our::GroupsControllerTest < ActionDispatch::IntegrationTest
     @other_group = groups(:family)
   end
 
+  test "update_override does not reset subgroup_inclusion_mode when param is absent" do
+    user_three = users(:three)
+    sign_in_as user_three
+    alpha = groups(:alpha_clan)
+    edge = alpha.child_links.find_by(child_group: groups(:spectrum))
+    target = groups(:prism_circle)
+    override = inclusion_overrides(:rogue_pack_excluded_from_alpha)
+
+    # Precondition: override has subgroup_inclusion_mode 'selected', included_subgroup_ids []
+    assert_equal "selected", override.subgroup_inclusion_mode
+    assert_equal [], override.included_subgroup_ids
+    assert_equal "selected", override.profile_inclusion_mode
+    ember_id = profiles(:ember).id
+    assert_equal [ ember_id ], override.included_profile_ids
+
+    # Submit only profile_inclusion_mode (simulate UI for group with no children)
+    patch update_override_our_group_path(alpha), params: {
+      edge_id: edge.id,
+      target_group_id: target.id,
+      profile_inclusion_mode: "none"
+    }
+    assert_redirected_to manage_groups_our_group_path(alpha)
+
+    override.reload
+    # subgroup_inclusion_mode and included_subgroup_ids should be unchanged
+    assert_equal "selected", override.subgroup_inclusion_mode
+    assert_equal [], override.included_subgroup_ids
+    # profile_inclusion_mode should be updated
+    assert_equal "none", override.profile_inclusion_mode
+    assert_equal [], override.included_profile_ids
+  end
+
   # -- Authenticated happy paths --
 
   test "index lists current user groups" do
@@ -380,23 +412,23 @@ class Our::GroupsControllerTest < ActionDispatch::IntegrationTest
     sign_in_as @user
     everyone = groups(:everyone)
     link = group_groups(:friends_in_everyone)
-    link.update!(inclusion_mode: "all")
-    assert link.all?
+    link.update!(subgroup_inclusion_mode: "all")
+    assert link.subgroup_all?
 
-    patch update_relationship_our_group_path(everyone), params: { group_id: @group.id, inclusion_mode: "none" }
+    patch update_relationship_our_group_path(everyone), params: { group_id: @group.id, subgroup_inclusion_mode: "none" }
     assert_redirected_to manage_groups_our_group_path(everyone)
-    assert link.reload.none?
+    assert link.reload.subgroup_none?
   end
 
   test "update_relationship switches none back to all" do
     sign_in_as @user
     everyone = groups(:everyone)
     link = group_groups(:friends_in_everyone)
-    link.update!(inclusion_mode: "none")
+    link.update!(subgroup_inclusion_mode: "none")
 
-    patch update_relationship_our_group_path(everyone), params: { group_id: @group.id, inclusion_mode: "all" }
+    patch update_relationship_our_group_path(everyone), params: { group_id: @group.id, subgroup_inclusion_mode: "all" }
     assert_redirected_to manage_groups_our_group_path(everyone)
-    assert link.reload.all?
+    assert link.reload.subgroup_all?
   end
 
   test "update_relationship with invalid group_id shows alert" do
@@ -421,21 +453,21 @@ class Our::GroupsControllerTest < ActionDispatch::IntegrationTest
     assert_redirected_to group_path(everyone.uuid)
   end
 
-  test "update_relationship accepts inclusion_mode selected and persisted ids" do
+  test "update_relationship accepts subgroup_inclusion_mode selected and persisted ids" do
     sign_in_as @user
     everyone = groups(:everyone)
     link = group_groups(:friends_in_everyone)
 
     # create a child sub-group under friends so it can be selected
     sub = @user.groups.create!(name: "Subgroup")
-    GroupGroup.create!(parent_group: groups(:friends), child_group: sub, inclusion_mode: "all")
+    GroupGroup.create!(parent_group: groups(:friends), child_group: sub, subgroup_inclusion_mode: "all")
 
-    assert_not link.selected?
+    assert_not link.subgroup_selected?
 
-    patch update_relationship_our_group_path(everyone), params: { group_id: @group.id, inclusion_mode: "selected", included_subgroup_ids: [ sub.id ] }
+    patch update_relationship_our_group_path(everyone), params: { group_id: @group.id, subgroup_inclusion_mode: "selected", included_subgroup_ids: [ sub.id ] }
     assert_redirected_to manage_groups_our_group_path(everyone)
     link.reload
-    assert link.selected?
+    assert link.subgroup_selected?
     assert_equal [ sub.id ], link.included_subgroup_ids.map(&:to_i)
   end
 
@@ -446,108 +478,95 @@ class Our::GroupsControllerTest < ActionDispatch::IntegrationTest
 
     # prepare existing included ids
     sub = @user.groups.create!(name: "Subgroup2")
-    GroupGroup.create!(parent_group: groups(:friends), child_group: sub, inclusion_mode: "all")
-    patch update_relationship_our_group_path(everyone), params: { group_id: @group.id, inclusion_mode: "selected", included_subgroup_ids: [ sub.id ] }
+    GroupGroup.create!(parent_group: groups(:friends), child_group: sub, subgroup_inclusion_mode: "all")
+    patch update_relationship_our_group_path(everyone), params: { group_id: @group.id, subgroup_inclusion_mode: "selected", included_subgroup_ids: [ sub.id ] }
     link.reload
-    assert link.selected?
+    assert link.subgroup_selected?
     assert_equal [ sub.id ], link.included_subgroup_ids.map(&:to_i)
 
-    patch update_relationship_our_group_path(everyone), params: { group_id: @group.id, inclusion_mode: "all" }
+    patch update_relationship_our_group_path(everyone), params: { group_id: @group.id, subgroup_inclusion_mode: "all" }
     link.reload
-    assert link.all?
+    assert link.subgroup_all?
     assert_equal [], link.included_subgroup_ids
   end
 
-  # -- Update relationship: include_direct_profiles --
+  # -- Update relationship: profile_inclusion_mode --
 
-  test "update_relationship sets include_direct_profiles true via explicit param" do
+  test "update_relationship sets profile_inclusion_mode to all via explicit param" do
     sign_in_as @user
     everyone = groups(:everyone)
     link = group_groups(:friends_in_everyone)
-    link.update!(inclusion_mode: "all", include_direct_profiles: false)
-
-    sub = @user.groups.create!(name: "SubExplicit")
-    GroupGroup.create!(parent_group: groups(:friends), child_group: sub, inclusion_mode: "all")
+    link.update!(subgroup_inclusion_mode: "all", profile_inclusion_mode: "none")
 
     patch update_relationship_our_group_path(everyone), params: {
-      group_id: @group.id, inclusion_mode: "selected", included_subgroup_ids: [ sub.id ],
-      include_direct_profiles: "1"
+      group_id: @group.id, profile_inclusion_mode: "all"
     }
     link.reload
-    assert link.selected?
-    assert link.include_direct_profiles
+    assert link.profile_all?
   end
 
-  test "update_relationship sets include_direct_profiles false via explicit param" do
+  test "update_relationship sets profile_inclusion_mode to none via explicit param" do
     sign_in_as @user
     everyone = groups(:everyone)
     link = group_groups(:friends_in_everyone)
-    link.update!(inclusion_mode: "all", include_direct_profiles: true)
-
-    sub = @user.groups.create!(name: "SubFalse")
-    GroupGroup.create!(parent_group: groups(:friends), child_group: sub, inclusion_mode: "all")
+    link.update!(subgroup_inclusion_mode: "all", profile_inclusion_mode: "all")
 
     patch update_relationship_our_group_path(everyone), params: {
-      group_id: @group.id, inclusion_mode: "selected", included_subgroup_ids: [ sub.id ],
-      include_direct_profiles: "0"
+      group_id: @group.id, profile_inclusion_mode: "none"
     }
     link.reload
-    assert_not link.include_direct_profiles
+    assert link.profile_none?
   end
 
-  test "update_relationship preserves include_direct_profiles when no param sent" do
+  test "update_relationship sets profile_inclusion_mode to selected with ids" do
     sign_in_as @user
     everyone = groups(:everyone)
     link = group_groups(:friends_in_everyone)
-
-    sub = @user.groups.create!(name: "SubPreserve")
-    GroupGroup.create!(parent_group: groups(:friends), child_group: sub, inclusion_mode: "all")
-    link.update!(inclusion_mode: "selected", included_subgroup_ids: [ sub.id ], include_direct_profiles: false)
+    profile = groups(:friends).profiles.first
+    assert profile, "precondition: friends must have at least one profile"
 
     patch update_relationship_our_group_path(everyone), params: {
-      group_id: @group.id, inclusion_mode: "selected", included_subgroup_ids: [ sub.id ]
+      group_id: @group.id, profile_inclusion_mode: "selected", included_profile_ids: [ profile.id ]
     }
     link.reload
-    assert_not link.include_direct_profiles, "should preserve existing value when param absent"
+    assert link.profile_selected?
+    assert_equal [ profile.id ], link.included_profile_ids.map(&:to_i)
   end
 
-  test "update_relationship preserves include_direct_profiles for a group with sub-groups but no profiles" do
+  test "update_relationship clears included_profile_ids for all or none profile mode" do
     sign_in_as @user
     everyone = groups(:everyone)
     link = group_groups(:friends_in_everyone)
-    # Give friends a sub-group so it is not a leaf; remove any direct profiles
-    sub = @user.groups.create!(name: "SubOnly")
-    GroupGroup.create!(parent_group: groups(:friends), child_group: sub, inclusion_mode: "all")
-    groups(:friends).group_profiles.destroy_all
-    link.update!(inclusion_mode: "all", include_direct_profiles: true)
-    assert_equal 0, link.child_group.group_profiles.count, "precondition: friends must have no direct profiles"
+    profile = groups(:friends).profiles.first
 
-    # Form submits inclusion_mode but no include_direct_profiles (field not rendered)
+    # Set to selected first
+    link.update!(profile_inclusion_mode: "selected", included_profile_ids: [ profile.id ])
+    assert_equal [ profile.id ], link.included_profile_ids.map(&:to_i)
+
     patch update_relationship_our_group_path(everyone), params: {
-      group_id: @group.id, inclusion_mode: "none"
+      group_id: @group.id, profile_inclusion_mode: "all"
     }
-
     link.reload
-    assert link.none?, "inclusion_mode should be updated"
-    assert link.include_direct_profiles, "include_direct_profiles should be unchanged when param absent"
+    assert link.profile_all?
+    assert_equal [], link.included_profile_ids
   end
 
-  test "update_relationship updates include_direct_profiles for a leaf group (no sub-groups)" do
+  test "update_relationship updates profile_inclusion_mode for a leaf group (no sub-groups)" do
     sign_in_as @user
     # friends has no child groups, making it a leaf
     everyone = groups(:everyone)
     link = group_groups(:friends_in_everyone)
     assert_equal 0, link.child_group.child_links.count, "precondition: friends must be a leaf"
-    link.update!(include_direct_profiles: false)
+    link.update!(profile_inclusion_mode: "none")
 
-    # Submit only include_direct_profiles — no inclusion_mode, matching what the
+    # Submit only profile_inclusion_mode — no subgroup_inclusion_mode, matching what the
     # form sends for a leaf group
     patch update_relationship_our_group_path(everyone), params: {
-      group_id: @group.id, include_direct_profiles: "1"
+      group_id: @group.id, profile_inclusion_mode: "all"
     }
 
     assert_redirected_to manage_groups_our_group_path(everyone)
-    assert link.reload.include_direct_profiles, "include_direct_profiles should be updated even without inclusion_mode"
+    assert link.reload.profile_all?, "profile_inclusion_mode should be updated even without subgroup_inclusion_mode"
   end
 
   # -- regenerate_uuid --
@@ -618,15 +637,15 @@ class Our::GroupsControllerTest < ActionDispatch::IntegrationTest
       patch update_override_our_group_path(alpha), params: {
         edge_id: edge.id,
         target_group_id: target.id,
-        inclusion_mode: "none",
-        include_direct_profiles: "0"
+        subgroup_inclusion_mode: "none",
+        profile_inclusion_mode: "none"
       }
     end
     assert_redirected_to manage_groups_our_group_path(alpha)
 
     override = InclusionOverride.last
-    assert_equal "none", override.inclusion_mode
-    assert_equal false, override.include_direct_profiles
+    assert_equal "none", override.subgroup_inclusion_mode
+    assert_equal "none", override.profile_inclusion_mode
   end
 
   test "update_override updates an existing override" do
@@ -641,15 +660,15 @@ class Our::GroupsControllerTest < ActionDispatch::IntegrationTest
       patch update_override_our_group_path(alpha), params: {
         edge_id: edge.id,
         target_group_id: target.id,
-        inclusion_mode: "all",
-        include_direct_profiles: "1"
+        subgroup_inclusion_mode: "all",
+        profile_inclusion_mode: "all"
       }
     end
     assert_redirected_to manage_groups_our_group_path(alpha)
 
     override.reload
-    assert_equal "all", override.inclusion_mode
-    assert_equal true, override.include_direct_profiles
+    assert_equal "all", override.subgroup_inclusion_mode
+    assert_equal "all", override.profile_inclusion_mode
   end
 
   test "remove_override destroys an override" do

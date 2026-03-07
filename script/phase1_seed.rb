@@ -14,9 +14,17 @@ def attach_avatar(record, path)
   )
 end
 
-email = ARGV.first
-user = email ? User.find_by!(email_address: email) : User.find(1)
-puts "Seeding for #{user.email_address} (id #{user.id})."
+random_email    = "phase1-#{SecureRandom.hex(6)}@example.com"
+random_password = SecureRandom.hex(12)
+
+user = User.create!(
+  email_address:    random_email,
+  password:         random_password,
+  password_confirmation: random_password,
+  email_verified_at: Time.current
+)
+
+puts "Seeding for new user #{user.email_address} (id #{user.id})."
 
 if user.groups.exists?(name: "Alpha Clan")
   puts "Alpha Clan already exists for #{user.email_address} — skipping. Delete it first if you want to re-seed."
@@ -63,42 +71,21 @@ ActiveRecord::Base.transaction do
   #     flux → static_burst (all)           ← excluded from castle_clan by selected mode
   #   castle_clan → castle_flux (all)
 
-  GroupGroup.create!(parent_group: alpha_clan,   child_group: spectrum,     inclusion_mode: "all")
-  GroupGroup.create!(parent_group: spectrum,     child_group: prism_circle, inclusion_mode: "all")
-  GroupGroup.create!(parent_group: prism_circle, child_group: rogue_pack,   inclusion_mode: "all")
-  GroupGroup.create!(parent_group: castle_clan,   child_group: flux,         inclusion_mode: "selected",
-                     included_subgroup_ids: [ echo_shard.id ], include_direct_profiles: false)
-  GroupGroup.create!(parent_group: flux,         child_group: echo_shard,   inclusion_mode: "all")
-  GroupGroup.create!(parent_group: flux,         child_group: static_burst, inclusion_mode: "all")
-  GroupGroup.create!(parent_group: castle_clan,   child_group: castle_flux,   inclusion_mode: "all")
+  GroupGroup.create!(parent_group: alpha_clan,   child_group: spectrum,     subgroup_inclusion_mode: "all")
+  GroupGroup.create!(parent_group: spectrum,     child_group: prism_circle, subgroup_inclusion_mode: "all")
+  GroupGroup.create!(parent_group: prism_circle, child_group: rogue_pack,   subgroup_inclusion_mode: "all")
+  GroupGroup.create!(parent_group: castle_clan,   child_group: flux,         subgroup_inclusion_mode: "selected",
+                     included_subgroup_ids: [ echo_shard.id ], profile_inclusion_mode: "none")
+  GroupGroup.create!(parent_group: flux,         child_group: echo_shard,   subgroup_inclusion_mode: "all")
+  GroupGroup.create!(parent_group: flux,         child_group: static_burst, subgroup_inclusion_mode: "all")
+  GroupGroup.create!(parent_group: castle_clan,   child_group: castle_flux,   subgroup_inclusion_mode: "all")
 
   puts "Created 7 group relationships."
 
-  # ── Inclusion overrides ───────────────────────────────────────────────────
-  #
-  # Demonstrates Phase 3: deep exclusion without touching the intermediate group.
-  #
-  #   Override on the alpha_clan → spectrum edge, targeting prism_circle:
-  #     inclusion_mode: "selected", included_subgroup_ids: []
-  #
-  #   Effect: from Alpha Clan's perspective, Prism Circle exposes no sub-groups,
-  #   so Rogue Pack is excluded. Spectrum's own tree is unaffected — Rogue Pack
-  #   still appears when you view Spectrum directly.
-
-  spectrum_in_alpha_edge = GroupGroup.find_by!(parent_group: alpha_clan, child_group: spectrum)
-  InclusionOverride.create!(
-    group_group: spectrum_in_alpha_edge,
-    target_group: prism_circle,
-    inclusion_mode: "selected",
-    included_subgroup_ids: []
-  )
-
-  puts "Created 1 inclusion override."
-
   # ── Profiles ──────────────────────────────────────────────────────────────
 
-  stray  = user.profiles.create!(name: "Stray",  pronouns: "they/them", heart_emojis: %w[13_storm_heart 25_shadow_heart],               description: "In Rogue Pack — should NOT appear in Alpha Clan.")
-  ember  = user.profiles.create!(name: "Ember",  pronouns: "she/her",   heart_emojis: %w[26_blossom_heart 33_passionate_heart],         description: "In Prism Circle — SHOULD appear in Alpha Clan.")
+  stray  = user.profiles.create!(name: "Stray",  pronouns: "they/them", heart_emojis: %w[13_storm_heart 25_shadow_heart],               description: "In Prism Circle & Rogue Pack — should NOT appear in Alpha Clan (excluded by profile override).")
+  ember  = user.profiles.create!(name: "Ember",  pronouns: "she/her",   heart_emojis: %w[26_blossom_heart 33_passionate_heart],         description: "In Prism Circle — SHOULD appear in Alpha Clan (selected in profile override).")
   drift  = user.profiles.create!(name: "Drift",  pronouns: "he/him",                                                                    description: "In Flux (direct) — should NOT appear in Castle Clan.")
   ripple = user.profiles.create!(name: "Ripple", pronouns: "they/she",  heart_emojis: %w[05_seafoam_heart 11_aqua_heart 20_mist_heart], description: "In Flux (direct) — should NOT appear in Castle Clan.")
   grove  = user.profiles.create!(name: "Grove",                                                                                         description: "Direct member of Alpha Clan.")
@@ -119,6 +106,31 @@ ActiveRecord::Base.transaction do
 
   puts "Created 8 profiles."
 
+  # ── Inclusion overrides ───────────────────────────────────────────────────
+  #
+  # Demonstrates Phase 3: deep exclusion without touching the intermediate group.
+  #
+  #   Override on the alpha_clan → spectrum edge, targeting prism_circle:
+  #     subgroup_inclusion_mode: "selected", included_subgroup_ids: []
+  #     profile_inclusion_mode: "selected", included_profile_ids: [ember.id]
+  #
+  #   Effect: from Alpha Clan's perspective, Prism Circle exposes no sub-groups
+  #   (so Rogue Pack is excluded) and only Ember is visible (Stray is excluded).
+  #   Spectrum's own tree is unaffected — both profiles and Rogue Pack still
+  #   appear when you view Spectrum directly.
+
+  spectrum_in_alpha_edge = GroupGroup.find_by!(parent_group: alpha_clan, child_group: spectrum)
+  InclusionOverride.create!(
+    group_group: spectrum_in_alpha_edge,
+    target_group: prism_circle,
+    subgroup_inclusion_mode: "selected",
+    included_subgroup_ids: [],
+    profile_inclusion_mode: "selected",
+    included_profile_ids: [ ember.id ]
+  )
+
+  puts "Created 1 inclusion override."
+
   # ── Group memberships ─────────────────────────────────────────────────────
 
   GroupProfile.create!(group: rogue_pack,   profile: stray)   # deep exclusion test
@@ -135,15 +147,17 @@ ActiveRecord::Base.transaction do
 end
 
 puts ""
-puts "Done. Phase 1 data seeded for user id 1."
+puts "Done. Phase 1 data seeded for #{user.email_address} (id #{user.id})."
 puts ""
 puts "Scenario summary:"
 puts "  Alpha Clan → Spectrum → Prism Circle → Rogue Pack"
 puts "    Grove is a direct member of Alpha Clan."
-puts "    Ember is in Prism Circle (should appear in Alpha Clan tree)."
-puts "    Stray is in Rogue Pack AND Prism Circle (repeated profile; should appear in Alpha Clan)."
-puts "    Override on alpha→spectrum edge targets Prism Circle with selected+[] —"
-puts "      Rogue Pack excluded from Alpha Clan's tree; Spectrum's own tree unaffected."
+puts "    Ember is in Prism Circle (SHOULD appear — selected in profile override)."
+puts "    Stray is in Rogue Pack AND Prism Circle (should NOT appear — excluded by profile override)."
+puts "    Override on alpha→spectrum edge targets Prism Circle:"
+puts "      subgroups: selected+[] → Rogue Pack excluded from Alpha Clan's tree."
+puts "      profiles: selected+[Ember] → only Ember visible; Stray excluded."
+puts "      Spectrum's own tree is unaffected."
 puts ""
 puts "  Castle Clan → Flux [selected: echo_shard only] → Echo Shard / Static Burst"
 puts "  Castle Clan → Castle Flux"
@@ -151,3 +165,9 @@ puts "    Shadow is a direct member of Castle Clan."
 puts "    Mirage is in Echo Shard (SHOULD appear in Castle Clan — echo_shard is selected)."
 puts "    Drift and Ripple are direct Flux members (should NOT appear in Castle Clan)."
 puts "    Spark is in Static Burst (should NOT appear in Castle Clan — not selected)."
+puts ""
+puts "────────────────────────────────"
+puts "Login credentials:"
+puts "  Email:    #{user.email_address}"
+puts "  Password: #{random_password}"
+puts "────────────────────────────────"

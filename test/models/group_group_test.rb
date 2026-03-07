@@ -54,8 +54,8 @@ class GroupGroupTest < ActiveSupport::TestCase
     a = @user.groups.create!(name: "A")
     b = @user.groups.create!(name: "B")
     c = @user.groups.create!(name: "C")
-    GroupGroup.create!(parent_group: a, child_group: b, inclusion_mode: "none")
-    GroupGroup.create!(parent_group: b, child_group: c, inclusion_mode: "all")
+    GroupGroup.create!(parent_group: a, child_group: b, subgroup_inclusion_mode: "none")
+    GroupGroup.create!(parent_group: b, child_group: c, subgroup_inclusion_mode: "all")
 
     link = GroupGroup.new(parent_group: c, child_group: a)
     assert_not link.valid?
@@ -92,40 +92,40 @@ class GroupGroupTest < ActiveSupport::TestCase
 
   # -- Relationship type --
 
-  test "defaults to all inclusion mode" do
+  test "defaults to all subgroup inclusion mode" do
     new_group = @user.groups.create!(name: "Coworkers")
     link = GroupGroup.create!(parent_group: @everyone, child_group: new_group)
-    assert_equal "all", link.inclusion_mode
-    assert link.all?
-    assert_not link.none?
+    assert_equal "all", link.subgroup_inclusion_mode
+    assert link.subgroup_all?
+    assert_not link.subgroup_none?
   end
 
   test "can be set to none" do
     new_group = @user.groups.create!(name: "Coworkers")
-    link = GroupGroup.create!(parent_group: @everyone, child_group: new_group, inclusion_mode: "none")
-    assert_equal "none", link.inclusion_mode
-    assert link.none?
-    assert_not link.all?
+    link = GroupGroup.create!(parent_group: @everyone, child_group: new_group, subgroup_inclusion_mode: "none")
+    assert_equal "none", link.subgroup_inclusion_mode
+    assert link.subgroup_none?
+    assert_not link.subgroup_all?
   end
 
-  test "rejects invalid inclusion mode" do
+  test "rejects invalid subgroup inclusion mode" do
     new_group = @user.groups.create!(name: "Coworkers")
-    link = GroupGroup.new(parent_group: @everyone, child_group: new_group, inclusion_mode: "invalid")
+    link = GroupGroup.new(parent_group: @everyone, child_group: new_group, subgroup_inclusion_mode: "invalid")
     assert_not link.valid?
-    assert_includes link.errors[:inclusion_mode], "is not included in the list"
+    assert_includes link.errors[:subgroup_inclusion_mode], "is not included in the list"
   end
 
-  test "all_mode scope returns only all-mode links" do
+  test "subgroup_all_mode scope returns only all-mode links" do
     new_group = @user.groups.create!(name: "Coworkers")
-    GroupGroup.create!(parent_group: @everyone, child_group: new_group, inclusion_mode: "none")
-    all = @everyone.child_links.all_mode
-    assert all.all?(&:all?)
+    GroupGroup.create!(parent_group: @everyone, child_group: new_group, subgroup_inclusion_mode: "none")
+    all = @everyone.child_links.subgroup_all_mode
+    assert all.all?(&:subgroup_all?)
   end
 
-  test "none_mode scope returns only none-mode links" do
+  test "subgroup_none_mode scope returns only none-mode links" do
     new_group = @user.groups.create!(name: "Coworkers")
-    GroupGroup.create!(parent_group: @everyone, child_group: new_group, inclusion_mode: "none")
-    none = @everyone.child_links.none_mode
-    assert none.all?(&:none?)
+    GroupGroup.create!(parent_group: @everyone, child_group: new_group, subgroup_inclusion_mode: "none")
+    none = @everyone.child_links.subgroup_none_mode
+    assert none.all?(&:subgroup_none?)
   end
 end

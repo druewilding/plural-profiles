@@ -68,7 +68,7 @@ class GroupManagementTest < ApplicationSystemTestCase
 
     # --- Switch to none: inner group and Bob should disappear ---
     link = GroupGroup.find_by(parent_group: everyone, child_group: friends)
-    link.update!(inclusion_mode: "none")
+    link.update!(subgroup_inclusion_mode: "none")
 
     visit group_path(everyone.uuid)
 
@@ -105,7 +105,7 @@ class GroupManagementTest < ApplicationSystemTestCase
     GroupGroup.create!(parent_group: friends, child_group: acquaintances)
 
     # everyone -> friends but only include 'close' as selected
-    GroupGroup.create!(parent_group: everyone, child_group: friends, inclusion_mode: "selected", included_subgroup_ids: [ close.id ])
+    GroupGroup.create!(parent_group: everyone, child_group: friends, subgroup_inclusion_mode: "selected", included_subgroup_ids: [ close.id ])
 
     visit group_path(everyone.uuid)
 
@@ -144,7 +144,7 @@ class GroupManagementTest < ApplicationSystemTestCase
     GroupGroup.create!(parent_group: outer, child_group: inner)
     # outer has a sub-group but no direct profiles — with none mode its
     # children are hidden, so it should render as a leaf in the parent tree
-    GroupGroup.create!(parent_group: everyone, child_group: outer, inclusion_mode: "none")
+    GroupGroup.create!(parent_group: everyone, child_group: outer, subgroup_inclusion_mode: "none")
 
     visit group_path(everyone.uuid)
 
@@ -156,7 +156,7 @@ class GroupManagementTest < ApplicationSystemTestCase
     end
   end
 
-  test "public page renders sub-group as leaf when include_direct_profiles is false" do
+  test "public page renders sub-group as leaf when profile_inclusion_mode is none" do
     user = users(:one)
     everyone = groups(:everyone)
 
@@ -164,7 +164,7 @@ class GroupManagementTest < ApplicationSystemTestCase
     crew.profiles << profiles(:bob)
     # The edge hides direct profiles and there are no sub-groups, so the
     # node has neither children nor profiles — it should be a leaf
-    GroupGroup.create!(parent_group: everyone, child_group: crew, include_direct_profiles: false)
+    GroupGroup.create!(parent_group: everyone, child_group: crew, profile_inclusion_mode: "none")
 
     visit group_path(everyone.uuid)
 
@@ -226,6 +226,33 @@ class GroupManagementTest < ApplicationSystemTestCase
     end
   end
 
+  test "alpha clan profile override shows Ember but hides Stray" do
+    alpha = groups(:alpha_clan)
+    spectrum = groups(:spectrum)
+
+    # The inclusion override on alpha→spectrum targeting prism_circle sets
+    # profile_inclusion_mode: "selected" with only Ember — Stray should be
+    # excluded from Alpha Clan's public view entirely.
+    visit group_path(alpha.uuid)
+
+    within(".explorer__sidebar") do
+      assert_text "Ember"
+      assert_no_text "Stray"
+      assert_text "Grove"
+      # Rogue Pack should also be hidden (sub-group exclusion)
+      assert_no_text "Rogue Pack"
+    end
+
+    # Visiting Spectrum directly should still show both profiles and Rogue Pack
+    visit group_path(spectrum.uuid)
+
+    within(".explorer__sidebar") do
+      assert_text "Ember"
+      assert_text "Stray"
+      assert_text "Rogue Pack"
+    end
+  end
+
   test "no-JS fallback profile links use root group context" do
     alpha = groups(:alpha_clan)
     ember = profiles(:ember)
@@ -243,9 +270,21 @@ class GroupManagementTest < ApplicationSystemTestCase
     castle = groups(:castle_clan)
     drift = profiles(:drift)
 
-    # Drift is in Flux, but include_direct_profiles is false on the
+    # Drift is in Flux, but profile_inclusion_mode is "none" on the
     # castle→flux edge. Accessing Drift through Castle Clan should 404.
     visit group_profile_path(castle.uuid, drift.uuid)
+
+    assert_text "RecordNotFound"
+  end
+
+  test "no-JS fallback blocks Stray through Alpha Clan via profile override" do
+    alpha = groups(:alpha_clan)
+    stray = profiles(:stray)
+
+    # Stray is in Prism Circle but excluded by the profile_inclusion_mode
+    # override (selected with only Ember). Accessing Stray through Alpha
+    # Clan should 404.
+    visit group_profile_path(alpha.uuid, stray.uuid)
 
     assert_text "RecordNotFound"
   end

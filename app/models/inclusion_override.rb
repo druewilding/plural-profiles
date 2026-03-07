@@ -4,7 +4,8 @@ class InclusionOverride < ApplicationRecord
   belongs_to :group_group
   belongs_to :target_group, class_name: "Group"
 
-  validates :inclusion_mode, inclusion: { in: INCLUSION_MODES }
+  validates :subgroup_inclusion_mode, inclusion: { in: INCLUSION_MODES }
+  validates :profile_inclusion_mode, inclusion: { in: INCLUSION_MODES }
   validates :target_group_id, uniqueness: { scope: :group_group_id }
   validate :target_group_reachable
 

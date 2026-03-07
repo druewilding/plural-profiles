@@ -1,10 +1,12 @@
 # Demonstrates deep exclusion (Phase 3):
 # When traversing Alpha Clan via the spectrum_in_alpha edge, Prism Circle is
-# overridden to selected+[] — so Rogue Pack is excluded from Alpha Clan's tree.
-# Spectrum's own tree is unaffected (this override is edge-contextual).
+# overridden to subgroups: selected+[] and profiles: selected+[Ember].
+# Rogue Pack is excluded from Alpha Clan's tree, and only Ember is visible
+# (Stray is excluded). Spectrum's own tree is unaffected.
 rogue_pack_excluded_from_alpha:
   group_group: spectrum_in_alpha
   target_group: prism_circle
-  inclusion_mode: selected
+  subgroup_inclusion_mode: selected
   included_subgroup_ids: []
-  include_direct_profiles: true
+  profile_inclusion_mode: selected
+  included_profile_ids: <%= [ActiveRecord::FixtureSet.identify(:ember)].to_json %>
