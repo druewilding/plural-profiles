@@ -153,16 +153,20 @@ class Our::GroupsController < ApplicationController
 
     override = edge.inclusion_overrides.find_or_initialize_by(target_group: target_group)
 
-    mode = params[:subgroup_inclusion_mode].to_s
-    mode = "none" unless %w[all selected none].include?(mode)
+    attrs = {}
 
-    attrs = { subgroup_inclusion_mode: mode }
+    if params[:subgroup_inclusion_mode].present?
+      mode = params[:subgroup_inclusion_mode].to_s
+      mode = "none" unless %w[all selected none].include?(mode)
 
-    if mode == "selected"
-      included = Array(params[:included_subgroup_ids]).map(&:to_i)
-      attrs[:included_subgroup_ids] = included & target_group.child_group_ids
-    else
-      attrs[:included_subgroup_ids] = []
+      attrs[:subgroup_inclusion_mode] = mode
+
+      if mode == "selected"
+        included = Array(params[:included_subgroup_ids]).map(&:to_i)
+        attrs[:included_subgroup_ids] = included & target_group.child_group_ids
+      else
+        attrs[:included_subgroup_ids] = []
+      end
     end
 
     if params[:profile_inclusion_mode].present?

@@ -8,6 +8,38 @@ class Our::GroupsControllerTest < ActionDispatch::IntegrationTest
     @other_group = groups(:family)
   end
 
+  test "update_override does not reset subgroup_inclusion_mode when param is absent" do
+    user_three = users(:three)
+    sign_in_as user_three
+    alpha = groups(:alpha_clan)
+    edge = alpha.child_links.find_by(child_group: groups(:spectrum))
+    target = groups(:prism_circle)
+    override = inclusion_overrides(:rogue_pack_excluded_from_alpha)
+
+    # Precondition: override has subgroup_inclusion_mode 'selected', included_subgroup_ids []
+    assert_equal "selected", override.subgroup_inclusion_mode
+    assert_equal [], override.included_subgroup_ids
+    assert_equal "selected", override.profile_inclusion_mode
+    ember_id = profiles(:ember).id
+    assert_equal [ ember_id ], override.included_profile_ids
+
+    # Submit only profile_inclusion_mode (simulate UI for group with no children)
+    patch update_override_our_group_path(alpha), params: {
+      edge_id: edge.id,
+      target_group_id: target.id,
+      profile_inclusion_mode: "none"
+    }
+    assert_redirected_to manage_groups_our_group_path(alpha)
+
+    override.reload
+    # subgroup_inclusion_mode and included_subgroup_ids should be unchanged
+    assert_equal "selected", override.subgroup_inclusion_mode
+    assert_equal [], override.included_subgroup_ids
+    # profile_inclusion_mode should be updated
+    assert_equal "none", override.profile_inclusion_mode
+    assert_equal [], override.included_profile_ids
+  end
+
   # -- Authenticated happy paths --
 
   test "index lists current user groups" do
