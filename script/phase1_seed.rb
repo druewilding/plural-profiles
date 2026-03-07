@@ -14,9 +14,17 @@ def attach_avatar(record, path)
   )
 end
 
-email = ARGV.first
-user = email ? User.find_by!(email_address: email) : User.find(1)
-puts "Seeding for #{user.email_address} (id #{user.id})."
+random_email    = "phase1-#{SecureRandom.hex(6)}@example.com"
+random_password = SecureRandom.hex(12)
+
+user = User.create!(
+  email_address:    random_email,
+  password:         random_password,
+  password_confirmation: random_password,
+  email_verified_at: Time.current
+)
+
+puts "Seeding for new user #{user.email_address} (id #{user.id})."
 
 if user.groups.exists?(name: "Alpha Clan")
   puts "Alpha Clan already exists for #{user.email_address} — skipping. Delete it first if you want to re-seed."
@@ -135,7 +143,7 @@ ActiveRecord::Base.transaction do
 end
 
 puts ""
-puts "Done. Phase 1 data seeded for user id 1."
+puts "Done. Phase 1 data seeded for #{user.email_address} (id #{user.id})."
 puts ""
 puts "Scenario summary:"
 puts "  Alpha Clan → Spectrum → Prism Circle → Rogue Pack"
@@ -151,3 +159,9 @@ puts "    Shadow is a direct member of Castle Clan."
 puts "    Mirage is in Echo Shard (SHOULD appear in Castle Clan — echo_shard is selected)."
 puts "    Drift and Ripple are direct Flux members (should NOT appear in Castle Clan)."
 puts "    Spark is in Static Burst (should NOT appear in Castle Clan — not selected)."
+puts ""
+puts "────────────────────────────────"
+puts "Login credentials:"
+puts "  Email:    #{user.email_address}"
+puts "  Password: #{random_password}"
+puts "────────────────────────────────"
