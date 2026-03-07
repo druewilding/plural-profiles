@@ -68,7 +68,7 @@ class GroupManagementTest < ApplicationSystemTestCase
 
     # --- Switch to none: inner group and Bob should disappear ---
     link = GroupGroup.find_by(parent_group: everyone, child_group: friends)
-    link.update!(inclusion_mode: "none")
+    link.update!(subgroup_inclusion_mode: "none")
 
     visit group_path(everyone.uuid)
 
@@ -105,7 +105,7 @@ class GroupManagementTest < ApplicationSystemTestCase
     GroupGroup.create!(parent_group: friends, child_group: acquaintances)
 
     # everyone -> friends but only include 'close' as selected
-    GroupGroup.create!(parent_group: everyone, child_group: friends, inclusion_mode: "selected", included_subgroup_ids: [ close.id ])
+    GroupGroup.create!(parent_group: everyone, child_group: friends, subgroup_inclusion_mode: "selected", included_subgroup_ids: [ close.id ])
 
     visit group_path(everyone.uuid)
 
@@ -144,7 +144,7 @@ class GroupManagementTest < ApplicationSystemTestCase
     GroupGroup.create!(parent_group: outer, child_group: inner)
     # outer has a sub-group but no direct profiles — with none mode its
     # children are hidden, so it should render as a leaf in the parent tree
-    GroupGroup.create!(parent_group: everyone, child_group: outer, inclusion_mode: "none")
+    GroupGroup.create!(parent_group: everyone, child_group: outer, subgroup_inclusion_mode: "none")
 
     visit group_path(everyone.uuid)
 
@@ -156,7 +156,7 @@ class GroupManagementTest < ApplicationSystemTestCase
     end
   end
 
-  test "public page renders sub-group as leaf when include_direct_profiles is false" do
+  test "public page renders sub-group as leaf when profile_inclusion_mode is none" do
     user = users(:one)
     everyone = groups(:everyone)
 
@@ -164,7 +164,7 @@ class GroupManagementTest < ApplicationSystemTestCase
     crew.profiles << profiles(:bob)
     # The edge hides direct profiles and there are no sub-groups, so the
     # node has neither children nor profiles — it should be a leaf
-    GroupGroup.create!(parent_group: everyone, child_group: crew, include_direct_profiles: false)
+    GroupGroup.create!(parent_group: everyone, child_group: crew, profile_inclusion_mode: "none")
 
     visit group_path(everyone.uuid)
 
@@ -243,7 +243,7 @@ class GroupManagementTest < ApplicationSystemTestCase
     castle = groups(:castle_clan)
     drift = profiles(:drift)
 
-    # Drift is in Flux, but include_direct_profiles is false on the
+    # Drift is in Flux, but profile_inclusion_mode is "none" on the
     # castle→flux edge. Accessing Drift through Castle Clan should 404.
     visit group_profile_path(castle.uuid, drift.uuid)
 
