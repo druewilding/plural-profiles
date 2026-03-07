@@ -226,6 +226,33 @@ class GroupManagementTest < ApplicationSystemTestCase
     end
   end
 
+  test "alpha clan profile override shows Ember but hides Stray" do
+    alpha = groups(:alpha_clan)
+    spectrum = groups(:spectrum)
+
+    # The inclusion override on alpha→spectrum targeting prism_circle sets
+    # profile_inclusion_mode: "selected" with only Ember — Stray should be
+    # excluded from Alpha Clan's public view entirely.
+    visit group_path(alpha.uuid)
+
+    within(".explorer__sidebar") do
+      assert_text "Ember"
+      assert_no_text "Stray"
+      assert_text "Grove"
+      # Rogue Pack should also be hidden (sub-group exclusion)
+      assert_no_text "Rogue Pack"
+    end
+
+    # Visiting Spectrum directly should still show both profiles and Rogue Pack
+    visit group_path(spectrum.uuid)
+
+    within(".explorer__sidebar") do
+      assert_text "Ember"
+      assert_text "Stray"
+      assert_text "Rogue Pack"
+    end
+  end
+
   test "no-JS fallback profile links use root group context" do
     alpha = groups(:alpha_clan)
     ember = profiles(:ember)
@@ -246,6 +273,18 @@ class GroupManagementTest < ApplicationSystemTestCase
     # Drift is in Flux, but profile_inclusion_mode is "none" on the
     # castle→flux edge. Accessing Drift through Castle Clan should 404.
     visit group_profile_path(castle.uuid, drift.uuid)
+
+    assert_text "RecordNotFound"
+  end
+
+  test "no-JS fallback blocks Stray through Alpha Clan via profile override" do
+    alpha = groups(:alpha_clan)
+    stray = profiles(:stray)
+
+    # Stray is in Prism Circle but excluded by the profile_inclusion_mode
+    # override (selected with only Ember). Accessing Stray through Alpha
+    # Clan should 404.
+    visit group_profile_path(alpha.uuid, stray.uuid)
 
     assert_text "RecordNotFound"
   end

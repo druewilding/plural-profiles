@@ -151,11 +151,11 @@ Nine groups and eight profiles, arranged to demonstrate and test the deep-inclus
 ```
 Alpha Clan  ← Grove (direct)
   └── Spectrum (all)
-        └── Prism Circle [override: selected+[] from Alpha's context]  ← Ember, Stray
+        └── Prism Circle [override: subgroups selected+[], profiles selected+[Ember]]  ← Ember, Stray
               └── Rogue Pack  [excluded from Alpha Clan — override stops recursion here]
 ```
 
-An `InclusionOverride` on the Alpha Clan → Spectrum edge targets Prism Circle with `subgroup_inclusion_mode: selected, included_subgroup_ids: []`. From Alpha Clan's perspective, Rogue Pack is excluded. Viewing Spectrum directly still shows Rogue Pack. Stray appears in both Prism Circle and Rogue Pack (repeated profile marker test).
+An `InclusionOverride` on the Alpha Clan → Spectrum edge targets Prism Circle with `subgroup_inclusion_mode: selected, included_subgroup_ids: []` and `profile_inclusion_mode: selected, included_profile_ids: [Ember]`. From Alpha Clan's perspective, Rogue Pack is excluded (no sub-groups selected) and only Ember is visible (Stray is excluded from the profile selection). Viewing Spectrum directly still shows both profiles and Rogue Pack. Stray appears in both Prism Circle and Rogue Pack (repeated profile marker test when viewing Spectrum).
 
 **Castle Clan tree** (selected sub-groups + direct profile exclusion):
 
