@@ -11,7 +11,7 @@
 - is_direct = path.empty?
 
 - if has_children
-  %details.tree-editor__folder{class: ("tree-editor__node--hidden" if effectively_hidden), open: !effectively_hidden}
+  %details.tree-editor__folder{class: ("tree-editor__node--hidden" if effectively_hidden), open: true}
     %summary.tree-editor__summary
       .tree-editor__item-info
         - if group.avatar.attached?
