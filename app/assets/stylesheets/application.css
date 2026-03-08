@@ -2,6 +2,10 @@
  * Plural Profiles — application styles
  */
 
+/* Ensure the HTML `hidden` attribute always wins, even when an element has
+   an explicit display value set by other rules. */
+[hidden] { display: none !important; }
+
 :root {
   --page-bg: #0e2e24;
   --pane-bg: #133b2f;

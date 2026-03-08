@@ -29,7 +29,7 @@
             = hidden_field_tag :target_type, "Group"
             = hidden_field_tag :target_id, group.id
             = hidden_field_tag :hidden, hidden ? "0" : "1"
-            %label.tree-editor__hide-label
+            %label.tree-editor__hide-label{hidden: true}
               Hide
               = check_box_tag :hidden_toggle, "1", hidden, disabled: cascade_hidden, data: { action: "change->visibility-toggle#toggle", path: path.to_json, target_type: "Group", target_id: group.id, visibility_toggle_target: "checkbox" }
             %noscript
@@ -59,7 +59,7 @@
           = hidden_field_tag :target_type, "Group"
           = hidden_field_tag :target_id, group.id
           = hidden_field_tag :hidden, hidden ? "0" : "1"
-          %label.tree-editor__hide-label
+          %label.tree-editor__hide-label{hidden: true}
             Hide
             = check_box_tag :hidden_toggle, "1", hidden, disabled: cascade_hidden, data: { action: "change->visibility-toggle#toggle", path: path.to_json, target_type: "Group", target_id: group.id, visibility_toggle_target: "checkbox" }
           %noscript

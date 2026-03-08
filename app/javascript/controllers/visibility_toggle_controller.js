@@ -3,6 +3,12 @@ import { Controller } from "@hotwired/stimulus"
 export default class extends Controller {
   static targets = ["checkbox", "form", "indicator"]
 
+  connect() {
+    this.element.querySelectorAll(".tree-editor__hide-label").forEach(label => {
+      label.removeAttribute("hidden")
+    })
+  }
+
   async toggle(event) {
     const checkbox = event.target
     const hidden = checkbox.checked
