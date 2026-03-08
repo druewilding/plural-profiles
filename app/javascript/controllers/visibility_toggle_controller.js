@@ -17,9 +17,9 @@ export default class extends Controller {
     const hiddenField = form.querySelector('input[name="hidden"]')
     if (hiddenField) hiddenField.value = hidden ? "1" : "0"
 
-    // Find the save indicator for this row
-    const row = checkbox.closest(".tree-editor__node")
-    const indicator = row?.querySelector(":scope > .tree-editor__row .tree-editor__save-indicator")
+    // Find the save indicator - it's in the .tree-editor__actions alongside the form
+    const actions = checkbox.closest(".tree-editor__actions")
+    const indicator = actions?.querySelector(".tree-editor__save-indicator")
 
     try {
       const response = await fetch(form.action, {
@@ -37,7 +37,8 @@ export default class extends Controller {
 
         // Cascade: if hiding a group, disable and dim descendant checkboxes
         if (targetType === "Group") {
-          this.cascadeGroupVisibility(row, hidden)
+          const node = checkbox.closest(".tree-editor__node")
+          if (node) this.cascadeGroupVisibility(node, hidden)
         }
       } else {
         // Revert on failure
@@ -60,13 +61,14 @@ export default class extends Controller {
   }
 
   cascadeGroupVisibility(groupNode, hidden) {
-    const childList = groupNode.querySelector(":scope > .tree-editor__children")
-    if (!childList) return
+    // Find the section content within this node's details element
+    const sectionContent = groupNode.querySelector(".tree-editor__section-content")
+    if (!sectionContent) return
 
-    const descendantNodes = childList.querySelectorAll(".tree-editor__node")
+    const descendantNodes = sectionContent.querySelectorAll(".tree-editor__node")
     descendantNodes.forEach(node => {
-      const cb = node.querySelector(':scope > .tree-editor__row input[type="checkbox"]')
-      const tag = node.querySelector(":scope > .tree-editor__row .tree-editor__tag--hidden")
+      const cb = node.querySelector('input[type="checkbox"]')
+      const tag = node.querySelector(".tree-editor__tag--hidden")
 
       if (hidden) {
         node.classList.add("tree-editor__node--hidden")
@@ -75,8 +77,8 @@ export default class extends Controller {
           const newTag = document.createElement("span")
           newTag.className = "tree-editor__tag tree-editor__tag--hidden"
           newTag.textContent = "hidden"
-          const label = node.querySelector(":scope > .tree-editor__row .tree-editor__checkbox-label")
-          if (label) label.appendChild(newTag)
+          const info = node.querySelector(".tree-editor__item-info")
+          if (info) info.appendChild(newTag)
         }
       } else {
         this.uncascadeNode(node, cb, tag)

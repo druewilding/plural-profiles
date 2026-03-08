@@ -4,26 +4,44 @@
   Manage groups in
   = @group.name
 
-- if @management_tree.any?
-  .tree-editor
+- has_tree = @management_tree.any?
+- has_root_profiles = @root_profiles.any?
+
+- if has_tree || has_root_profiles
+  .tree-editor{"data-controller": "visibility-toggle"}
     %p.tree-editor__hint
-      Check a group or profile to hide it from the public view of
+      Use the
+      %strong Hide
+      checkboxes to control what visitors can see on
       = succeed "." do
-        %strong= link_to @group.name, group_path(@group.uuid), target: "_blank", rel: "noopener noreferrer"
+        = link_to @group.name, group_path(@group.uuid), target: "_blank", rel: "noopener noreferrer"
       Hiding a group also hides everything inside it.
-    %ul.tree-editor__tree{"aria-label": "Group tree for #{@group.name}", "data-controller": "visibility-toggle"}
-      = render partial: "our/groups/manage_groups_node", collection: @management_tree, as: :node, locals: { root_group: @group }
+
+    -# Root group node (collapsible, no Hide/Remove)
+    - if has_tree
+      %details.tree-editor__section{open: true}
+        %summary.tree-editor__summary
+          .tree-editor__item-info
+            - if @group.avatar.attached?
+              = image_tag @group.avatar.variant(resize_to_fill: [24, 24]), class: "tree__avatar", width: 24, height: 24, alt: ""
+            - else
+              %span.tree__avatar.tree__avatar--placeholder{"aria-hidden": "true"}
+                = render "shared/plural_pride_logo"
+            %span.tree-editor__name= @group.name
+        .tree-editor__section-content
+          - @management_tree.each do |node|
+            = render "our/groups/manage_groups_node", node: node, root_group: @group
+
+    - if has_root_profiles
+      %h2.tree-editor__profiles-heading
+        Profiles directly in
+        = @group.name
+      .tree-editor__profile-list
+        - @root_profiles.each do |entry|
+          = render "our/groups/manage_groups_profile_node", entry: entry, root_group: @group
 - else
   .card
-    %p This group has no sub-groups yet. Add one below.
-
-- if @root_profiles.any?
-  %h2
-    Profiles directly in
-    = @group.name
-  %ul.tree-editor__tree{"data-controller": "visibility-toggle"}
-    - @root_profiles.each do |entry|
-      = render "our/groups/manage_groups_profile_node", entry: entry, root_group: @group
+    %p This group has no sub-groups or profiles yet. Add a group below.
 
 %h2
   Add a group to

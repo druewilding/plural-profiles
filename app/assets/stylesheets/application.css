@@ -1101,49 +1101,71 @@ details[open] .details-close {
   margin-bottom: 1.25rem;
 }
 
-.tree-editor__tree {
-  list-style: none;
-  margin: 0;
-  padding: 0;
+.tree-editor__section {
+  border-left: 1px solid var(--tree-guide);
+  padding-left: 1rem;
+  margin-bottom: 0.25rem;
 }
 
-.tree-editor__children {
+.tree-editor__section > .tree-editor__section-content {
+  padding: 0.25rem 0;
+}
+
+.tree-editor__summary {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.35rem 0.25rem;
+  cursor: pointer;
   list-style: none;
-  margin: 0;
-  padding: 0 0 0 1.5rem;
-  border-left: 1px solid var(--tree-guide);
+  border-radius: 4px;
+}
+
+.tree-editor__summary::-webkit-details-marker {
+  display: none;
+}
+
+.tree-editor__summary::before {
+  content: "▶";
+  font-size: 0.7rem;
+  flex-shrink: 0;
+  display: inline-block;
+  transition: transform 0.15s ease;
+  width: 1rem;
+  text-align: center;
+}
+
+details[open] > .tree-editor__summary::before {
+  transform: rotate(90deg);
+}
+
+.tree-editor__summary:hover {
+  background-color: rgba(78, 133, 95, 0.1);
+}
+
+.tree-editor__summary .tree-editor__item-info {
+  flex: 1;
+  min-width: 0;
+}
+
+.tree-editor__summary .tree-editor__actions {
+  margin-left: auto;
 }
 
 .tree-editor__node {
   margin-bottom: 0.25rem;
 }
 
-.tree-editor__row {
+.tree-editor__leaf {
   display: flex;
   align-items: center;
   gap: 0.5rem;
-  padding: 0.35rem 0;
-}
-
-.tree-editor__check {
-  flex: 1;
-  min-width: 0;
+  padding: 0.35rem 0.25rem;
+  padding-left: calc(1rem + 0.25rem);
 }
 
 .tree-editor__toggle-form {
   display: contents;
-}
-
-.tree-editor__checkbox-label {
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-  cursor: pointer;
-  min-width: 0;
-}
-
-.tree-editor__checkbox-label input[type="checkbox"] {
-  flex-shrink: 0;
 }
 
 .tree-editor__item-info {
@@ -1158,6 +1180,28 @@ details[open] .details-close {
   text-overflow: ellipsis;
   white-space: nowrap;
   color: var(--heading);
+}
+
+.tree-editor__actions {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  flex-shrink: 0;
+  margin-left: auto;
+}
+
+.tree-editor__hide-label {
+  display: flex;
+  align-items: center;
+  gap: 0.3rem;
+  cursor: pointer;
+  font-size: 0.85rem;
+  white-space: nowrap;
+  user-select: none;
+}
+
+.tree-editor__hide-label input[type="checkbox"] {
+  flex-shrink: 0;
 }
 
 .tree-editor__tag {
@@ -1178,15 +1222,23 @@ details[open] .details-close {
 }
 
 .tree-editor__node--profile {
-  margin-left: 0.25rem;
+  margin-left: 0;
 }
 
 .tree-editor__node--hidden {
   opacity: 0.5;
 }
 
-.tree-editor__node--hidden .tree-editor__children {
+.tree-editor__node--hidden .tree-editor__section-content {
   opacity: 0.7;
+}
+
+.tree-editor__profiles-heading {
+  margin-top: 1.5rem;
+}
+
+.tree-editor__profile-list {
+  padding-left: 0;
 }
 
 .tree-editor__save-indicator {
@@ -1208,12 +1260,16 @@ details[open] .details-close {
 }
 
 @media (max-width: 600px) {
-  .tree-editor__row {
+  .tree-editor__summary {
     flex-wrap: wrap;
   }
 
-  .tree-editor__children {
-    padding-left: 0.75rem;
+  .tree-editor__leaf {
+    flex-wrap: wrap;
+  }
+
+  .tree-editor__section {
+    padding-left: 0.5rem;
   }
 }
 
@@ -1235,7 +1291,7 @@ details[open] .details-close {
     color: CanvasText;
   }
 
-  .tree-editor__children {
+  .tree-editor__section {
     border-left-color: CanvasText;
   }
 
@@ -1249,6 +1305,10 @@ details[open] .details-close {
   }
 
   .tree-editor__save-indicator--error {
+    color: CanvasText;
+  }
+
+  .tree-editor__summary {
     color: CanvasText;
   }
 }
