@@ -101,8 +101,26 @@ class Our::GroupsController < ApplicationController
   def toggle_visibility
     target_type = params[:target_type].to_s
     target_id = params[:target_id].to_i
-    path = JSON.parse(params[:path] || "[]").map(&:to_i)
+    raw_path = params[:path]
 
+    path =
+      case raw_path
+      when Array
+        raw_path
+      when String
+        begin
+          JSON.parse(raw_path.presence || "[]")
+        rescue JSON::ParserError
+          return respond_to do |format|
+            format.html { redirect_to manage_groups_our_group_path(@group), alert: "Invalid path." }
+            format.json { render json: { error: "Invalid path" }, status: :unprocessable_entity }
+          end
+        end
+      else
+        []
+      end
+
+    path = Array(path).map(&:to_i)
     unless %w[Group Profile].include?(target_type)
       return respond_to do |format|
         format.html { redirect_to manage_groups_our_group_path(@group), alert: "Invalid target." }
