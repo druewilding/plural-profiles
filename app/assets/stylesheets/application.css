@@ -1118,82 +1118,39 @@ details[open] .details-close {
   margin-bottom: 0.25rem;
 }
 
-.tree-editor__details {
-  background-color: var(--pane-bg);
-  border: 1px solid color-mix(in srgb, var(--input-border) 50%, transparent);
-  border-radius: 6px;
-  overflow: hidden;
-}
-
-.tree-editor__details[open] {
-  border-color: var(--input-border);
-}
-
-.tree-editor__summary {
-  cursor: pointer;
-  padding: 0.5rem 0.75rem;
-  list-style: none;
-  user-select: none;
-  outline: none;
-}
-
-.tree-editor__summary:focus-visible .tree-editor__summary-row {
-  outline: 2px solid var(--link);
-  outline-offset: 3px;
-  border-radius: 4px;
-}
-
-@media (forced-colors: active) {
-  .tree-editor__summary:focus-visible .tree-editor__summary-row {
-    outline: 2px solid CanvasText;
-  }
-}
-
-.tree-editor__summary::-webkit-details-marker {
-  display: none;
-}
-
-.tree-editor__summary::marker {
-  content: "";
-}
-
-.tree-editor__summary-row {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 0.5rem;
-  flex-wrap: wrap;
-}
-
-.tree-editor__summary-left {
+.tree-editor__row {
   display: flex;
   align-items: center;
   gap: 0.5rem;
+  padding: 0.35rem 0;
+}
+
+.tree-editor__check {
+  flex: 1;
   min-width: 0;
 }
 
-.tree-editor__summary-left::before {
-  content: "▶";
-  font-size: 0.7rem;
-  display: inline-block;
-  width: 1rem;
-  text-align: center;
-  line-height: 1;
-  flex-shrink: 0;
-  color: var(--text);
-  transition: transform 0.15s ease;
+.tree-editor__toggle-form {
+  display: contents;
 }
 
-.tree-editor__details[open] > .tree-editor__summary .tree-editor__summary-left::before {
-  transform: rotate(90deg);
-}
-
-.tree-editor__summary-right {
+.tree-editor__checkbox-label {
   display: flex;
   align-items: center;
   gap: 0.5rem;
-  flex-wrap: wrap;
-  font-size: 0.8rem;
+  cursor: pointer;
+  min-width: 0;
+}
+
+.tree-editor__checkbox-label input[type="checkbox"] {
+  flex-shrink: 0;
+}
+
+.tree-editor__item-info {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  min-width: 0;
 }
 
 .tree-editor__name {
@@ -1211,120 +1168,44 @@ details[open] .details-close {
   font-weight: 600;
   letter-spacing: 0.03em;
   white-space: nowrap;
-}
-
-.tree-editor__tag--override {
-  background-color: color-mix(in srgb, var(--warning) 25%, transparent);
-  color: var(--warning);
+  margin-left: 0.35rem;
+  flex-shrink: 0;
 }
 
 .tree-editor__tag--hidden {
-  background-color: color-mix(in srgb, var(--error) 20%, transparent);
-  color: var(--error);
+  background-color: color-mix(in srgb, var(--danger-button-bg) 35%, transparent);
+  color: var(--danger-button-text);
 }
 
-.tree-editor__details--hidden {
-  opacity: 0.55;
+.tree-editor__node--hidden {
+  opacity: 0.5;
 }
 
-.tree-editor__details--hidden[open] {
+.tree-editor__node--hidden .tree-editor__children {
+  opacity: 0.7;
+}
+
+.tree-editor__save-indicator {
+  font-size: 0.8rem;
+  color: var(--primary-button-text);
+  opacity: 0;
+  transition: opacity 0.2s;
+  flex-shrink: 0;
+  white-space: nowrap;
+}
+
+.tree-editor__save-indicator--visible {
   opacity: 1;
 }
 
-/* Controls area revealed on expand */
-.tree-editor__controls {
-  padding: 0.75rem;
-  border-top: 1px solid color-mix(in srgb, var(--input-border) 40%, transparent);
-}
-
-.tree-editor__form {
-  display: flex;
-  flex-direction: column;
-  gap: 0.75rem;
-}
-
-.tree-editor__fieldsets {
-  display: flex;
-  gap: 0.75rem;
-  align-items: flex-start;
-  flex-wrap: wrap;
-}
-
-.tree-editor__fieldset {
-  border: 1px solid rgba(255,255,255,0.04);
-  background-color: rgba(255,255,255,0.02);
-  padding: 0.5rem 0.75rem;
-  border-radius: 8px;
-  min-width: 150px;
-  flex: 1 1 200px;
-}
-
-.tree-editor__fieldset legend {
-  color: var(--heading);
-  font-size: 0.85rem;
-  margin-bottom: 0.35rem;
-}
-
-.tree-editor__radio-group {
-  display: flex;
-  gap: 0.75rem;
-  flex-wrap: wrap;
-  margin-bottom: 0.35rem;
-}
-
-.tree-editor__radio-group label {
-  display: inline-flex;
-  align-items: center;
-  gap: 0.3rem;
-  font-size: 0.9rem;
-  color: var(--text);
-  cursor: pointer;
-  margin-bottom: 0;
-}
-
-.tree-editor__checkbox-list {
-  margin-top: 0.35rem;
-}
-
-/* Visually dim checkboxes when mode is not "selected" — pure CSS, no JS */
-.tree-editor__fieldset:has(input[name="inclusion_mode"][value="all"]:checked) .tree-editor__checkbox-list {
-  opacity: 0.4;
-  pointer-events: none;
-}
-
-.tree-editor__fieldset:has(input[name="inclusion_mode"][value="none"]:checked) .tree-editor__checkbox-list {
-  opacity: 0.4;
-  pointer-events: none;
-}
-
-.tree-editor__override-note {
-  font-size: 0.8rem;
-  opacity: 0.7;
-  margin: 0 0 0.5rem;
-  font-style: italic;
-}
-
-.tree-editor__actions {
-  display: flex;
-  gap: 0.5rem;
-  flex-wrap: wrap;
-  align-items: center;
+.tree-editor__save-indicator--error {
+  color: var(--danger-button-text);
+  opacity: 1;
 }
 
 @media (max-width: 600px) {
-  .tree-editor__fieldsets {
-    flex-direction: column;
-  }
-
-  .tree-editor__fieldset {
-    min-width: 0;
-    width: 100%;
-    flex: none;
-  }
-
-  .tree-editor__summary-row {
-    flex-direction: column;
-    align-items: flex-start;
+  .tree-editor__row {
+    flex-wrap: wrap;
   }
 
   .tree-editor__children {
@@ -1334,10 +1215,6 @@ details[open] .details-close {
 
 /* ── Forced-colors overrides for tree editor ───────────── */
 @media (forced-colors: active) {
-  .tree-editor__details {
-    border-color: CanvasText;
-  }
-
   .tree-editor__name {
     color: CanvasText;
   }
@@ -1348,26 +1225,9 @@ details[open] .details-close {
     color: CanvasText;
   }
 
-  .tree-editor__tag--override {
+  .tree-editor__tag--hidden {
     background-color: Canvas;
     border-color: CanvasText;
-    color: CanvasText;
-  }
-
-  .tree-editor__controls {
-    border-top-color: CanvasText;
-  }
-
-  .tree-editor__fieldset {
-    border-color: CanvasText;
-    background-color: Canvas;
-  }
-
-  .tree-editor__fieldset legend {
-    color: CanvasText;
-  }
-
-  .tree-editor__radio-group label {
     color: CanvasText;
   }
 
@@ -1375,26 +1235,16 @@ details[open] .details-close {
     border-left-color: CanvasText;
   }
 
-  .tree-editor__override-note {
+  .tree-editor__node--hidden {
     opacity: 1;
-    color: CanvasText;
-  }
-
-  .tree-editor__tag--hidden {
-    background-color: Canvas;
-    border-color: CanvasText;
-    color: CanvasText;
-  }
-
-  .tree-editor__details--hidden {
-    opacity: 1;
-  }
-
-  .tree-editor__details--hidden .tree-editor__name {
     color: GrayText;
   }
 
-  .tree-editor__summary-left::before {
+  .tree-editor__save-indicator {
+    color: CanvasText;
+  }
+
+  .tree-editor__save-indicator--error {
     color: CanvasText;
   }
 }

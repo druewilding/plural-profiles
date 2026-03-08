@@ -390,7 +390,7 @@ end
 
 ---
 
-## Phase 4: Views
+## Phase 4: Views — ✅ DONE
 
 ### 4a. `manage_groups.html.haml`
 
@@ -854,7 +854,7 @@ After all tests pass, review the Group model for any dead code from the old syst
 2. **Phase 2** — Model changes - ✅ DONE
 3. **Phase 7** — Test fixtures — ✅ DONE
 4. **Phase 3** — Routes & controller — ✅ DONE
-5. **Phase 4** — Views
+5. **Phase 4** — Views — ✅ DONE
 6. **Phase 5** — JavaScript
 7. **Phase 6** — CSS
 8. **Phase 8** — Tests
