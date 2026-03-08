@@ -533,7 +533,7 @@ Simpler structure: a tree node with a checkbox, name, "hidden" tag, and nested c
 
 ---
 
-## Phase 5: JavaScript — `visibility_toggle_controller.js`
+## Phase 5: JavaScript — ✅ DONE
 
 Replaces `inclusion_controller.js`. Provides AJAX saves with feedback.
 
@@ -855,7 +855,7 @@ After all tests pass, review the Group model for any dead code from the old syst
 3. **Phase 7** — Test fixtures — ✅ DONE
 4. **Phase 3** — Routes & controller — ✅ DONE
 5. **Phase 4** — Views — ✅ DONE
-6. **Phase 5** — JavaScript
+6. **Phase 5** — JavaScript — ✅ DONE
 7. **Phase 6** — CSS
 8. **Phase 8** — Tests
 9. **Phase 9** — Cleanup

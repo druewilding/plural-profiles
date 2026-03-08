@@ -3,7 +3,7 @@ class InclusionOverride < ApplicationRecord
 
   validates :target_type, inclusion: { in: %w[Group Profile] }
   validates :target_id, uniqueness: { scope: %i[group_id path target_type] }
-  validates :path, presence: true # [] is present; nil is not
+  validate :path_not_nil
   validate :same_user
   validate :path_groups_exist
 
@@ -14,6 +14,10 @@ class InclusionOverride < ApplicationRecord
 
   def normalise_path
     self.path = Array(path).map(&:to_i)
+  end
+
+  def path_not_nil
+    errors.add(:path, "can't be nil") if path.nil?
   end
 
   def same_user
