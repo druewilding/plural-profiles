@@ -35,7 +35,7 @@
             %noscript
               = submit_tag hidden ? "Show" : "Hide", class: "btn btn--small"
         - if is_direct
-          = link_to "Remove", remove_group_our_group_path(root_group, group_id: group.id), data: { turbo_method: :delete, turbo_confirm: "Remove #{group.name} from #{root_group.name}?" }, class: "btn btn--small btn--danger"
+          = link_to "Remove from #{root_group.name}", remove_group_our_group_path(root_group, group_id: group.id), data: { turbo_method: :delete, turbo_confirm: "Remove #{group.name} from #{root_group.name}?" }, class: "btn btn--small btn--danger"
     .tree-editor__children
       - children.each do |child_node|
         = render "our/groups/manage_groups_node", node: child_node, root_group: root_group
@@ -65,4 +65,4 @@
           %noscript
             = submit_tag hidden ? "Show" : "Hide", class: "btn btn--small"
       - if is_direct
-        = link_to "Remove", remove_group_our_group_path(root_group, group_id: group.id), data: { turbo_method: :delete, turbo_confirm: "Remove #{group.name} from #{root_group.name}?" }, class: "btn btn--small btn--danger"
+        = link_to "Remove from #{root_group.name}", remove_group_our_group_path(root_group, group_id: group.id), data: { turbo_method: :delete, turbo_confirm: "Remove #{group.name} from #{root_group.name}?" }, class: "btn btn--small btn--danger"

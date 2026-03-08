@@ -1147,7 +1147,7 @@ details[open] > .tree-editor__summary::before {
 }
 
 .tree-editor__summary:hover,
-.tree-editor__leaf--profile:hover {
+.tree-editor__leaf:hover {
   background-color: rgba(78, 133, 95, 0.1);
 }
 
