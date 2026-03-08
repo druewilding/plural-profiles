@@ -833,7 +833,7 @@ Update public-tree rendering tests to work with the new override data (fixture c
 
 ---
 
-## Phase 9: Cleanup
+## Phase 9: Cleanup — ✅ DONE
 
 ### 9a. Remove `inclusion_controller.js`
 
@@ -858,7 +858,7 @@ After all tests pass, review the Group model for any dead code from the old syst
 6. **Phase 5** — JavaScript — ✅ DONE
 7. **Phase 6** — CSS — ✅ DONE
 8. **Phase 8** — Tests — ✅ DONE
-9. **Phase 9** — Cleanup
+9. **Phase 9** — Cleanup — ✅ DONE
 
 ---
 

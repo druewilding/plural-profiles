@@ -21,13 +21,6 @@ class Group < ApplicationRecord
     uuid
   end
 
-  # All group IDs in the descendant tree (this group + all children, recursive).
-  # Uses a single recursive CTE query instead of N+1 queries per nesting level.
-  # Now identical to reachable_group_ids — no mode filtering.
-  def descendant_group_ids
-    reachable_group_ids
-  end
-
   # All group IDs reachable from this group via group_groups edges (recursive).
   # Used for circular-reference validation, UI exclusion lists, and tree building.
   def reachable_group_ids
@@ -45,6 +38,8 @@ class Group < ApplicationRecord
       Group.sanitize_sql([ sql, root_id: id ])
     ).map(&:to_i)
   end
+
+  alias_method :descendant_group_ids, :reachable_group_ids
 
   # All group IDs in the ancestor tree (this group + all parents, recursive).
   # Used to prevent circular references in the UI before validation.

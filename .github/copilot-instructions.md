@@ -78,21 +78,19 @@ Profile ←→ Group  (many-to-many via GroupProfile)
 Group   ←→ Group  (many-to-many via GroupGroup)
 ```
 
-### Group nesting & overlapping
+### Group nesting & visibility
 
-The `GroupGroup` join table has a `relationship_type` column with two values:
+`GroupGroup` is a simple join table linking parent and child groups (just `parent_group_id`, `child_group_id`, and timestamps). All edges are fully recursive — the CTE follows every link.
 
-- **`nested`** (default) — full containment. The child group's entire sub-tree (groups + profiles) appears in the parent. Recursive CTEs follow these links.
-- **`overlapping`** — partial overlap (Venn diagram). The child group and its direct profiles appear in the parent, but recursion **stops** — the child's own sub-groups are not pulled into the parent. Visiting the child group directly still shows its full tree.
-
-This is implemented via recursive CTEs in `Group` model methods (`descendant_group_ids`, `descendant_tree`, `descendant_sections`). The CTE tracks a `recurse_further` flag based on relationship type.
+Visibility is controlled by `InclusionOverride` records. Each override hides a specific group or profile within a particular root group's tree, scoped by the **traversal path** (an array of group IDs from root to the item's container). This allows the same item to be hidden along one path but visible along another when a group appears at multiple points in a diamond-shaped tree.
 
 Key methods in `Group`:
-- `descendant_group_ids` — returns IDs of all descendant groups (respecting overlapping boundaries)
-- `all_profiles` — all profiles reachable from this group (direct + descendants)
-- `descendant_tree` — nested hash structure for sidebar tree rendering
-- `descendant_sections` — flat list of groups with their direct profiles for page sections
-- `build_tree` / `walk_descendants` — tree-building helpers that stop at overlapping boundaries
+- `reachable_group_ids` / `descendant_group_ids` — recursive CTE returning all group IDs in the tree (aliased, identical)
+- `all_profiles` — all profiles reachable from this group, respecting path-scoped overrides
+- `descendant_tree` — nested hash structure for sidebar tree rendering, applying overrides
+- `descendant_sections` — depth-first flat list of groups with their direct profiles for page sections
+- `management_tree` — full unfiltered tree with `hidden` / `cascade_hidden` flags for the manage-groups UI
+- `overrides_index` — loads all `InclusionOverride` records for a root group into a Set of `[path, target_type, target_id]` tuples for O(1) lookups during traversal
 
 ### UUIDs
 All profiles and groups use `SecureRandom.uuid` (stored as `uuid` column) for public URLs. Internal IDs are standard Rails auto-increment integers used only in authenticated routes.
@@ -120,7 +118,7 @@ test/fixtures/         — test data
 
 3. **Circular group references**: The `GroupGroup` model validates against circular references (a group can't be its own ancestor). Keep this in mind when creating test fixtures.
 
-4. **Overlapping vs nested in tests**: When testing overlapping relationships, remember that the overlapping group itself and its direct profiles ARE visible in the parent — only its sub-groups are hidden from the parent's view.
+4. **Path-scoped overrides**: Inclusion overrides use a `path` (jsonb array of group IDs) to scope visibility to a specific traversal route through the tree. The same group or profile can be hidden along one path but visible along another. Empty path `[]` means the target is directly on the root group.
 
 ## Deployment
 
