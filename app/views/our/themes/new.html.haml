@@ -1,0 +1,8 @@
+- content_for(:title) { "New theme — Plural Profiles" }
+
+%h1 New theme
+
+.card
+  = render "our/themes/form", theme: @theme
+
+%p= link_to "← Back to themes", our_themes_path
