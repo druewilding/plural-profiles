@@ -1269,15 +1269,6 @@ details[open] > .tree-editor__summary::before {
   color: var(--danger-button-text);
 }
 
-/* ── Hidden state ────────────────────────────────────── */
-.tree-editor__node--hidden {
-  opacity: 0.5;
-}
-
-.tree-editor__node--hidden .tree-editor__children {
-  opacity: 0.7;
-}
-
 /* ── Save indicator ──────────────────────────────────── */
 .tree-editor__save-indicator {
   font-size: 0.8rem;
@@ -1333,11 +1324,6 @@ details[open] > .tree-editor__summary::before {
   .tree-editor__children > .tree-editor__leaf::before,
   .tree-editor__children > .tree-editor__leaf::after {
     border-color: CanvasText;
-  }
-
-  .tree-editor__node--hidden {
-    opacity: 1;
-    color: GrayText;
   }
 
   .tree-editor__save-indicator {
