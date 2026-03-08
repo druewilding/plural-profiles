@@ -72,20 +72,47 @@ export default class extends Controller {
   }
 
   cascadeGroupVisibility(groupNode, hidden) {
-    // Find the children container within this folder's details element.
-    // The CSS rule `.tree-editor__node--hidden .tree-editor__tag--hidden`
-    // already makes every descendant tag visible when the parent row carries
-    // the class, so we only need to manage checkbox disabled state here.
     const childrenContainer = groupNode.querySelector(".tree-editor__children")
     if (!childrenContainer) return
 
-    const checkboxes = childrenContainer.querySelectorAll('input[type="checkbox"]')
-    checkboxes.forEach(cb => {
-      if (hidden) {
+    if (hidden) {
+      // Cascade hidden: disable every descendant checkbox in one pass.
+      childrenContainer.querySelectorAll('input[type="checkbox"]').forEach(cb => {
         cb.disabled = true
-      } else {
-        // Re-enable unless the checkbox's own row is directly hidden
-        if (!cb.checked) cb.disabled = false
+      })
+    } else {
+      // Cascade un-hidden: walk direct children, removing the hidden class
+      // and re-enabling checkboxes only for nodes that aren't directly hidden
+      // themselves. Stop recursing into any node that is directly hidden so
+      // its own subtree is left untouched.
+      this._uncascadeChildren(childrenContainer)
+    }
+  }
+
+  _uncascadeChildren(container) {
+    container.querySelectorAll(":scope > .tree-editor__leaf, :scope > .tree-editor__folder").forEach(node => {
+      const isFolder = node.tagName === "DETAILS"
+
+      // Locate the checkbox that belongs to *this* node, not a descendant.
+      // For folders the checkbox lives in the <summary>'s actions bar;
+      // for leaves the leaf itself has no children so any match is fine.
+      const checkbox = isFolder
+        ? node.querySelector("summary .tree-editor__actions input[type='checkbox']")
+        : node.querySelector(".tree-editor__actions input[type='checkbox']")
+
+      if (checkbox?.checked) {
+        // This node is directly hidden — leave it and its subtree alone.
+        return
+      }
+
+      // Not directly hidden: remove the cascade class and re-enable.
+      node.classList.remove("tree-editor__node--hidden")
+      if (checkbox) checkbox.disabled = false
+
+      // Recurse into folder children.
+      if (isFolder) {
+        const children = node.querySelector(".tree-editor__children")
+        if (children) this._uncascadeChildren(children)
       }
     })
   }
