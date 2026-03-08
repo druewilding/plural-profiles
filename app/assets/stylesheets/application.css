@@ -17,9 +17,15 @@
   --input-bg: #263a2e;
   --input-border: var(--text);
   --spoiler: #3A3A3A;
-  --error: #d96459;
-  --success: #6dbf7b;
-  --warning: #e2a854;
+  --notice-bg: var(--pane-bg);
+  --notice-border: var(--text);
+  --notice-text: var(--text);
+  --alert-bg: var(--primary-button-bg);
+  --alert-border: var(--primary-button-text);
+  --alert-text: var(--primary-button-text);
+  --warning-bg: var(--danger-button-bg);
+  --warning-border: var(--danger-button-text);
+  --warning-text: var(--danger-button-text);
   --tree-guide: color-mix(in srgb, var(--text) 30%, transparent);
   --placeholder-border: color-mix(in srgb, var(--text) 50%, transparent);
 }
@@ -274,21 +280,21 @@ a.btn:hover {
 }
 
 .flash--notice {
-  background-color: rgba(109, 191, 123, 0.15);
-  border: 1px solid var(--success);
-  color: var(--success);
+  background-color: var(--notice-bg);
+  border: 1px solid var(--notice-border);
+  color: var(--notice-text);
 }
 
 .flash--alert {
-  background-color: rgba(217, 100, 89, 0.15);
-  border: 1px solid var(--error);
-  color: var(--error);
+  background-color: var(--alert-bg);
+  border: 1px solid var(--alert-border);
+  color: var(--alert-text);
 }
 
 .flash--warning {
-  background-color: rgba(226, 168, 84, 0.15);
-  border: 1px solid var(--warning);
-  color: var(--warning);
+  background-color: var(--warning-bg);
+  border: 1px solid var(--warning-border);
+  color: var(--warning-text);
 }
 
 /* Forms */
@@ -462,7 +468,7 @@ input[type="datetime-local"]::-webkit-calendar-picker-indicator {
 input:focus,
 textarea:focus,
 select:focus {
-  border-color: var(--heading);
+  border-color: var(--link);
 }
 
 /* Chrome autofill: override the forced white background */
