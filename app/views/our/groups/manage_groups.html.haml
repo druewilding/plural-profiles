@@ -4,19 +4,39 @@
   Manage groups in
   = @group.name
 
-- if @editor_tree.any?
-  .tree-editor
+- has_tree = @management_tree.any?
+- has_root_profiles = @root_profiles.any?
+
+- if has_tree || has_root_profiles
+  .tree-editor{"data-controller": "visibility-toggle"}
     %p.tree-editor__hint
-      Expand each group to configure how it appears when viewing
+      Use the
+      %strong Hide
+      checkboxes to determine what can be seen when viewing
       %strong= link_to @group.name, group_path(@group.uuid), target: "_blank", rel: "noopener noreferrer"
-      publicly. Direct children can be added or removed. Deeper descendants can have overrides
-      that change their behaviour only in this tree.
-    %ul.tree-editor__tree{"aria-label": "Group tree for #{@group.name}"}
-      - @editor_tree.each do |node|
-        = render "our/groups/manage_groups_node", node: node, root_group: @group
+      publicly.
+      Hiding a group also hides everything inside it.
+
+    -# Root group node (collapsible, no Hide/Remove)
+    %details.tree-editor__folder.tree-editor__folder--root{open: true}
+      %summary.tree-editor__summary
+        .tree-editor__item-info
+          - if @group.avatar.attached?
+            = image_tag @group.avatar.variant(resize_to_fill: [24, 24]), class: "tree__avatar", width: 24, height: 24, alt: ""
+          - else
+            %span.tree__avatar.tree__avatar--placeholder{"aria-hidden": "true"}
+              = render "shared/plural_pride_logo"
+          %span.tree-editor__name= @group.name
+      .tree-editor__children
+        - if has_tree
+          - @management_tree.each do |node|
+            = render "our/groups/manage_groups_node", node: node, root_group: @group
+        - if has_root_profiles
+          - @root_profiles.each do |entry|
+            = render "our/groups/manage_groups_profile_node", entry: entry, root_group: @group
 - else
   .card
-    %p This group has no sub-groups yet. Add one below.
+    %p This group has no sub-groups or profiles yet. Add a group below.
 
 %h2
   Add a group to

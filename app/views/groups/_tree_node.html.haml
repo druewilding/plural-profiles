@@ -1,6 +1,7 @@
 -# Recursive tree node for the explorer sidebar.
--# Locals: node (hash with :group, :profiles, :children), root_uuid
+-# Locals: node (hash with :group, :profiles, :children, :path), root_uuid
 -#   node[:profiles] entries are hashes with :profile and :repeated (set by the model).
+-#   node[:path] is the integer-ID traversal path to this group (for path-scoped panel requests).
 - group = node[:group]
 - profile_entries = Array(node[:profiles])
 - children = Array(node[:children])
@@ -11,7 +12,7 @@
     .tree__row
       %span.tree__arrow-btn{role: "button", tabindex: "0", "data-action": "click->tree#toggleFolder keydown->tree#toggleFolder", "aria-label": "Toggle #{group.name}"}
         %span.tree__arrow.tree__arrow--open{"aria-hidden": "true"} ▶
-      = link_to group_path(group.uuid), class: "tree__item", "data-action": "click->tree#selectGroup", "data-panel-url": panel_group_path(group.uuid, root: root_uuid), "data-group-uuid": group.uuid do
+      = link_to group_path(group.uuid), class: "tree__item", "data-action": "click->tree#selectGroup", "data-panel-url": panel_group_path(group.uuid, root: root_uuid, path: node[:path]), "data-group-uuid": group.uuid do
         - if group.avatar.attached?
           = image_tag group.avatar.variant(resize_to_fill: [24, 24]), class: "tree__avatar", width: 24, height: 24, alt: "", loading: "lazy"
         %span.tree__label= group.name
@@ -36,7 +37,7 @@
               %span.tree__label= profile.name
 - else
   %li.tree__leaf{role: "treeitem"}
-    = link_to group_path(group.uuid), class: "tree__item", "data-action": "click->tree#selectGroup", "data-panel-url": panel_group_path(group.uuid, root: root_uuid), "data-group-uuid": group.uuid do
+    = link_to group_path(group.uuid), class: "tree__item", "data-action": "click->tree#selectGroup", "data-panel-url": panel_group_path(group.uuid, root: root_uuid, path: node[:path]), "data-group-uuid": group.uuid do
       - if group.avatar.attached?
         = image_tag group.avatar.variant(resize_to_fill: [24, 24]), class: "tree__avatar", width: 24, height: 24, alt: "", loading: "lazy"
       %span.tree__label= group.name

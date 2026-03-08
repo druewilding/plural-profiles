@@ -2,6 +2,10 @@
  * Plural Profiles — application styles
  */
 
+/* Ensure the HTML `hidden` attribute always wins, even when an element has
+   an explicit display value set by other rules. */
+[hidden] { display: none !important; }
+
 :root {
   --page-bg: #0e2e24;
   --pane-bg: #133b2f;
@@ -1101,99 +1105,131 @@ details[open] .details-close {
   margin-bottom: 1.25rem;
 }
 
-.tree-editor__tree {
-  list-style: none;
-  margin: 0;
-  padding: 0;
-}
-
+/* ── Layout variables (mirrors public tree) ──────────── */
+.tree-editor__folder,
 .tree-editor__children {
-  list-style: none;
+  --te-indent: 1.5rem;
+  --te-arrow-width: 1.4rem;
+  --te-row-center: 0.95rem;
+  --te-guide-inset: -0.35rem;
+  --te-leaf-connector: 1.6rem;
+}
+
+/* ── Folder (details/summary) ────────────────────────── */
+.tree-editor__folder {
   margin: 0;
-  padding: 0 0 0 1.5rem;
-  border-left: 1px solid var(--tree-guide);
-}
-
-.tree-editor__node {
-  margin-bottom: 0.25rem;
-}
-
-.tree-editor__details {
-  background-color: var(--pane-bg);
-  border: 1px solid color-mix(in srgb, var(--input-border) 50%, transparent);
-  border-radius: 6px;
-  overflow: hidden;
-}
-
-.tree-editor__details[open] {
-  border-color: var(--input-border);
+  position: relative;
 }
 
 .tree-editor__summary {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.3rem 0.5rem;
   cursor: pointer;
-  padding: 0.5rem 0.75rem;
   list-style: none;
-  user-select: none;
-  outline: none;
-}
-
-.tree-editor__summary:focus-visible .tree-editor__summary-row {
-  outline: 2px solid var(--link);
-  outline-offset: 3px;
   border-radius: 4px;
-}
-
-@media (forced-colors: active) {
-  .tree-editor__summary:focus-visible .tree-editor__summary-row {
-    outline: 2px solid CanvasText;
-  }
 }
 
 .tree-editor__summary::-webkit-details-marker {
   display: none;
 }
 
-.tree-editor__summary::marker {
-  content: "";
-}
-
-.tree-editor__summary-row {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 0.5rem;
-  flex-wrap: wrap;
-}
-
-.tree-editor__summary-left {
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-  min-width: 0;
-}
-
-.tree-editor__summary-left::before {
+.tree-editor__summary::before {
   content: "▶";
-  font-size: 0.7rem;
+  font-size: 0.75rem;
+  flex-shrink: 0;
   display: inline-block;
-  width: 1rem;
+  transition: transform 0.15s ease;
+  width: var(--te-arrow-width);
   text-align: center;
   line-height: 1;
-  flex-shrink: 0;
-  color: var(--text);
-  transition: transform 0.15s ease;
 }
 
-.tree-editor__details[open] > .tree-editor__summary .tree-editor__summary-left::before {
+details[open] > .tree-editor__summary::before {
   transform: rotate(90deg);
 }
 
-.tree-editor__summary-right {
+.tree-editor__summary:hover,
+.tree-editor__leaf:hover {
+  background-color: rgba(78, 133, 95, 0.1);
+}
+
+.tree-editor__summary .tree-editor__item-info {
+  flex: 1;
+  min-width: 0;
+}
+
+.tree-editor__summary .tree-editor__actions {
+  margin-left: auto;
+}
+
+/* ── Children container (indented with guide lines) ──── */
+.tree-editor__children {
+  padding-left: var(--te-indent);
+  margin: 0;
+}
+
+/* Vertical + horizontal guide lines on direct children */
+.tree-editor__children > .tree-editor__folder,
+.tree-editor__children > .tree-editor__leaf {
+  position: relative;
+}
+
+/* Vertical guide line running down the left */
+.tree-editor__children > .tree-editor__folder::before,
+.tree-editor__children > .tree-editor__leaf::before {
+  content: "";
+  position: absolute;
+  left: var(--te-guide-inset);
+  top: 0;
+  bottom: 0;
+  border-left: 1px solid var(--tree-guide);
+  pointer-events: none;
+}
+
+/* Last child: vertical line stops at the row center */
+.tree-editor__children > .tree-editor__folder:last-child::before,
+.tree-editor__children > .tree-editor__leaf:last-child::before {
+  bottom: auto;
+  height: var(--te-row-center);
+}
+
+/* Horizontal connector line into leaf items */
+.tree-editor__children > .tree-editor__leaf::after {
+  content: "";
+  position: absolute;
+  left: var(--te-guide-inset);
+  top: var(--te-row-center);
+  width: var(--te-leaf-connector);
+  border-top: 1px solid var(--tree-guide);
+  pointer-events: none;
+}
+
+/* ── Leaf items (profiles + groups without children) ─── */
+.tree-editor__leaf {
   display: flex;
   align-items: center;
   gap: 0.5rem;
-  flex-wrap: wrap;
-  font-size: 0.8rem;
+  padding: 0.3rem 0.5rem;
+  padding-left: calc(var(--te-arrow-width) + 0.5rem);
+  margin: 0;
+}
+
+/* ── Common elements ─────────────────────────────────── */
+.tree-editor__toggle-form {
+  display: contents;
+}
+
+.tree-editor__item-info {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  min-width: 0;
+}
+
+.tree-editor__item-info .btn {
+  margin-left: 0.6rem;
 }
 
 .tree-editor__name {
@@ -1201,6 +1237,37 @@ details[open] .details-close {
   text-overflow: ellipsis;
   white-space: nowrap;
   color: var(--heading);
+}
+
+.tree-editor__node--hidden .tree-editor__name {
+  font-style: italic;
+  opacity: 0.5;
+}
+
+.tree-editor__actions {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  flex-shrink: 0;
+  margin-left: auto;
+  line-height: 24px;
+}
+
+.tree-editor__hide-label {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+  cursor: pointer;
+  font-size: 0.85rem;
+  white-space: nowrap;
+  user-select: none;
+  line-height: 24px;
+  vertical-align: middle;
+  margin-bottom: 0;
+}
+
+.tree-editor__hide-label input[type="checkbox"] {
+  flex-shrink: 0;
 }
 
 .tree-editor__tag {
@@ -1211,133 +1278,55 @@ details[open] .details-close {
   font-weight: 600;
   letter-spacing: 0.03em;
   white-space: nowrap;
-}
-
-.tree-editor__tag--override {
-  background-color: color-mix(in srgb, var(--warning) 25%, transparent);
-  color: var(--warning);
+  margin-left: 0.35rem;
+  flex-shrink: 0;
 }
 
 .tree-editor__tag--hidden {
-  background-color: color-mix(in srgb, var(--error) 20%, transparent);
-  color: var(--error);
+  display: none;
+  background-color: color-mix(in srgb, var(--danger-button-bg) 35%, transparent);
+  color: var(--danger-button-text);
 }
 
-.tree-editor__details--hidden {
-  opacity: 0.55;
+.tree-editor__node--hidden .tree-editor__tag--hidden {
+  display: inline-block;
 }
 
-.tree-editor__details--hidden[open] {
+/* ── Save indicator ──────────────────────────────────── */
+.tree-editor__save-indicator {
+  font-size: 0.8rem;
+  color: var(--primary-button-text);
+  opacity: 0;
+  transition: opacity 0.2s;
+  flex-shrink: 0;
+  white-space: nowrap;
+}
+
+.tree-editor__save-indicator--visible {
   opacity: 1;
 }
 
-/* Controls area revealed on expand */
-.tree-editor__controls {
-  padding: 0.75rem;
-  border-top: 1px solid color-mix(in srgb, var(--input-border) 40%, transparent);
-}
-
-.tree-editor__form {
-  display: flex;
-  flex-direction: column;
-  gap: 0.75rem;
-}
-
-.tree-editor__fieldsets {
-  display: flex;
-  gap: 0.75rem;
-  align-items: flex-start;
-  flex-wrap: wrap;
-}
-
-.tree-editor__fieldset {
-  border: 1px solid rgba(255,255,255,0.04);
-  background-color: rgba(255,255,255,0.02);
-  padding: 0.5rem 0.75rem;
-  border-radius: 8px;
-  min-width: 150px;
-  flex: 1 1 200px;
-}
-
-.tree-editor__fieldset legend {
-  color: var(--heading);
-  font-size: 0.85rem;
-  margin-bottom: 0.35rem;
-}
-
-.tree-editor__radio-group {
-  display: flex;
-  gap: 0.75rem;
-  flex-wrap: wrap;
-  margin-bottom: 0.35rem;
-}
-
-.tree-editor__radio-group label {
-  display: inline-flex;
-  align-items: center;
-  gap: 0.3rem;
-  font-size: 0.9rem;
-  color: var(--text);
-  cursor: pointer;
-  margin-bottom: 0;
-}
-
-.tree-editor__checkbox-list {
-  margin-top: 0.35rem;
-}
-
-/* Visually dim checkboxes when mode is not "selected" — pure CSS, no JS */
-.tree-editor__fieldset:has(input[name="inclusion_mode"][value="all"]:checked) .tree-editor__checkbox-list {
-  opacity: 0.4;
-  pointer-events: none;
-}
-
-.tree-editor__fieldset:has(input[name="inclusion_mode"][value="none"]:checked) .tree-editor__checkbox-list {
-  opacity: 0.4;
-  pointer-events: none;
-}
-
-.tree-editor__override-note {
-  font-size: 0.8rem;
-  opacity: 0.7;
-  margin: 0 0 0.5rem;
-  font-style: italic;
-}
-
-.tree-editor__actions {
-  display: flex;
-  gap: 0.5rem;
-  flex-wrap: wrap;
-  align-items: center;
+.tree-editor__save-indicator--error {
+  color: var(--danger-button-text);
+  opacity: 1;
 }
 
 @media (max-width: 600px) {
-  .tree-editor__fieldsets {
-    flex-direction: column;
+  .tree-editor__summary {
+    flex-wrap: wrap;
   }
 
-  .tree-editor__fieldset {
-    min-width: 0;
-    width: 100%;
-    flex: none;
-  }
-
-  .tree-editor__summary-row {
-    flex-direction: column;
-    align-items: flex-start;
+  .tree-editor__leaf {
+    flex-wrap: wrap;
   }
 
   .tree-editor__children {
-    padding-left: 0.75rem;
+    padding-left: 0.5rem;
   }
 }
 
 /* ── Forced-colors overrides for tree editor ───────────── */
 @media (forced-colors: active) {
-  .tree-editor__details {
-    border-color: CanvasText;
-  }
-
   .tree-editor__name {
     color: CanvasText;
   }
@@ -1348,53 +1337,27 @@ details[open] .details-close {
     color: CanvasText;
   }
 
-  .tree-editor__tag--override {
-    background-color: Canvas;
-    border-color: CanvasText;
-    color: CanvasText;
-  }
-
-  .tree-editor__controls {
-    border-top-color: CanvasText;
-  }
-
-  .tree-editor__fieldset {
-    border-color: CanvasText;
-    background-color: Canvas;
-  }
-
-  .tree-editor__fieldset legend {
-    color: CanvasText;
-  }
-
-  .tree-editor__radio-group label {
-    color: CanvasText;
-  }
-
-  .tree-editor__children {
-    border-left-color: CanvasText;
-  }
-
-  .tree-editor__override-note {
-    opacity: 1;
-    color: CanvasText;
-  }
-
   .tree-editor__tag--hidden {
     background-color: Canvas;
     border-color: CanvasText;
     color: CanvasText;
   }
 
-  .tree-editor__details--hidden {
-    opacity: 1;
+  .tree-editor__children > .tree-editor__folder::before,
+  .tree-editor__children > .tree-editor__leaf::before,
+  .tree-editor__children > .tree-editor__leaf::after {
+    border-color: CanvasText;
   }
 
-  .tree-editor__details--hidden .tree-editor__name {
-    color: GrayText;
+  .tree-editor__save-indicator {
+    color: CanvasText;
   }
 
-  .tree-editor__summary-left::before {
+  .tree-editor__save-indicator--error {
+    color: CanvasText;
+  }
+
+  .tree-editor__summary {
     color: CanvasText;
   }
 }
