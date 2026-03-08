@@ -110,6 +110,17 @@ class Group < ApplicationRecord
     build_tree(id, [], children_map, groups_by_id, seen_profile_ids, overrides)
   end
 
+  # Profiles visible when this group is reached via a specific traversal path
+  # from root_group_id. Performs a single targeted DB query — no tree traversal.
+  # path is an array of integer group IDs (the container_path including this group's id).
+  def profiles_visible_at_path(path, root_group_id:)
+    hidden_ids = InclusionOverride
+      .where(group_id: root_group_id, target_type: "Profile")
+      .where("path = ?::jsonb", path.to_json)
+      .pluck(:target_id)
+    profiles.where.not(id: hidden_ids)
+  end
+
   # Root-level profiles visible in the public view, filtering out
   # those hidden by inclusion overrides at path=[].
   def visible_root_profiles
@@ -230,7 +241,8 @@ class Group < ApplicationRecord
         {
           group: g,
           profiles: tag_profiles(visible_profiles, seen_profile_ids),
-          children: build_tree(g.id, child_path, children_map, groups_by_id, seen_profile_ids, overrides)
+          children: build_tree(g.id, child_path, children_map, groups_by_id, seen_profile_ids, overrides),
+          path: child_path
         }
       end
   end

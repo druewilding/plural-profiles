@@ -101,4 +101,24 @@ class GroupsControllerTest < ActionDispatch::IntegrationTest
     get panel_group_path(uuid: "nonexistent-uuid")
     assert_response :not_found
   end
+
+  test "panel hides profiles with a matching path-scoped override" do
+    flux = groups(:flux)
+    castle_clan = groups(:castle_clan)
+    # Override hides Drift and Ripple in Flux when reached as a direct child of Castle Clan
+    get panel_group_path(uuid: flux.uuid, root: castle_clan.uuid, path: [ flux.id ])
+    assert_response :success
+    assert_no_match "Drift", response.body
+    assert_no_match "Ripple", response.body
+  end
+
+  test "panel shows profiles when path does not match any override" do
+    flux = groups(:flux)
+    castle_clan = groups(:castle_clan)
+    # Different path (e.g. empty — reached as if it were the root) has no override
+    get panel_group_path(uuid: flux.uuid, root: castle_clan.uuid, path: [])
+    assert_response :success
+    assert_match "Drift", response.body
+    assert_match "Ripple", response.body
+  end
 end

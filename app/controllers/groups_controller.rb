@@ -13,8 +13,8 @@ class GroupsController < ApplicationController
 
     if params[:root].present? && params[:root] != params[:uuid]
       root_group = Group.find_by!(uuid: params[:root])
-      visible_from_root = root_group.all_profiles
-      @profiles = @group.profiles.where(id: visible_from_root.select(:id))
+      path = Array(params[:path]).map(&:to_i)
+      @profiles = @group.profiles_visible_at_path(path, root_group_id: root_group.id)
     else
       @profiles = @group.visible_root_profiles
     end
