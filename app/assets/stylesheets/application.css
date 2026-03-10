@@ -335,7 +335,6 @@ fieldset.form-group legend {
 
 .checkbox-label input[type="checkbox"] {
   width: auto;
-  accent-color: var(--link);
 }
 
 label {
