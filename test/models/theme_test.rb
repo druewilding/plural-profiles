@@ -50,6 +50,5 @@ class ThemeTest < ActiveSupport::TestCase
     assert_includes groups, :buttons
     assert_includes groups, :forms
     assert_includes groups, :flash
-    assert_includes groups, :misc
   end
 end

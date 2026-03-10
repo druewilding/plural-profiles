@@ -10,9 +10,10 @@
   --page-bg: #0e2e24;
   --pane-bg: #133b2f;
   --pane-border: #02120e;
+  --heading: #5ea389;
   --text: #5ea389;
   --link: #3ab580;
-  --heading: var(--text);
+  --spoiler: #3A3A3A;
   --primary-button-bg: #11694a;
   --primary-button-text: #58cc9d;
   --secondary-button-text: var(--primary-button-text);
@@ -21,7 +22,6 @@
   --input-label: var(--heading);
   --input-bg: #263a2e;
   --input-border: var(--text);
-  --spoiler: #3A3A3A;
   --notice-bg: var(--pane-bg);
   --notice-border: var(--text);
   --notice-text: var(--text);
