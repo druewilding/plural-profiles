@@ -339,103 +339,6 @@ fieldset.form-group legend {
   accent-color: var(--link);
 }
 
-.toggle-label {
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-  cursor: pointer;
-  font-size: 0.8rem;
-  color: var(--text);
-  opacity: 0.75;
-  text-decoration: none;
-  margin-top: 0.2rem;
-}
-
-.toggle-label:hover {
-  opacity: 1;
-  text-decoration: none;
-}
-
-.toggle-label input[type="checkbox"] {
-  position: absolute;
-  opacity: 0;
-  width: 0;
-  height: 0;
-  pointer-events: none;
-}
-
-.toggle-track {
-  position: relative;
-  width: 2rem;
-  height: 1.15rem;
-  background-color: color-mix(in srgb, var(--text) 25%, var(--page-bg));
-  border: 1px solid color-mix(in srgb, var(--link) 10%, transparent);
-  border-radius: 0.6rem;
-  flex-shrink: 0;
-  transition: background-color 0.2s;
-}
-
-.toggle-track::after {
-  content: "";
-  position: absolute;
-  top: 0.1rem;
-  left: 0.1rem;
-  width: 0.85rem;
-  height: 0.85rem;
-  background-color: color-mix(in srgb, var(--primary-button-text) 20%, white);
-  border-radius: 50%;
-  transition: transform 0.2s;
-}
-
-input:checked + .toggle-track {
-  background-color: var(--link);
-}
-
-input:checked + .toggle-track::after {
-  transform: translateX(0.85rem);
-}
-
-@media (forced-colors: active) {
-  /* Keep toggle checkbox hidden even with appearance: none */
-  .toggle-label input[type="checkbox"] {
-    forced-color-adjust: auto;
-    -webkit-appearance: checkbox;
-    appearance: checkbox;
-  }
-
-  .toggle-track {
-    forced-color-adjust: none;
-    background-color: Canvas;
-    border-color: CanvasText;
-  }
-
-  .toggle-track::after {
-    background-color: CanvasText;
-    border-color: CanvasText;
-  }
-
-  input:checked + .toggle-track {
-    background-color: CanvasText;
-    border-color: CanvasText;
-  }
-
-  input:checked + .toggle-track::after {
-    background-color: Canvas;
-  }
-
-  input:not(:checked) ~ .toggle-text {
-    opacity: 1;
-  }
-}
-
-input:not(:checked) ~ .toggle-text {
-  opacity: 0.5;
-}
-
-.toggle-text {
-  white-space: nowrap;
-}
-
 label {
   display: block;
   margin-bottom: 0.35rem;
@@ -1546,13 +1449,7 @@ input[type="submit"].btn--small,
     color: CanvasText;
   }
 
-  /*
-   * Checkboxes — replace native control, manual system-color styling.
-   * Note: .toggle-label input[type="checkbox"] is restored to appearance: checkbox
-   * in the earlier forced-colors block with higher specificity (0,2,1).
-   * That ensures toggle switches keep the hidden native checkbox. Do not add rules here
-   * that match .toggle-label input[type="checkbox"] or the toggle will break.
-   */
+  /* Checkboxes — replace native control, manual system-color styling. */
   input[type="checkbox"],
   .checkbox-label input[type="checkbox"] {
     forced-color-adjust: none;
