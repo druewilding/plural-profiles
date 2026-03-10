@@ -341,7 +341,7 @@ label {
   display: block;
   margin-bottom: 0.35rem;
   font-size: 0.9rem;
-  color: var(--text);
+  color: var(--input-label);
 }
 
 input[type="text"],
@@ -1156,6 +1156,7 @@ details[open] > .tree-editor__summary::before {
 }
 
 .tree-editor__hide-label {
+  color: var(--text);
   display: inline-flex;
   align-items: center;
   gap: 0.3rem;
