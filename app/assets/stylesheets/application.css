@@ -18,6 +18,7 @@
   --secondary-button-text: var(--primary-button-text);
   --danger-button-bg: #a81d49;
   --danger-button-text: #e6c4cf;
+  --input-label: var(--heading);
   --input-bg: #263a2e;
   --input-border: var(--text);
   --spoiler: #3A3A3A;
@@ -314,7 +315,7 @@ fieldset.form-group {
 
 fieldset.form-group legend {
   font-size: 0.9rem;
-  color: var(--heading);
+  color: var(--input-label);
   padding: 0 0.35rem;
 }
 
@@ -439,7 +440,7 @@ label {
   display: block;
   margin-bottom: 0.35rem;
   font-size: 0.9rem;
-  color: var(--heading);
+  color: var(--input-label);
 }
 
 input[type="text"],

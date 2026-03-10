@@ -20,6 +20,7 @@ class Theme < ApplicationRecord
     "secondary_button_text" => { label: "Secondary button text",    default: "#58cc9d", group: :buttons },
     "danger_button_bg"     => { label: "Danger button background",  default: "#a81d49", group: :buttons },
     "danger_button_text"   => { label: "Danger button text",        default: "#e6c4cf", group: :buttons },
+    "input_label"          => { label: "Input labels",              default: "#5ea389", group: :forms },
     "input_bg"             => { label: "Input background",          default: "#263a2e", group: :forms },
     "input_border"         => { label: "Input border",              default: "#5ea389", group: :forms },
     "spoiler"              => { label: "Spoiler background",        default: "#3A3A3A", group: :misc },
