@@ -3,16 +3,6 @@
 -# updated live by the theme-designer Stimulus controller.
 
 .theme-preview__section
-  %h3 Navigation header
-  .theme-preview__header
-    %span.theme-preview__logo
-      = render "shared/plural_pride_logo"
-      Plural Profiles
-    %nav
-      %a{href: "#"} Groups
-      %a{href: "#"} Profiles
-
-.theme-preview__section
   %h2 Theme preview
   %p This preview updates live as you change colours.
   %p This is body text on the page background. Here is a #{link_to "sample link", "#"} in a sentence.
@@ -37,17 +27,18 @@
     %button.btn.btn--danger Danger button
 
 .theme-preview__section
-  %h3 Form controls
-  .form-group
-    %label Text input
-    %input{type: "text", placeholder: "Sample text"}
-  .form-group
-    %label Textarea
-    %textarea{rows: 2, placeholder: "Sample textarea content"}
-  .form-group
-    %label.checkbox-label
-      %input{type: "checkbox", checked: true, disabled: true}
-      Checkbox option
+  .card
+    %h3 Form controls
+    .form-group
+      %label Text input
+      %input{type: "text", placeholder: "Sample text"}
+    .form-group
+      %label Textarea
+      %textarea{rows: 2, placeholder: "Sample textarea content"}
+    .form-group
+      %label.checkbox-label
+        %input{type: "checkbox", checked: true, disabled: true}
+        Checkbox option
 
 .theme-preview__section
   %h3 Flash messages

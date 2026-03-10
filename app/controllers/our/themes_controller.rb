@@ -9,7 +9,7 @@ class Our::ThemesController < ApplicationController
 
   def new
     @theme = Current.user.themes.build(
-      name: "My theme",
+      name: "New theme",
       colors: Theme::THEMEABLE_PROPERTIES.transform_values { |v| v[:default] }
     )
   end
