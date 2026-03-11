@@ -47,8 +47,8 @@ class ThemeTest < ActiveSupport::TestCase
   test "THEMEABLE_PROPERTIES covers all expected groups" do
     groups = Theme::THEMEABLE_PROPERTIES.values.map { |v| v[:group] }.uniq
     assert_includes groups, :base
-    assert_includes groups, :buttons
     assert_includes groups, :forms
+    assert_includes groups, :buttons
     assert_includes groups, :flash
   end
 end
