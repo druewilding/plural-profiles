@@ -45,8 +45,8 @@ class Theme < ApplicationRecord
 
   PROPERTY_GROUPS = {
     base:    "Base colours",
-    buttons: "Buttons",
     forms:   "Form controls",
+    buttons: "Buttons",
     flash:   "Flash messages"
   }.freeze
 

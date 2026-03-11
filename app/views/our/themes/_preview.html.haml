@@ -19,13 +19,6 @@
       element.
 
 .theme-preview__section
-  %h3 Buttons
-  .theme-preview__buttons
-    %button.btn Primary button
-    %button.btn.btn--secondary Secondary button
-    %button.btn.btn--danger Danger button
-
-.theme-preview__section
   .card
     %h3 Form controls
     .form-group
@@ -39,13 +32,28 @@
       %label.checkbox-label
         %input{type: "checkbox", checked: true, disabled: true}
         Checkbox option
+    %br
+    .theme-preview__buttons
+      %button.btn Primary button
+      %button.btn.btn--secondary Secondary button
+      %button.btn.btn--danger Danger button
 
+  %br
+  .theme-preview__section
+    %h3 Buttons outside panes
+    .theme-preview__buttons
+      %button.btn Primary button
+      %button.btn.btn--secondary Secondary button
+      %button.btn.btn--danger Danger button
+
+%br
 .theme-preview__section
   %h3 Flash messages
   .flash.flash--notice This is a notice message.
   .flash.flash--alert This is an alert message.
   .flash.flash--warning This is a warning message.
 
+%br
 .theme-preview__section
   %h3 Profile card
   .profile-grid
