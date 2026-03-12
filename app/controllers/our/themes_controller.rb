@@ -48,11 +48,17 @@ class Our::ThemesController < ApplicationController
   end
 
   def duplicate
-    copy = Current.user.themes.create!(
-      name: "#{@theme.name} (copy)",
+    suffix = " (copy)"
+    base_name = @theme.name.truncate(255 - suffix.length, omission: "")
+    copy = Current.user.themes.build(
+      name: "#{base_name}#{suffix}",
       colors: @theme.colors
     )
-    redirect_to edit_our_theme_path(copy), notice: "Theme duplicated. You're now editing the copy."
+    if copy.save
+      redirect_to edit_our_theme_path(copy), notice: "Theme duplicated. You're now editing the copy."
+    else
+      redirect_to our_themes_path, alert: "Could not duplicate theme: #{copy.errors.full_messages.to_sentence}"
+    end
   end
 
   def activate
