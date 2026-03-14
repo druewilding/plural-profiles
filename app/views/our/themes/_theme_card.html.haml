@@ -17,8 +17,7 @@
           Made by
           %strong= theme.credit
       - if theme.notes.present?
-        %p.theme-card__notes
-          %em= theme.notes
+        %p.theme-card__notes= theme.notes
   - if theme.tags.any?
     .card__tags
       - theme.tags.each do |tag|
