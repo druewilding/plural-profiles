@@ -5,7 +5,10 @@
 - if @active_theme
   %h2 Active theme
   .card-list
-    = render "our/themes/theme_card", theme: @active_theme
+    - if @active_theme.shared?
+      = render "our/themes/shared_theme_card", theme: @active_theme
+    - else
+      = render "our/themes/theme_card", theme: @active_theme
 
 .theme-tag-filter
   %span.theme-tag-filter__label Filter themes by tags:
