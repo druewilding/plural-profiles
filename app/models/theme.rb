@@ -12,12 +12,11 @@ class Theme < ApplicationRecord
   TAGS = {
     "light"         => "Light",
     "dark"          => "Dark",
-    "high-contrast" => "High contrast",
-    "low-contrast"  => "Low contrast",
     "warm-colours"  => "Warm colours",
     "cool-colours"  => "Cool colours",
-    "pastel"        => "Pastel",
-    "muted"         => "Muted"
+    "high-contrast" => "High contrast",
+    "mid-contrast"  => "Mid contrast",
+    "low-contrast"  => "Low contrast"
   }.freeze
 
   def colors=(value)

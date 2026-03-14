@@ -531,6 +531,23 @@ button:hover,
   padding: 1rem 1.5rem;
 }
 
+.card--stacked {
+  padding: 1rem 1.5rem;
+}
+
+.card--stacked .card__main {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.card__tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.35rem;
+  margin-top: 0.6rem;
+}
+
 .card__header {
   display: flex;
   align-items: center;
