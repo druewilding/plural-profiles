@@ -13,7 +13,7 @@ class Our::ThemesController < ApplicationController
     @shared_themes = Theme.shared.order(:name)
     @shared_themes = @shared_themes.where("tags @> ARRAY[?]::varchar[]", @filter_tags) if @filter_tags.any?
 
-    own_scope = Current.user.themes.personal.where.not(id: Current.user.active_theme_id)
+    own_scope = Current.user.themes.personal
     own_scope = own_scope.where("tags @> ARRAY[?]::varchar[]", @filter_tags) if @filter_tags.any?
     @other_themes = own_scope.order(:name)
   end

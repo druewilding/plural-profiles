@@ -85,6 +85,24 @@ body {
   text-decoration: underline;
 }
 
+.admin-badge {
+  margin-left: 1.5rem;
+  font-size: 0.7rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  padding: 0.2em 0.5em;
+  border-radius: 3px;
+  background: color-mix(in srgb, var(--danger-button-bg) 85%, transparent);
+  color: var(--danger-button-text);
+  vertical-align: middle;
+
+  @media (forced-colors: active) {
+    border: 1px solid ButtonText;
+    color: ButtonText;
+    background: ButtonFace;
+  }
+}
+
 .container {
   max-width: 960px;
   margin: 2rem auto;
