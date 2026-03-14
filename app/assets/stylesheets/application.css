@@ -95,8 +95,10 @@ body {
   background: color-mix(in srgb, var(--danger-button-bg) 85%, transparent);
   color: var(--danger-button-text);
   vertical-align: middle;
+}
 
-  @media (forced-colors: active) {
+@media (forced-colors: active) {
+  .admin-badge {
     border: 1px solid ButtonText;
     color: ButtonText;
     background: ButtonFace;
