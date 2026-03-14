@@ -252,4 +252,37 @@ class Our::ThemesControllerTest < ActionDispatch::IntegrationTest
     assert_redirected_to our_themes_path
     assert_equal [], @theme.reload.tags
   end
+
+  # -- Credit & notes --
+
+  test "create saves credit and notes" do
+    sign_in_as @user
+    post our_themes_path, params: {
+      theme: { name: "Credited", colors: {}, credit: "Dru", notes: "Some notes here" }
+    }
+    assert_redirected_to our_themes_path
+    theme = Theme.find_by!(name: "Credited")
+    assert_equal "Dru", theme.credit
+    assert_equal "Some notes here", theme.notes
+  end
+
+  test "update saves credit and notes" do
+    sign_in_as @user
+    patch our_theme_path(@theme), params: {
+      theme: { name: @theme.name, colors: @theme.colors, credit: "Dru", notes: "Updated notes" }
+    }
+    assert_redirected_to our_themes_path
+    @theme.reload
+    assert_equal "Dru", @theme.credit
+    assert_equal "Updated notes", @theme.notes
+  end
+
+  test "duplicate copies credit and notes" do
+    sign_in_as @user
+    @theme.update!(credit: "Dru", notes: "Original notes")
+    post duplicate_our_theme_path(@theme)
+    copy = Theme.order(:created_at).last
+    assert_equal "Dru", copy.credit
+    assert_equal "Original notes", copy.notes
+  end
 end

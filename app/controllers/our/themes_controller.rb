@@ -59,7 +59,9 @@ class Our::ThemesController < ApplicationController
     copy = Current.user.themes.build(
       name: "#{base_name}#{suffix}",
       colors: @theme.colors,
-      tags: @theme.tags
+      tags: @theme.tags,
+      credit: @theme.credit,
+      notes: @theme.notes
     )
     if copy.save
       redirect_to edit_our_theme_path(copy), notice: "Theme duplicated. You're now editing the copy."
@@ -85,7 +87,7 @@ class Our::ThemesController < ApplicationController
   end
 
   def theme_params
-    permitted = params.require(:theme).permit(:name, tags: [], colors: {})
+    permitted = params.require(:theme).permit(:name, :credit, :notes, tags: [], colors: {})
     # Ensure only known tag values are stored
     permitted[:tags] = (permitted[:tags] || []).reject(&:blank?).uniq & Theme::TAGS.keys
     # Ensure only known colour keys are stored

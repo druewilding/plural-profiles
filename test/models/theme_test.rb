@@ -87,4 +87,27 @@ class ThemeTest < ActiveSupport::TestCase
   test "fixture sunset has expected tags" do
     assert_equal [ "light", "warm-colours" ], themes(:sunset).tags
   end
+
+  # -- Credit & notes --
+
+  test "valid with credit and notes" do
+    theme = Theme.new(user: users(:one), name: "Credited", colors: {}, credit: "Dru", notes: "My notes")
+    assert theme.valid?, theme.errors.full_messages.inspect
+  end
+
+  test "valid without credit and notes" do
+    theme = Theme.new(user: users(:one), name: "Plain", colors: {})
+    assert theme.valid?, theme.errors.full_messages.inspect
+  end
+
+  test "credit over 255 characters is invalid" do
+    theme = Theme.new(user: users(:one), name: "Long credit", colors: {}, credit: "a" * 256)
+    assert_not theme.valid?
+    assert_includes theme.errors[:credit], "is too long (maximum is 255 characters)"
+  end
+
+  test "credit at exactly 255 characters is valid" do
+    theme = Theme.new(user: users(:one), name: "Max credit", colors: {}, credit: "a" * 255)
+    assert theme.valid?, theme.errors.full_messages.inspect
+  end
 end
