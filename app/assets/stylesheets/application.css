@@ -1244,7 +1244,7 @@ details[open] > .tree-editor__summary::before {
 
 .theme-tag-filter__label {
   font-size: 0.85rem;
-  color: var(--input-label);
+  color: var(--text);
   margin-right: 0.25rem;
   white-space: nowrap;
 }

@@ -5,10 +5,12 @@ class Our::ThemesController < ApplicationController
 
   def index
     @filter_tags = Array(params[:tags]).reject(&:blank?) & Theme::TAGS.keys
-    @themes = Current.user.themes.order(:name)
+    @active_theme = Current.user.active_theme
+    other_themes = Current.user.themes.where.not(id: Current.user.active_theme_id).order(:name)
     if @filter_tags.any?
-      @themes = @themes.where("tags @> ARRAY[?]::varchar[]", @filter_tags)
+      other_themes = other_themes.where("tags @> ARRAY[?]::varchar[]", @filter_tags)
     end
+    @other_themes = other_themes
   end
 
   def new
