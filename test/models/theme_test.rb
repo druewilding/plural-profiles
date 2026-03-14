@@ -145,4 +145,38 @@ class ThemeTest < ActiveSupport::TestCase
     assert_not theme.valid?
     assert_includes theme.errors[:credit_url], "is too long (maximum is 255 characters)"
   end
+
+  # -- Shared themes --
+
+  test "admin user can create a shared theme" do
+    theme = Theme.new(user: users(:one), name: "Admin shared", colors: {}, shared: true)
+    assert users(:one).admin?, "fixture user one should be admin"
+    assert theme.valid?, theme.errors.full_messages.inspect
+  end
+
+  test "non-admin user cannot create a shared theme" do
+    theme = Theme.new(user: users(:two), name: "Non-admin shared", colors: {}, shared: true)
+    assert_not users(:two).admin?
+    assert_not theme.valid?
+    assert_includes theme.errors[:shared], "can only be set by admins"
+  end
+
+  test "non-admin theme with shared false is valid" do
+    theme = Theme.new(user: users(:two), name: "Non-admin personal", colors: {}, shared: false)
+    assert theme.valid?, theme.errors.full_messages.inspect
+  end
+
+  test "shared scope returns only shared themes" do
+    shared = Theme.shared
+    assert_includes shared, themes(:ocean_shared)
+    assert_not_includes shared, themes(:dark_forest)
+    assert_not_includes shared, themes(:sunset)
+  end
+
+  test "personal scope returns only non-shared themes" do
+    personal = Theme.personal
+    assert_not_includes personal, themes(:ocean_shared)
+    assert_includes personal, themes(:dark_forest)
+    assert_includes personal, themes(:sunset)
+  end
 end

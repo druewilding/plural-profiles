@@ -20,6 +20,12 @@
     = form.label :notes, "Notes"
     = form.text_area :notes, rows: 4
 
+  - if Current.user.admin?
+    .form-group
+      %label.checkbox-label
+        = form.check_box :shared
+        Share this theme with everyone
+
   - Theme::PROPERTY_GROUPS.each do |group_key, group_label|
     %hr.form-divider
     %h3= group_label

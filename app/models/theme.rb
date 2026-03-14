@@ -3,10 +3,14 @@ require "uri"
 class Theme < ApplicationRecord
   belongs_to :user
 
+  scope :shared, -> { where(shared: true) }
+  scope :personal, -> { where(shared: false) }
+
   validates :name, presence: true, length: { maximum: 255 }
   validates :credit, length: { maximum: 255 }, allow_nil: true
   validates :credit_url, length: { maximum: 255 }, allow_blank: true
   validate :credit_url_must_be_http_url
+  validate :only_admin_can_share
   validate :colors_is_a_hash
   validate :colors_keys_are_known
   validate :colors_values_are_hex
@@ -117,6 +121,12 @@ class Theme < ApplicationRecord
   end
 
   private
+
+    def only_admin_can_share
+      if shared? && !user&.admin?
+        errors.add(:shared, "can only be set by admins")
+      end
+    end
 
     HEX_COLOR_PATTERN = /\A#[0-9A-Fa-f]{6}\z/
 

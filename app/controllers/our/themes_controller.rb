@@ -1,16 +1,23 @@
 class Our::ThemesController < ApplicationController
   include OurSidebar
-  skip_before_action :set_sidebar_data, only: %i[new create edit update activate deactivate destroy duplicate]
-  before_action :set_theme, only: %i[edit update destroy activate duplicate]
+  skip_before_action :set_sidebar_data, only: %i[new create edit update activate deactivate destroy duplicate show]
+  before_action :set_theme, only: %i[edit update destroy activate]
+  before_action :set_theme_for_duplicate, only: %i[duplicate]
+  before_action :set_theme_for_show, only: %i[show]
 
   def index
     @filter_tags = Array(params[:tags]).reject(&:blank?) & Theme::TAGS.keys
     @active_theme = Current.user.active_theme
-    other_themes = Current.user.themes.where.not(id: Current.user.active_theme_id).order(:name)
-    if @filter_tags.any?
-      other_themes = other_themes.where("tags @> ARRAY[?]::varchar[]", @filter_tags)
-    end
-    @other_themes = other_themes
+
+    @shared_themes = Theme.shared.order(:name)
+    @shared_themes = @shared_themes.where("tags @> ARRAY[?]::varchar[]", @filter_tags) if @filter_tags.any?
+
+    own_scope = Current.user.themes.personal.where.not(id: Current.user.active_theme_id)
+    own_scope = own_scope.where("tags @> ARRAY[?]::varchar[]", @filter_tags) if @filter_tags.any?
+    @other_themes = own_scope.order(:name)
+  end
+
+  def show
   end
 
   def new
@@ -62,7 +69,8 @@ class Our::ThemesController < ApplicationController
       tags: @theme.tags,
       credit: @theme.credit,
       credit_url: @theme.credit_url,
-      notes: @theme.notes
+      notes: @theme.notes,
+      shared: false
     )
     if copy.save
       redirect_to edit_our_theme_path(copy), notice: "Theme duplicated. You're now editing the copy."
@@ -87,8 +95,26 @@ class Our::ThemesController < ApplicationController
     @theme = Current.user.themes.find(params[:id])
   end
 
+  def set_theme_for_duplicate
+    @theme = if Theme.shared.exists?(params[:id])
+               Theme.shared.find(params[:id])
+             else
+               Current.user.themes.find(params[:id])
+             end
+  end
+
+  def set_theme_for_show
+    @theme = if Current.user.themes.exists?(params[:id])
+               Current.user.themes.find(params[:id])
+             else
+               Theme.shared.find(params[:id])
+             end
+  end
+
   def theme_params
-    permitted = params.require(:theme).permit(:name, :credit, :credit_url, :notes, tags: [], colors: {})
+    permitted = params.require(:theme).permit(:name, :credit, :credit_url, :notes, :shared, tags: [], colors: {})
+    # Strip shared param if user is not admin
+    permitted.delete(:shared) unless Current.user.admin?
     # Ensure only known tag values are stored
     permitted[:tags] = (permitted[:tags] || []).reject(&:blank?).uniq & Theme::TAGS.keys
     # Ensure only known colour keys are stored
@@ -98,3 +124,4 @@ class Our::ThemesController < ApplicationController
     permitted
   end
 end
+

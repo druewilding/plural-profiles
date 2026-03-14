@@ -21,7 +21,13 @@
   .card-list
     = render "our/themes/theme_card", theme: @active_theme
 
-%h2= @active_theme ? "Other themes" : "Themes"
+- if @shared_themes.any?
+  %h2 Shared themes
+  .card-list
+    - @shared_themes.each do |theme|
+      = render "our/themes/shared_theme_card", theme: theme
+
+%h2= @active_theme ? "Your themes" : "Your themes"
 
 .theme-tag-filter
   %span.theme-tag-filter__label Filter by tags:

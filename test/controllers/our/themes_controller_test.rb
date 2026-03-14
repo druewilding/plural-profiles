@@ -23,7 +23,7 @@ class Our::ThemesControllerTest < ActionDispatch::IntegrationTest
     assert_response :success
     assert_match "Dark Forest", response.body
     assert_match "Sunset", response.body
-    assert_no_match "Ocean", response.body
+    assert_no_match "Cerulean", response.body
   end
 
   # -- New --
@@ -304,5 +304,102 @@ class Our::ThemesControllerTest < ActionDispatch::IntegrationTest
     assert_equal "Dru", copy.credit
     assert_equal "Original notes", copy.notes
     assert_equal "https://example.com", copy.credit_url
+  end
+
+  # -- Shared themes --
+
+  test "index shows shared themes section to all logged-in users" do
+    sign_in_as @other_user
+    get our_themes_path
+    assert_response :success
+    assert_match "Shared themes", response.body
+    assert_match "Ocean Shared", response.body
+  end
+
+  test "index does not show shared themes in personal themes section" do
+    sign_in_as @user
+    get our_themes_path
+    assert_response :success
+    # Shared theme appears in Shared themes section, not counted as a personal theme
+    assert_match "Ocean Shared", response.body
+  end
+
+  test "non-admin cannot set shared on create" do
+    sign_in_as @other_user
+    post our_themes_path, params: {
+      theme: { name: "Sneaky shared", colors: {}, shared: true }
+    }
+    assert_redirected_to our_themes_path
+    theme = Theme.find_by!(name: "Sneaky shared")
+    assert_not theme.shared?
+  end
+
+  test "admin can create a shared theme" do
+    sign_in_as @user
+    assert @user.admin?
+    post our_themes_path, params: {
+      theme: { name: "Admin shared theme", colors: {}, shared: true }
+    }
+    assert_redirected_to our_themes_path
+    theme = Theme.find_by!(name: "Admin shared theme")
+    assert theme.shared?
+  end
+
+  test "non-admin can duplicate a shared theme" do
+    shared = themes(:ocean_shared)
+    sign_in_as @other_user
+    assert_difference("Theme.count", 1) do
+      post duplicate_our_theme_path(shared)
+    end
+    copy = Theme.order(:created_at).last
+    assert_equal @other_user, copy.user
+    assert_not copy.shared?
+  end
+
+  test "non-admin cannot edit a shared theme they do not own" do
+    shared = themes(:ocean_shared)
+    sign_in_as @other_user
+    get edit_our_theme_path(shared)
+    assert_response :not_found
+  end
+
+  test "non-admin cannot delete a shared theme" do
+    shared = themes(:ocean_shared)
+    sign_in_as @other_user
+    assert_no_difference("Theme.count") do
+      delete our_theme_path(shared)
+    end
+    assert_response :not_found
+  end
+
+  test "duplicated shared theme has shared false" do
+    shared = themes(:ocean_shared)
+    sign_in_as @user
+    post duplicate_our_theme_path(shared)
+    copy = Theme.order(:created_at).last
+    assert_not copy.shared?
+  end
+
+  # -- Show / preview --
+
+  test "show renders a user's own theme" do
+    sign_in_as @user
+    get our_theme_path(@theme)
+    assert_response :success
+    assert_match @theme.name, response.body
+  end
+
+  test "show renders a shared theme for any logged-in user" do
+    shared = themes(:ocean_shared)
+    sign_in_as @other_user
+    get our_theme_path(shared)
+    assert_response :success
+    assert_match shared.name, response.body
+  end
+
+  test "show returns 404 for another user's personal theme" do
+    sign_in_as @other_user
+    get our_theme_path(@theme)
+    assert_response :not_found
   end
 end

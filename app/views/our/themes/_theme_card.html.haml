@@ -1,7 +1,7 @@
 .card.card--stacked
   .card__main
     .card__header
-      %h3= link_to theme.name, edit_our_theme_path(theme)
+      %h3= link_to theme.name, our_theme_path(theme)
       - if Current.user.active_theme_id == theme.id
         = link_to "Deactivate", deactivate_our_themes_path, data: { turbo_method: :patch }, class: "btn btn--small"
       - else
