@@ -11,7 +11,8 @@ Extend the existing theme feature with four enhancements:
 
 ### Key decisions from discussion
 
-- **Credit field** is free text only (no URL, no profile link) — `string`, max 255 chars
+- **Credit field** uses a free-text "made by" string (no automatic profile link lookup) — `credit` as `string`, max 255 chars
+- **Optional credit URL** allows linking to the maker's site or profile — `credit_url` as `string`, validated as a URL
 - **Notes field** is a textarea — `text`, no hard limit in DB
 - **Only admins can share themes** — requires a new `admin` boolean on the `users` table
 - **Admins can still edit shared themes** — other users can only view and duplicate them
