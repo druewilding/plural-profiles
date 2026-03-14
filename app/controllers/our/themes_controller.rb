@@ -4,7 +4,11 @@ class Our::ThemesController < ApplicationController
   before_action :set_theme, only: %i[edit update destroy activate duplicate]
 
   def index
+    @filter_tags = Array(params[:tags]).reject(&:blank?) & Theme::TAGS.keys
     @themes = Current.user.themes.order(:name)
+    if @filter_tags.any?
+      @themes = @themes.where("tags @> ARRAY[?]::varchar[]", @filter_tags)
+    end
   end
 
   def new
@@ -52,7 +56,8 @@ class Our::ThemesController < ApplicationController
     base_name = @theme.name.truncate(255 - suffix.length, omission: "")
     copy = Current.user.themes.build(
       name: "#{base_name}#{suffix}",
-      colors: @theme.colors
+      colors: @theme.colors,
+      tags: @theme.tags
     )
     if copy.save
       redirect_to edit_our_theme_path(copy), notice: "Theme duplicated. You're now editing the copy."
@@ -78,7 +83,9 @@ class Our::ThemesController < ApplicationController
   end
 
   def theme_params
-    permitted = params.require(:theme).permit(:name, colors: {})
+    permitted = params.require(:theme).permit(:name, tags: [], colors: {})
+    # Ensure only known tag values are stored
+    permitted[:tags] = (permitted[:tags] || []).reject(&:blank?).uniq & Theme::TAGS.keys
     # Ensure only known colour keys are stored
     if permitted[:colors].present?
       permitted[:colors] = permitted[:colors].to_h.slice(*Theme::THEMEABLE_PROPERTIES.keys)

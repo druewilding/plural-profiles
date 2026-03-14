@@ -5,8 +5,20 @@ class Theme < ApplicationRecord
   validate :colors_is_a_hash
   validate :colors_keys_are_known
   validate :colors_values_are_hex
+  validate :tags_are_known
 
   before_validation :normalize_colors_keys
+
+  TAGS = {
+    "light"         => "Light",
+    "dark"          => "Dark",
+    "high-contrast" => "High contrast",
+    "low-contrast"  => "Low contrast",
+    "warm-colours"  => "Warm colours",
+    "cool-colours"  => "Cool colours",
+    "pastel"        => "Pastel",
+    "muted"         => "Muted"
+  }.freeze
 
   def colors=(value)
     super(value.is_a?(Hash) ? value.transform_keys(&:to_s) : value)
@@ -105,5 +117,12 @@ class Theme < ApplicationRecord
           errors.add(:colors, "value for '#{key}' is not a valid hex colour (expected #RRGGBB)")
         end
       end
+    end
+
+    def tags_are_known
+      return unless tags.is_a?(Array)
+
+      unknown = tags - TAGS.keys
+      errors.add(:tags, "contains unknown values: #{unknown.join(', ')}") if unknown.any?
     end
 end
