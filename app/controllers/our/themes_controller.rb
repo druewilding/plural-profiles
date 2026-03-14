@@ -1,9 +1,9 @@
 class Our::ThemesController < ApplicationController
   include OurSidebar
   skip_before_action :set_sidebar_data, only: %i[new create edit update activate deactivate destroy duplicate show]
-  before_action :set_theme, only: %i[edit update destroy activate]
+  before_action :set_theme, only: %i[edit update destroy]
   before_action :set_theme_for_duplicate, only: %i[duplicate]
-  before_action :set_theme_for_show, only: %i[show]
+  before_action :set_theme_for_show, only: %i[show activate]
 
   def index
     @filter_tags = Array(params[:tags]).reject(&:blank?) & Theme::TAGS.keys

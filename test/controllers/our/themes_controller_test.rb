@@ -152,6 +152,23 @@ class Our::ThemesControllerTest < ActionDispatch::IntegrationTest
     assert_redirected_to our_themes_path
   end
 
+  test "activate works for a shared theme not owned by the user" do
+    shared = themes(:ocean_shared)
+    sign_in_as @other_user
+    patch activate_our_theme_path(shared)
+    @other_user.reload
+    assert_equal shared.id, @other_user.active_theme_id
+    assert_redirected_to our_themes_path
+  end
+
+  test "activate rejects another user's personal theme" do
+    sign_in_as @other_user
+    patch activate_our_theme_path(@theme)
+    assert_response :not_found
+    @other_user.reload
+    assert_nil @other_user.active_theme_id
+  end
+
   test "deactivate clears active theme" do
     sign_in_as @user
     @user.update!(active_theme: @theme)
