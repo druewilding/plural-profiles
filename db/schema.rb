@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_03_14_000003) do
+ActiveRecord::Schema[8.1].define(version: 2026_03_14_000005) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -127,15 +127,18 @@ ActiveRecord::Schema[8.1].define(version: 2026_03_14_000003) do
     t.string "credit_url", limit: 255
     t.string "name", null: false
     t.text "notes"
+    t.boolean "shared", default: false, null: false
     t.string "tags", default: [], null: false, array: true
     t.datetime "updated_at", null: false
     t.bigint "user_id", null: false
+    t.index ["shared"], name: "index_themes_on_shared", where: "(shared = true)"
     t.index ["tags"], name: "index_themes_on_tags", using: :gin
     t.index ["user_id"], name: "index_themes_on_user_id"
   end
 
   create_table "users", force: :cascade do |t|
     t.bigint "active_theme_id"
+    t.boolean "admin", default: false, null: false
     t.datetime "created_at", null: false
     t.string "email_address", null: false
     t.datetime "email_verified_at"

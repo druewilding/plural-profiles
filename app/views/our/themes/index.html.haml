@@ -2,6 +2,25 @@
 
 %h1 Themes
 
+- if @active_theme
+  %h2 Active theme
+  .card-list
+    - if @active_theme.shared?
+      = render "our/themes/shared_theme_card", theme: @active_theme
+    - else
+      = render "our/themes/theme_card", theme: @active_theme
+
+.theme-tag-filter
+  %span.theme-tag-filter__label Filter themes by tags:
+  - Theme::TAGS.each do |value, label|
+    - active = @filter_tags.include?(value)
+    - new_tags = active ? @filter_tags - [value] : @filter_tags + [value]
+    = link_to label, our_themes_path(tags: new_tags), class: "tag tag--filter #{'tag--filter-active' if active}"
+  - if @filter_tags.any?
+    = link_to "Clear filter", our_themes_path, class: "theme-tag-filter__clear"
+
+%h2 Our themes
+
 .theme-import{data: { controller: "theme-import", "theme-import-new-url-value": new_our_theme_path }}
   = link_to "New theme", new_our_theme_path, class: "btn"
   %button.btn.btn--outline{type: "button", data: { action: "click->theme-import#open" }} Import theme
@@ -16,22 +35,6 @@
         %button.btn{type: "submit"} Import
         %button.btn.btn--secondary{type: "button", data: { action: "click->theme-import#close" }} Cancel
 
-- if @active_theme
-  %h2 Active theme
-  .card-list
-    = render "our/themes/theme_card", theme: @active_theme
-
-%h2= @active_theme ? "Other themes" : "Themes"
-
-.theme-tag-filter
-  %span.theme-tag-filter__label Filter by tags:
-  - Theme::TAGS.each do |value, label|
-    - active = @filter_tags.include?(value)
-    - new_tags = active ? @filter_tags - [value] : @filter_tags + [value]
-    = link_to label, our_themes_path(tags: new_tags), class: "tag tag--filter #{'tag--filter-active' if active}"
-  - if @filter_tags.any?
-    = link_to "Clear filter", our_themes_path, class: "theme-tag-filter__clear"
-
 - if @other_themes.any?
   .card-list
     - @other_themes.each do |theme|
@@ -42,4 +45,14 @@
 - elsif @active_theme.nil?
   .card
     %p You haven't created any themes yet. Themes let you customise the colours used across the site.
+
+- if @any_shared_themes
+  %h2 Shared themes
+  - if @shared_themes.any?
+    .card-list
+      - @shared_themes.each do |theme|
+        = render "our/themes/shared_theme_card", theme: theme
+  - elsif @filter_tags.any?
+    .card
+      %p No themes match the selected tags.
 

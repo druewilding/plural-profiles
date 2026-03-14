@@ -65,8 +65,42 @@ sunset:
     warning_text: "#e6c4cf"
 
 other_user_theme:
-  name: Ocean
+  name: Cerulean
   user: two
   colors:
     page_bg: "#0e1e2e"
     text: "#89a3c4"
+
+ocean_shared:
+  name: Ocean Shared
+  user: one
+  shared: true
+  tags:
+    - cool-colours
+  colors:
+    page_bg: "#0e1e2e"
+    pane_bg: "#132030"
+    pane_border: "#020e12"
+    heading: "#5ea3a3"
+    text: "#5ea3a3"
+    link: "#3ab5b5"
+    spoiler: "#3A3A3A"
+    primary_button_bg: "#116969"
+    primary_button_text: "#58cccc"
+    secondary_button_text: "#58cccc"
+    danger_button_bg: "#a81d49"
+    danger_button_text: "#e6c4cf"
+    input_label: "#5ea3a3"
+    input_bg: "#263a3a"
+    input_text: "#5ea3a3"
+    input_border: "#5ea3a3"
+    notice_bg: "#132030"
+    notice_border: "#5ea3a3"
+    notice_text: "#5ea3a3"
+    alert_bg: "#116969"
+    alert_border: "#58cccc"
+    alert_text: "#58cccc"
+    warning_bg: "#a81d49"
+    warning_border: "#e6c4cf"
+    warning_text: "#e6c4cf"
+
