@@ -1969,7 +1969,7 @@ input[type="submit"].btn--small,
 }
 
 .theme-designer__hex-input {
-  width: 100px !important;
+  width: calc(7ch + 2.5rem) !important;
   font-family: monospace;
   font-size: 0.85rem;
   text-transform: uppercase;
