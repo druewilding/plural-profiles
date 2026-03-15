@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_03_15_000003) do
+ActiveRecord::Schema[8.1].define(version: 2026_03_15_000004) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -109,10 +109,12 @@ ActiveRecord::Schema[8.1].define(version: 2026_03_15_000003) do
     t.jsonb "labels", default: [], null: false
     t.string "name", null: false
     t.string "pronouns"
+    t.bigint "theme_id"
     t.datetime "updated_at", null: false
     t.bigint "user_id", null: false
     t.string "uuid", null: false
     t.index ["labels"], name: "index_profiles_on_labels", using: :gin
+    t.index ["theme_id"], name: "index_profiles_on_theme_id"
     t.index ["user_id"], name: "index_profiles_on_user_id"
     t.index ["uuid"], name: "index_profiles_on_uuid", unique: true
   end
@@ -169,6 +171,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_03_15_000003) do
   add_foreign_key "inclusion_overrides", "groups", on_delete: :cascade
   add_foreign_key "invite_codes", "users"
   add_foreign_key "invite_codes", "users", column: "redeemed_by_id"
+  add_foreign_key "profiles", "themes", on_delete: :nullify
   add_foreign_key "profiles", "users"
   add_foreign_key "sessions", "users"
   add_foreign_key "themes", "users"

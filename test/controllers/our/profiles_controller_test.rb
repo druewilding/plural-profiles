@@ -424,4 +424,74 @@ class Our::ProfilesControllerTest < ActionDispatch::IntegrationTest
     assert_response :success
     assert_no_match "Clear filter", response.body
   end
+
+  # -- Theme dropdown --
+
+  test "new form includes Our themes optgroup when user has personal themes" do
+    sign_in_as @user
+    get new_our_profile_path
+    assert_response :success
+    assert_select "select[name='profile[theme_id]'] optgroup[label='Our themes']"
+  end
+
+  test "new form includes Shared themes optgroup when shared themes exist" do
+    sign_in_as @user
+    get new_our_profile_path
+    assert_response :success
+    assert_select "select[name='profile[theme_id]'] optgroup[label='Shared themes']"
+  end
+
+  test "edit form preserves selected theme" do
+    sign_in_as @user
+    @profile.update!(theme: themes(:dark_forest))
+    get edit_our_profile_path(@profile)
+    assert_select "select[name='profile[theme_id]'] option[selected][value='#{themes(:dark_forest).id}']"
+  end
+
+  test "create with a personal theme_id saves the theme" do
+    sign_in_as @user
+    post our_profiles_path, params: {
+      profile: { name: "Themed Profile", theme_id: themes(:dark_forest).id }
+    }
+    assert_redirected_to our_profile_path(Profile.last)
+    assert_equal themes(:dark_forest), Profile.last.theme
+  end
+
+  test "create with a shared theme_id saves the theme" do
+    sign_in_as @user
+    post our_profiles_path, params: {
+      profile: { name: "Themed Profile", theme_id: themes(:ocean_shared).id }
+    }
+    assert_redirected_to our_profile_path(Profile.last)
+    assert_equal themes(:ocean_shared), Profile.last.theme
+  end
+
+  test "create with another user's non-shared theme_id is rejected" do
+    sign_in_as @user
+    assert_no_difference("Profile.count") do
+      post our_profiles_path, params: {
+        profile: { name: "Themed Profile", theme_id: themes(:other_user_theme).id }
+      }
+    end
+    assert_response :unprocessable_entity
+  end
+
+  test "update changes a profile's theme" do
+    sign_in_as @user
+    patch our_profile_path(@profile), params: {
+      profile: { theme_id: themes(:ocean_shared).id }
+    }
+    assert_redirected_to our_profile_path(@profile)
+    assert_equal themes(:ocean_shared), @profile.reload.theme
+  end
+
+  test "update clears a profile's theme when blank is submitted" do
+    sign_in_as @user
+    @profile.update!(theme: themes(:dark_forest))
+    patch our_profile_path(@profile), params: {
+      profile: { theme_id: "" }
+    }
+    assert_redirected_to our_profile_path(@profile)
+    assert_nil @profile.reload.theme
+  end
 end

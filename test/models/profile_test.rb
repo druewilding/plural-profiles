@@ -183,4 +183,27 @@ class ProfileTest < ActiveSupport::TestCase
     profile.update!(labels: [ "family", "private" ])
     assert_equal [ "family", "private" ], profile.reload.labels
   end
+
+  # -- Profile theme association --
+
+  test "profile without a theme is valid" do
+    profile = users(:one).profiles.build(name: "Themeless")
+    assert profile.valid?
+  end
+
+  test "profile with a theme is valid" do
+    profile = users(:one).profiles.build(name: "Themed", theme: themes(:dark_forest))
+    assert profile.valid?
+  end
+
+  test "theme association is accessible via fixture" do
+    assert_equal themes(:dark_forest), profiles(:alice).theme
+  end
+
+  test "deleting a theme nullifies the profile theme_id" do
+    profile = users(:one).profiles.create!(name: "Will Lose Theme", theme: themes(:sunset))
+    assert_not_nil profile.theme_id
+    themes(:sunset).destroy
+    assert_nil profile.reload.theme_id
+  end
 end

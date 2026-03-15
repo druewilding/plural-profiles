@@ -78,4 +78,35 @@ class ThemeHelperTest < ActionView::TestCase
     @group_theme = themes(:dark_forest)
     assert_equal themes(:default_shared).to_css_properties, active_theme_style
   end
+
+  # -- profile theme (@profile_theme) --
+
+  test "unauthenticated visitor with a profile theme sees the profile theme's CSS" do
+    Current.session = nil
+    @profile_theme = themes(:dark_forest)
+    assert_equal themes(:dark_forest).to_css_properties, active_theme_style
+  end
+
+  test "logged-in user with active theme and no override sees the profile theme" do
+    user = users(:two)
+    user.update!(active_theme: themes(:other_user_theme), override_group_themes: false)
+    Current.session = user.sessions.create!
+    @profile_theme = themes(:dark_forest)
+    assert_equal themes(:dark_forest).to_css_properties, active_theme_style
+  end
+
+  test "logged-in user with active theme and override enabled sees their own theme over profile theme" do
+    user = users(:two)
+    user.update!(active_theme: themes(:other_user_theme), override_group_themes: true)
+    Current.session = user.sessions.create!
+    @profile_theme = themes(:dark_forest)
+    assert_equal themes(:other_user_theme).to_css_properties, active_theme_style
+  end
+
+  test "group theme takes priority over profile theme" do
+    Current.session = nil
+    @group_theme = themes(:sunset)
+    @profile_theme = themes(:dark_forest)
+    assert_equal themes(:sunset).to_css_properties, active_theme_style
+  end
 end

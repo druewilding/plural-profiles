@@ -4,6 +4,7 @@ alice:
   name: Alice
   pronouns: she/her
   description: Hi, I'm Alice! I like painting and reading.
+  theme: dark_forest
 
 bob:
   user: one

@@ -55,6 +55,7 @@ class Profile < ApplicationRecord
   end.freeze
 
   belongs_to :user
+  belongs_to :theme, optional: true
   has_many :group_profiles, dependent: :destroy
   has_many :groups, through: :group_profiles
 
