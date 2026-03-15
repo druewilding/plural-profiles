@@ -30,6 +30,25 @@ class Our::GroupsControllerTest < ActionDispatch::IntegrationTest
     assert_response :success
   end
 
+  test "new form includes Our themes optgroup when user has personal themes" do
+    sign_in_as @user
+    get new_our_group_path
+    assert_select "select[name='group[theme_id]'] optgroup[label='Our themes']"
+  end
+
+  test "new form includes Shared themes optgroup when shared themes exist" do
+    sign_in_as @user
+    get new_our_group_path
+    assert_select "select[name='group[theme_id]'] optgroup[label='Shared themes']"
+  end
+
+  test "edit form preserves selected theme" do
+    sign_in_as @user
+    @group.update!(theme: themes(:dark_forest))
+    get edit_our_group_path(@group)
+    assert_select "select[name='group[theme_id]'] option[selected][value='#{themes(:dark_forest).id}']"
+  end
+
   test "create saves a valid group" do
     sign_in_as @user
     assert_difference("Group.count", 1) do
