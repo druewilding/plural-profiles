@@ -30,6 +30,25 @@ class Our::GroupsControllerTest < ActionDispatch::IntegrationTest
     assert_response :success
   end
 
+  test "new form includes Our themes optgroup when user has personal themes" do
+    sign_in_as @user
+    get new_our_group_path
+    assert_select "select[name='group[theme_id]'] optgroup[label='Our themes']"
+  end
+
+  test "new form includes Shared themes optgroup when shared themes exist" do
+    sign_in_as @user
+    get new_our_group_path
+    assert_select "select[name='group[theme_id]'] optgroup[label='Shared themes']"
+  end
+
+  test "edit form preserves selected theme" do
+    sign_in_as @user
+    @group.update!(theme: themes(:dark_forest))
+    get edit_our_group_path(@group)
+    assert_select "select[name='group[theme_id]'] option[selected][value='#{themes(:dark_forest).id}']"
+  end
+
   test "create saves a valid group" do
     sign_in_as @user
     assert_difference("Group.count", 1) do
@@ -746,6 +765,55 @@ class Our::GroupsControllerTest < ActionDispatch::IntegrationTest
     assert_response :success
     assert_select ".main-content h2 a", text: "Friends"
     assert_select ".main-content h2 a", text: "Everyone", count: 0
+  end
+
+  # -- Theme dropdown --
+
+  test "create with a personal theme_id saves the theme" do
+    sign_in_as @user
+    post our_groups_path, params: {
+      group: { name: "Themed Group", theme_id: themes(:dark_forest).id }
+    }
+    assert_redirected_to our_group_path(Group.last)
+    assert_equal themes(:dark_forest), Group.last.theme
+  end
+
+  test "create with a shared theme_id saves the theme" do
+    sign_in_as @user
+    post our_groups_path, params: {
+      group: { name: "Themed Group", theme_id: themes(:ocean_shared).id }
+    }
+    assert_redirected_to our_group_path(Group.last)
+    assert_equal themes(:ocean_shared), Group.last.theme
+  end
+
+  test "create with another user's non-shared theme_id is rejected" do
+    sign_in_as @user
+    assert_no_difference("Group.count") do
+      post our_groups_path, params: {
+        group: { name: "Themed Group", theme_id: themes(:other_user_theme).id }
+      }
+    end
+    assert_response :unprocessable_entity
+  end
+
+  test "update changes a group's theme" do
+    sign_in_as @user
+    patch our_group_path(@group), params: {
+      group: { theme_id: themes(:ocean_shared).id }
+    }
+    assert_redirected_to our_group_path(@group)
+    assert_equal themes(:ocean_shared), @group.reload.theme
+  end
+
+  test "update clears a group's theme when blank is submitted" do
+    sign_in_as @user
+    @group.update!(theme: themes(:dark_forest))
+    patch our_group_path(@group), params: {
+      group: { theme_id: "" }
+    }
+    assert_redirected_to our_group_path(@group)
+    assert_nil @group.reload.theme
   end
 
   test "index filter returns no groups when no match" do

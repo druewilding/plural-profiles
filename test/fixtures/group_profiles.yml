@@ -1,3 +1,6 @@
+everyone_profile_in_everyone:
+  group: everyone
+  profile: everyone_profile
 alice_in_friends:
   group: friends
   profile: alice

@@ -96,4 +96,152 @@ class ThemesTest < ApplicationSystemTestCase
     assert_no_link "Make default"
     assert_no_link "Remove default"
   end
+
+
+  # -- Theme credit footer on public group pages --
+
+  test "public group page with a theme shows theme name in footer" do
+    visit group_path(groups(:friends).uuid)
+    assert_css ".theme-credit"
+    assert_text "Theme: Dark Forest"
+  end
+
+  test "public group page with a theme shows Made by credit" do
+    visit group_path(groups(:friends).uuid)
+    assert_text "by Verdant Studio"
+  end
+
+  test "public group page with a theme links to credit_url" do
+    visit group_path(groups(:friends).uuid)
+    assert_link "Verdant Studio", href: "https://example.com/verdant"
+  end
+
+  test "public group page without a theme shows no theme credit footer" do
+    visit group_path(groups(:everyone).uuid)
+    assert_no_css ".theme-credit"
+  end
+
+  test "group profile page with a group theme shows theme name in footer" do
+    profile = groups(:friends).profiles.first
+    skip "friends group has no profiles" if profile.nil?
+    visit group_profile_path(groups(:friends).uuid, profile.uuid)
+    assert_css ".theme-credit"
+    assert_text "Theme: Dark Forest"
+  end
+
+  # -- Theme credit footer on public profile pages --
+
+  test "public profile page with a group theme shows theme name in footer" do
+    profile = groups(:friends).profiles.first
+    skip "friends group has no profiles" if profile.nil?
+    visit profile_path(profile.uuid)
+    assert_css ".theme-credit"
+    assert_text "Theme: Dark Forest"
+  end
+
+  test "public profile page with a group theme shows Made by credit" do
+    profile = groups(:friends).profiles.first
+    skip "friends group has no profiles" if profile.nil?
+    visit profile_path(profile.uuid)
+    assert_text "by Verdant Studio"
+  end
+
+  test "public profile page with a group theme links to credit_url" do
+    profile = groups(:friends).profiles.first
+    skip "friends group has no profiles" if profile.nil?
+    visit profile_path(profile.uuid)
+    assert_link "Verdant Studio", href: "https://example.com/verdant"
+  end
+
+  test "public profile page without a group theme shows no theme credit footer" do
+    profile = groups(:everyone).profiles.first
+    skip "everyone group has no profiles" if profile.nil?
+    visit profile_path(profile.uuid)
+    assert_no_css ".theme-credit"
+  end
+
+  # -- override_themes preference --
+  # friends group uses dark_forest (page-bg: #0e2e24)
+  # everyone group has no theme
+  # sunset: page-bg #2e1a0e  |  ocean_shared: page-bg #0e1e2e  |  default_shared: page-bg #1a1a2e
+
+  test "override on with a personal active theme: sees own theme on a group page" do
+    users(:one).update!(active_theme: themes(:sunset), override_themes: true)
+    sign_in_via_browser(users(:one))
+    visit group_path(groups(:friends).uuid)
+    assert_includes find("body")[:style], "--page-bg: #2e1a0e"
+  end
+
+  test "override on with a personal active theme: sees own theme on a profile page" do
+    users(:one).update!(active_theme: themes(:sunset), override_themes: true)
+    sign_in_via_browser(users(:one))
+    profile = groups(:friends).profiles.first
+    skip "friends group has no profiles" if profile.nil?
+    visit profile_path(profile.uuid)
+    assert_includes find("body")[:style], "--page-bg: #2e1a0e"
+  end
+
+  test "override on with a shared active theme: sees own theme on a group page" do
+    users(:one).update!(active_theme: themes(:ocean_shared), override_themes: true)
+    sign_in_via_browser(users(:one))
+    visit group_path(groups(:friends).uuid)
+    assert_includes find("body")[:style], "--page-bg: #0e1e2e"
+  end
+
+  test "override on with a shared active theme: sees own theme on a profile page" do
+    users(:one).update!(active_theme: themes(:ocean_shared), override_themes: true)
+    sign_in_via_browser(users(:one))
+    profile = groups(:friends).profiles.first
+    skip "friends group has no profiles" if profile.nil?
+    visit profile_path(profile.uuid)
+    assert_includes find("body")[:style], "--page-bg: #0e1e2e"
+  end
+
+  test "override on but no active theme set: default theme applies instead of group theme" do
+    users(:one).update!(active_theme: nil, override_themes: true)
+    sign_in_via_browser(users(:one))
+    visit group_path(groups(:friends).uuid)
+    assert_includes find("body")[:style], "--page-bg: #1a1a2e"
+  end
+
+  test "override on but no active theme set: default theme applies instead of group theme on profile page" do
+    users(:one).update!(active_theme: nil, override_themes: true)
+    sign_in_via_browser(users(:one))
+    profile = groups(:friends).profiles.first
+    skip "friends group has no profiles" if profile.nil?
+    visit profile_path(profile.uuid)
+    assert_includes find("body")[:style], "--page-bg: #1a1a2e"
+  end
+
+  test "override off with a personal active theme: group theme takes precedence" do
+    users(:one).update!(active_theme: themes(:sunset), override_themes: false)
+    sign_in_via_browser(users(:one))
+    visit group_path(groups(:friends).uuid)
+    assert_includes find("body")[:style], "--page-bg: #0e2e24"
+  end
+
+  test "override off with a personal active theme: group theme takes precedence on profile page" do
+    users(:one).update!(active_theme: themes(:sunset), override_themes: false)
+    sign_in_via_browser(users(:one))
+    profile = groups(:friends).profiles.first
+    skip "friends group has no profiles" if profile.nil?
+    visit profile_path(profile.uuid)
+    assert_includes find("body")[:style], "--page-bg: #0e2e24"
+  end
+
+  test "override off on a group with no theme: own active theme still applies" do
+    users(:one).update!(active_theme: themes(:sunset), override_themes: false)
+    sign_in_via_browser(users(:one))
+    visit group_path(groups(:everyone).uuid)
+    assert_includes find("body")[:style], "--page-bg: #2e1a0e"
+  end
+
+  test "override off on a profile with no group theme: own active theme still applies" do
+    users(:one).update!(active_theme: themes(:sunset), override_themes: false)
+    sign_in_via_browser(users(:one))
+    profile = groups(:everyone).profiles.first
+    skip "everyone group has no profiles" if profile.nil?
+    visit profile_path(profile.uuid)
+    assert_includes find("body")[:style], "--page-bg: #2e1a0e"
+  end
 end
