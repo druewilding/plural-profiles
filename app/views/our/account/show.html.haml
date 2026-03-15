@@ -46,7 +46,7 @@
         = check_box_tag :override_group_themes, "1", Current.user.override_group_themes
         Always use our own theme on public pages
       %p.form-hint
-        When enabled, group pages will always display in your active theme instead of the group's chosen theme.
+        When enabled, public group pages will always display in your active theme, even if the group sets a different theme.
     .form-group
       = form.submit "Save preferences"
 
