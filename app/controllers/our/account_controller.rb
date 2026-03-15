@@ -33,6 +33,11 @@ class Our::AccountController < ApplicationController
     redirect_to our_account_path, notice: "Email change cancelled."
   end
 
+  def update_preferences
+    Current.user.update!(override_group_themes: params[:override_group_themes] == "1")
+    redirect_to our_account_path, notice: "Preferences updated."
+  end
+
   private
 
   def password_params

@@ -152,4 +152,31 @@ class Our::AccountControllerTest < ActionDispatch::IntegrationTest
     delete cancel_email_change_our_account_path
     assert_redirected_to new_session_path
   end
+
+  # -- update_preferences --
+
+  test "update_preferences sets override_group_themes to true" do
+    sign_in_as @user
+    @user.update!(override_group_themes: false)
+    patch update_preferences_our_account_path, params: { override_group_themes: "1" }
+    assert_redirected_to our_account_path
+    follow_redirect!
+    assert_match "Preferences updated.", response.body
+    assert @user.reload.override_group_themes
+  end
+
+  test "update_preferences sets override_group_themes to false when unchecked" do
+    sign_in_as @user
+    @user.update!(override_group_themes: true)
+    patch update_preferences_our_account_path, params: {}
+    assert_redirected_to our_account_path
+    follow_redirect!
+    assert_match "Preferences updated.", response.body
+    assert_not @user.reload.override_group_themes
+  end
+
+  test "update_preferences redirects unauthenticated user" do
+    patch update_preferences_our_account_path, params: { override_group_themes: "1" }
+    assert_redirected_to new_session_path
+  end
 end
