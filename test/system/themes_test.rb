@@ -155,12 +155,12 @@ class ThemesTest < ApplicationSystemTestCase
     assert_includes find("body")[:style], "--page-bg: #0e1e2e"
   end
 
-  test "override on but no active theme set: group theme still applies" do
+  test "override on but no active theme set: default theme applies instead of group theme" do
     users(:one).update!(active_theme: nil, override_group_themes: true)
     sign_in_via_browser(users(:one))
     visit group_path(groups(:friends).uuid)
 
-    assert_includes find("body")[:style], "--page-bg: #0e2e24"
+    assert_includes find("body")[:style], "--page-bg: #1a1a2e"
   end
 
   test "override off with a personal active theme: group theme takes precedence" do
