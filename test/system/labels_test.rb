@@ -123,5 +123,4 @@ class LabelsTest < ApplicationSystemTestCase
       assert_text "Everyone"
     end
   end
-
 end

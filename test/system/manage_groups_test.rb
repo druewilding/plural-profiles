@@ -140,5 +140,4 @@ class ManageGroupsTest < ApplicationSystemTestCase
 
     assert_current_path our_group_path(alpha)
   end
-
 end

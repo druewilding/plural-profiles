@@ -99,5 +99,4 @@ class AccountSettingsTest < ApplicationSystemTestCase
       assert_text invite_codes(:available).code
     end
   end
-
 end

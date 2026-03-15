@@ -313,5 +313,4 @@ class GroupManagementTest < ApplicationSystemTestCase
 
     assert_text "RecordNotFound"
   end
-
 end

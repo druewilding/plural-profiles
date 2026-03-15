@@ -12,5 +12,4 @@ class AdminBadgeTest < ApplicationSystemTestCase
     assert_not users(:two).admin?
     assert_no_selector ".admin-badge"
   end
-
 end

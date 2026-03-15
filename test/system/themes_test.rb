@@ -96,5 +96,4 @@ class ThemesTest < ApplicationSystemTestCase
     assert_no_link "Make default"
     assert_no_link "Remove default"
   end
-
 end

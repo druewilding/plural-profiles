@@ -136,5 +136,4 @@ class PrivacyRedirectsTest < ApplicationSystemTestCase
     assert_text "Friends"
     assert_no_text "Manage profiles"
   end
-
 end

@@ -212,5 +212,4 @@ class SpoilerTest < ApplicationSystemTestCase
       assert_no_selector "details[open]"
     end
   end
-
 end

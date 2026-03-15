@@ -42,5 +42,4 @@ class ProfileManagementTest < ApplicationSystemTestCase
     visit our_profile_path(profiles(:alice))
     assert_text "Share this profile"
   end
-
 end
