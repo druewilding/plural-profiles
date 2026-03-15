@@ -19,6 +19,18 @@
   = button_to "Generate invite code", our_invite_codes_path, method: :post, class: "btn"
 
 .card
+  %h2 Display preferences
+  = form_with url: update_preferences_our_account_path, method: :patch do |form|
+    .form-group
+      %label.checkbox-label
+        = check_box_tag :override_group_themes, "1", Current.user.override_group_themes
+        Always use our own theme on public pages
+      %p.form-hint
+        When enabled, public group pages will always display in your active theme, even if the group sets a different theme.
+    .form-group
+      = form.submit "Save preferences"
+
+.card
   %h2 Change email
   %p
     Current email:
@@ -37,18 +49,6 @@
 
     .form-group
       = form.submit "Send verification email"
-
-.card
-  %h2 Display preferences
-  = form_with url: update_preferences_our_account_path, method: :patch do |form|
-    .form-group
-      %label.checkbox-label
-        = check_box_tag :override_group_themes, "1", Current.user.override_group_themes
-        Always use our own theme on public pages
-      %p.form-hint
-        When enabled, public group pages will always display in your active theme, even if the group sets a different theme.
-    .form-group
-      = form.submit "Save preferences"
 
 .card
   %h2 Change password
