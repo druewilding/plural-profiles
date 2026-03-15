@@ -23,6 +23,8 @@ class Our::ThemesController < ApplicationController
 
   def new
     colors = Theme::THEMEABLE_PROPERTIES.transform_values { |v| v[:default] }
+    default_source = Current.user.active_theme || Theme.site_default_theme
+    colors.merge!(default_source.colors) if default_source
     if params[:theme].present? && params[:theme][:colors].present?
       imported = params[:theme][:colors].to_unsafe_h.transform_keys(&:to_s).slice(*Theme::THEMEABLE_PROPERTIES.keys)
       colors.merge!(imported)
