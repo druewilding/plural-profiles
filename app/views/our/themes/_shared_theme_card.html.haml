@@ -3,8 +3,6 @@
     .card__header
       %h3
         = link_to theme.name, our_theme_path(theme)
-        - if theme.site_default?
-          %span.badge.badge--default (default)
       - if Current.user.active_theme_id == theme.id
         = link_to "Deactivate", deactivate_our_themes_path, data: { turbo_method: :patch }, class: "btn btn--small"
       - else
@@ -17,7 +15,7 @@
         - if theme.site_default?
           = link_to "Remove default", set_default_our_theme_path(theme), data: { turbo_method: :patch }, class: "btn btn--small btn--outline"
         - else
-          = link_to "Set as default", set_default_our_theme_path(theme), data: { turbo_method: :patch }, class: "btn btn--small btn--outline"
+          = link_to "Make default", set_default_our_theme_path(theme), data: { turbo_method: :patch }, class: "btn btn--small btn--outline"
   - if theme.credit.present? || theme.credit_url.present? || theme.notes.present?
     .card__body
       - if theme.credit.present? || theme.credit_url.present?
@@ -31,6 +29,8 @@
             %strong= link_to theme.credit_url, theme.credit_url, target: "_blank", rel: "noopener noreferrer"
       - if theme.notes.present?
         %p.theme-card__notes= theme.notes
+      - if theme.site_default?
+        %span.tag.tag--default Default theme
   - if theme.tags.any?
     .card__tags
       - theme.tags.each do |tag|

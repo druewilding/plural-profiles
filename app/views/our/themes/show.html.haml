@@ -9,7 +9,7 @@
         %p
           %span.tag.tag--active Shared theme
           - if @theme.site_default?
-            %span.badge.badge--default (default)
+            %span.tag.tag--default Default theme
       - if @theme.credit.present? || @theme.credit_url.present?
         %p.theme-card__credit
           Made by
