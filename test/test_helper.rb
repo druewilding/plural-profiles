@@ -14,3 +14,15 @@ module ActiveSupport
     # Add more helper methods to be used by all tests here...
   end
 end
+
+require "minitest/reporters"
+require "minitest/minitest_reporter_plugin"
+Minitest::Reporters.use!(
+  [
+    Minitest::Reporters::DefaultReporter.new(color: true),
+    Minitest::Reporters::HtmlReporter.new(reports_dir: "test/reports", output_filename: "test-report.html")
+  ],
+  ENV,
+  Minitest.backtrace_filter
+)
+Minitest.extensions << "minitest_reporter" unless Minitest.extensions.include?("minitest_reporter")

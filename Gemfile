@@ -60,4 +60,7 @@ group :test do
   # Use system testing [https://guides.rubyonrails.org/testing.html#system-testing]
   gem "capybara"
   gem "selenium-webdriver"
+
+  # HTML/pretty test report output (used in CI)
+  gem "minitest-reporters"
 end
