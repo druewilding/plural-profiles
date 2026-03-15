@@ -672,6 +672,60 @@ class Our::GroupsControllerTest < ActionDispatch::IntegrationTest
     assert_redirected_to group_path(alpha.uuid)
   end
 
+  # -- labels --
+
+  test "create saves labels from comma-separated text" do
+    sign_in_as @user
+    post our_groups_path, params: {
+      group: { name: "Labelled", labels_text: "safe, work" }
+    }
+    assert_redirected_to our_group_path(Group.last)
+    assert_equal %w[safe work], Group.last.labels
+  end
+
+  test "update saves labels" do
+    sign_in_as @user
+    patch our_group_path(@group), params: {
+      group: { labels_text: "close friends, family" }
+    }
+    assert_redirected_to our_group_path(@group)
+    assert_equal [ "close friends", "family" ], @group.reload.labels
+  end
+
+  test "update clears labels with blank text" do
+    sign_in_as @user
+    @group.update!(labels: %w[safe work])
+    patch our_group_path(@group), params: {
+      group: { labels_text: "" }
+    }
+    assert_redirected_to our_group_path(@group)
+    assert_equal [], @group.reload.labels
+  end
+
+  test "show displays labels on private page" do
+    sign_in_as @user
+    @group.update!(labels: %w[safe work])
+    get our_group_path(@group)
+    assert_response :success
+    assert_match "safe", response.body
+    assert_match "work", response.body
+  end
+
+  test "index displays labels on group cards" do
+    sign_in_as @user
+    @group.update!(labels: %w[safe])
+    get our_groups_path
+    assert_response :success
+    assert_match "safe", response.body
+  end
+
+  test "labels do not appear on public group page" do
+    @group.update!(labels: %w[safe work])
+    get group_path(@group.uuid)
+    assert_response :success
+    assert_no_match "label-badge", response.body
+  end
+
   private
 
   def sign_in_as(user)
