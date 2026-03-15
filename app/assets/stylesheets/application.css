@@ -217,6 +217,7 @@ body {
 .sidebar__item {
   display: flex;
   align-items: center;
+  flex-wrap: wrap;
   gap: 0.5rem;
   padding: 0.35rem 0.5rem 0.35rem 1.25rem;
   border-radius: 4px;
@@ -315,6 +316,12 @@ h2 { font-size: 1.4rem; }
 
 .name-with-labels .label-badges {
   margin-top: 0;
+}
+
+/* Compact label badge variant for tight spaces like the sidebar */
+.label-badge--sidebar {
+  font-size: 0.65rem;
+  padding: 0.0625rem 0.375rem;
 }
 h2 a { color: inherit; }
 h2 a:hover { text-decoration: none; opacity: 0.8; }

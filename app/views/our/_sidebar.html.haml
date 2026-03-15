@@ -33,6 +33,9 @@
             %span.sidebar__avatar.sidebar__avatar--placeholder
               = render "shared/plural_pride_logo"
           = link_to profile.name, our_profile_path(profile), class: "sidebar__link"
+          - if profile.labels.any?
+            - profile.labels.each do |label|
+              %span.label-badge.label-badge--sidebar= label
 
   %hr
 
