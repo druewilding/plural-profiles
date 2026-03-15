@@ -419,4 +419,110 @@ class Our::ThemesControllerTest < ActionDispatch::IntegrationTest
     get our_theme_path(@theme)
     assert_response :not_found
   end
+
+  # -- Cross-admin: one admin acting on another admin's shared theme --
+
+  test "admin can edit another admin's shared theme" do
+    sign_in_as @user
+    assert @user.admin?
+    theme = themes(:another_admin_shared)
+    assert_not_equal theme.user_id, @user.id
+    get edit_our_theme_path(theme)
+    assert_response :success
+  end
+
+  test "admin can update another admin's shared theme" do
+    sign_in_as @user
+    theme = themes(:another_admin_shared)
+    patch our_theme_path(theme), params: { theme: { name: "Renamed by other admin" } }
+    assert_redirected_to our_themes_path
+    assert_equal "Renamed by other admin", theme.reload.name
+  end
+
+  test "admin can delete another admin's shared theme" do
+    sign_in_as @user
+    theme = themes(:another_admin_shared)
+    assert_difference("Theme.count", -1) do
+      delete our_theme_path(theme)
+    end
+    assert_redirected_to our_themes_path
+  end
+
+  test "admin can set another admin's shared theme as default" do
+    sign_in_as @user
+    theme = themes(:another_admin_shared)
+    assert_not theme.site_default?
+    patch set_default_our_theme_path(theme)
+    assert_redirected_to our_themes_path
+    assert theme.reload.site_default?
+  end
+
+  test "non-admin cannot edit another user's shared theme" do
+    sign_in_as @other_user
+    assert_not @other_user.admin?
+    theme = themes(:another_admin_shared)
+    get edit_our_theme_path(theme)
+    assert_response :not_found
+  end
+
+  test "non-admin cannot delete another user's shared theme" do
+    sign_in_as @other_user
+    theme = themes(:another_admin_shared)
+    assert_no_difference("Theme.count") do
+      delete our_theme_path(theme)
+    end
+    assert_response :not_found
+  end
+
+  # -- Default theme --
+
+  test "admin can set a shared theme as the default" do
+    sign_in_as @user
+    assert @user.admin?
+    theme = themes(:ocean_shared)
+    assert_not theme.site_default?
+    patch set_default_our_theme_path(theme)
+    assert_redirected_to our_themes_path
+    assert theme.reload.site_default?
+    assert_match "is now the default theme", flash[:notice]
+  end
+
+  test "set_default toggles off when theme is already the default" do
+    sign_in_as @user
+    theme = themes(:default_shared)
+    assert theme.site_default?
+    patch set_default_our_theme_path(theme)
+    assert_redirected_to our_themes_path
+    assert_not theme.reload.site_default?
+    assert_match "is no longer the default theme", flash[:notice]
+  end
+
+  test "non-admin cannot call set_default" do
+    sign_in_as @other_user
+    assert_not @other_user.admin?
+    theme = themes(:ocean_shared)
+    patch set_default_our_theme_path(theme)
+    assert_redirected_to our_themes_path
+    assert_match "Only admins", flash[:alert]
+    assert_not theme.reload.site_default?
+  end
+
+  test "cannot delete the default theme" do
+    sign_in_as @user
+    theme = themes(:default_shared)
+    assert theme.site_default?
+    assert_no_difference("Theme.count") do
+      delete our_theme_path(theme)
+    end
+    assert_redirected_to our_themes_path
+    assert_match "Cannot delete the default theme", flash[:alert]
+  end
+
+  test "deactivate shows site default message" do
+    sign_in_as @user
+    @user.update!(active_theme: themes(:dark_forest))
+    patch deactivate_our_themes_path
+    assert_redirected_to our_themes_path
+    assert_match "site default", flash[:notice]
+  end
 end

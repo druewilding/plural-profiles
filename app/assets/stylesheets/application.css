@@ -95,6 +95,7 @@ body {
   background: color-mix(in srgb, var(--danger-button-bg) 85%, transparent);
   color: var(--danger-button-text);
   vertical-align: middle;
+  text-transform: uppercase;
 }
 
 @media (forced-colors: active) {
@@ -472,6 +473,7 @@ button,
   line-height: 1.6;
   cursor: pointer;
   text-decoration: none;
+  white-space: nowrap;
   transition: background-color 0.2s;
 }
 
@@ -580,6 +582,7 @@ button:hover,
 .card__actions {
   display: flex;
   align-items: center;
+  flex-wrap: wrap;
   gap: 0.5rem;
   flex-shrink: 0;
 }
@@ -1231,13 +1234,13 @@ details[open] > .tree-editor__summary::before {
   white-space: nowrap;
 }
 
-.tag--active {
+.tag--active, .tag--default {
   background-color: color-mix(in srgb, var(--primary-button-bg) 35%, transparent);
   color: var(--text);
 }
 
 @media (forced-colors: active) {
-  .tag--active {
+  .tag--active, .tag--default {
     outline: 1px solid CanvasText;
   }
 }
@@ -2056,6 +2059,10 @@ input[type="submit"].btn--small,
   overflow-y: auto;
 }
 
+.theme-designer__controls details[open] > summary {
+  margin-bottom: 0.75rem;
+}
+
 .theme-designer__color-group {
   margin-bottom: 0.75rem;
 }
@@ -2204,7 +2211,7 @@ input[type="submit"].btn--small,
   resize: vertical;
   min-height: 200px;
   background-color: var(--input-bg);
-  color: var(--text);
+  color: var(--input-text);
   border: 1px solid var(--input-border);
   border-radius: 4px;
   padding: 0.5rem;
