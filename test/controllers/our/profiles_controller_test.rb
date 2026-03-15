@@ -435,7 +435,7 @@ class Our::ProfilesControllerTest < ActionDispatch::IntegrationTest
     # Ensure only non-shared themes are in the personal optgroup
     doc = Nokogiri::HTML(response.body)
     our_themes_optgroup = doc.at_css("select[name='profile[theme_id]'] optgroup[label='Our themes']")
-    option_values = our_themes_optgroup.css('option').map { |opt| opt['value'].to_i }
+    option_values = our_themes_optgroup.css("option").map { |opt| opt["value"].to_i }
     # Should include only personal (non-shared) themes for @user
     personal_theme_ids = Theme.personal.where(user: @user).pluck(:id)
     shared_theme_ids = Theme.shared.where(user: @user).pluck(:id)
