@@ -1,3 +1,9 @@
+everyone_profile:
+  user: one
+  uuid: abc99999-9999-9999-9999-999999999999
+  name: Everyone Profile
+  pronouns: they/them
+  description: Test profile for the everyone group.
 alice:
   user: one
   uuid: abc11111-1111-1111-1111-111111111111
