@@ -1366,6 +1366,15 @@ details[open] > .tree-editor__summary::before {
   }
 }
 
+.theme-section__summary {
+  color: var(--heading);
+  cursor: pointer;
+  font-size: 1.4rem;
+  font-weight: bold;
+  margin-block-start: 0.83em;
+  margin-block-end: 0.83em;
+}
+
 .tree-editor__tag {
   display: inline-block;
   padding: 0.1rem 0.45rem;
