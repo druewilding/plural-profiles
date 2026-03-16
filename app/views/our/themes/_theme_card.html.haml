@@ -1,4 +1,4 @@
-.card.card--stacked
+.card.card--stacked{ data: { theme_id: theme.id, theme_section: 'our' } }
   .card__main
     .card__header
       %h3= link_to theme.name, our_theme_path(theme)
