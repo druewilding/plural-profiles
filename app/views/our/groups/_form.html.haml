@@ -33,7 +33,7 @@
 
   .form-group
     = form.label :theme_id, "Public theme"
-    = form.select :theme_id, grouped_options_for_select(grouped_theme_options(@personal_themes, @shared_themes), group.theme_id), { include_blank: "None (use default)" }, {}
+    = form.select :theme_id, grouped_options_for_select(grouped_theme_options(@our_themes, @shared_themes), group.theme_id), { include_blank: "None (use default)" }, {}
     %p.form-hint Visitors to this group's public page will see this theme. Leave blank for the site default.
 
   - if group.persisted?
