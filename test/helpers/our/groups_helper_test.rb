@@ -3,14 +3,14 @@ require "test_helper"
 class Our::GroupsHelperTest < ActionView::TestCase
   FakeTheme = Struct.new(:name, :id)
 
-  test "grouped_theme_options includes Our themes when personal themes present" do
-    personal = [ FakeTheme.new("Dark Forest", 1), FakeTheme.new("Sunset", 2) ]
-    result = grouped_theme_options(personal, [])
+  test "grouped_theme_options includes Our themes when user themes present" do
+    our_themes = [ FakeTheme.new("Dark Forest", 1), FakeTheme.new("Sunset", 2), FakeTheme.new("Ocean Shared", 3) ]
+    result = grouped_theme_options(our_themes, [])
     labels = result.map(&:first)
     assert_includes labels, "Our themes"
   end
 
-  test "grouped_theme_options omits Our themes when personal themes empty" do
+  test "grouped_theme_options omits Our themes when user themes empty" do
     result = grouped_theme_options([], [])
     labels = result.map(&:first)
     assert_not_includes labels, "Our themes"

@@ -13,9 +13,9 @@ class Our::ThemesController < ApplicationController
     @shared_themes = Theme.shared.order(:name)
     @shared_themes = @shared_themes.where("tags @> ARRAY[?]::varchar[]", @filter_tags) if @filter_tags.any?
 
-    own_scope = Current.user.themes.personal
+    own_scope = Current.user.themes
     own_scope = own_scope.where("tags @> ARRAY[?]::varchar[]", @filter_tags) if @filter_tags.any?
-    @other_themes = own_scope.order(:name)
+    @our_themes = own_scope.order(:name)
   end
 
   def show
