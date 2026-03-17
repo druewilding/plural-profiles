@@ -46,6 +46,19 @@ class Our::ThemesControllerTest < ActionDispatch::IntegrationTest
     assert_redirected_to our_themes_path
   end
 
+  test "create accepts 8-digit hex colors with alpha" do
+    sign_in_as @user
+    assert_difference("Theme.count", 1) do
+      post our_themes_path, params: {
+        theme: { name: "Translucent", colors: { page_bg: "#00000080", text: "#ffffffcc" } }
+      }
+    end
+    assert_redirected_to our_themes_path
+    theme = Theme.last
+    assert_equal "#00000080", theme.colors["page_bg"]
+    assert_equal "#ffffffcc", theme.colors["text"]
+  end
+
   test "create rejects blank name" do
     sign_in_as @user
     assert_no_difference("Theme.count") do

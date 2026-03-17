@@ -244,4 +244,30 @@ class ThemesTest < ApplicationSystemTestCase
     visit profile_path(profile.uuid)
     assert_includes find("body")[:style], "--page-bg: #2e1a0e"
   end
+
+  # -- Import theme with alpha --
+
+  test "import theme accepts 8-digit hex colors with alpha" do
+    sign_in_via_browser(users(:one))
+    visit our_themes_path
+
+    click_button "Import theme"
+
+    css_block = <<~CSS
+      :root {
+        --page-bg: #12345678;
+        --text: #aabbccdd;
+        --link: #ff0000ff;
+      }
+    CSS
+
+    find("textarea.import-dialog__textarea").set(css_block)
+    click_button "Import"
+
+    # Should redirect to new theme page with colors pre-filled
+    assert_current_path new_our_theme_path, ignore_query: true
+    assert_match "12345678", page.body
+    assert_match "aabbccdd", page.body
+    assert_match "ff0000ff", page.body
+  end
 end
