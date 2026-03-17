@@ -2156,7 +2156,7 @@ input[type="submit"].btn--small,
 }
 
 .theme-designer__hex-input {
-  width: calc(7ch + 2.5rem) !important;
+  width: calc(9ch + 2.5rem) !important;
   font-family: monospace;
   font-size: 0.85rem;
   text-transform: uppercase;

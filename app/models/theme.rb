@@ -154,7 +154,7 @@ class Theme < ApplicationRecord
       Rails.cache.delete("site_default_theme")
     end
 
-    HEX_COLOR_PATTERN = /\A#[0-9A-Fa-f]{6}\z/
+    HEX_COLOR_PATTERN = /\A#[0-9A-Fa-f]{6}([0-9A-Fa-f]{2})?\z/
 
     def normalize_colors_keys
       self.colors = colors.transform_keys(&:to_s) if colors.is_a?(Hash)
@@ -182,7 +182,7 @@ class Theme < ApplicationRecord
 
       colors.transform_keys(&:to_s).each do |key, value|
         unless value.to_s.match?(HEX_COLOR_PATTERN)
-          errors.add(:colors, "value for '#{key}' is not a valid hex colour (expected #RRGGBB)")
+          errors.add(:colors, "value for '#{key}' is not a valid hex colour (expected #RRGGBB or #RRGGBBAA)")
         end
       end
     end
