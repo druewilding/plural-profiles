@@ -82,7 +82,7 @@ export default class extends Controller {
 
   // Apply all current colours to the preview
   applyAllToPreview() {
-    this.colorInputTargets.forEach(input => {
+    this.hexInputTargets.forEach(input => {
       this.applyToPreview(input.dataset.property, input.value)
     })
   }
@@ -91,7 +91,7 @@ export default class extends Controller {
   updateCssOutput() {
     if (!this.hasCssOutputTarget) return
 
-    const lines = this.colorInputTargets.map(input => {
+    const lines = this.hexInputTargets.map(input => {
       const prop = cssProp(input.dataset.property)
       return `  ${prop}: ${input.value};`
     })
