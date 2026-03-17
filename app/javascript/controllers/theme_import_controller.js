@@ -32,7 +32,7 @@ export default class extends Controller {
     if (Object.keys(colors).length === 0) {
       this.showError(
         "No valid CSS custom properties found. " +
-        "Make sure you paste a :root { } block containing --property: #rrggbb values."
+        "Make sure you paste a :root { } block containing --property: #RRGGBB or #RRGGBBAA values."
       )
       return
     }
@@ -49,7 +49,7 @@ export default class extends Controller {
   // Parse --custom-property: #hex pairs, convert hyphens → underscores for model keys
   parseCss(css) {
     const result = {}
-    const re = /--([a-z][a-z0-9-]*)\s*:\s*(#[0-9a-fA-F]{6})\s*;/g
+    const re = /--([a-z][a-z0-9-]*)\s*:\s*(#[0-9a-fA-F]{6}(?:[0-9a-fA-F]{2})?)\s*;/g
     let m
     while ((m = re.exec(css)) !== null) {
       const key = m[1].replace(/-/g, "_")

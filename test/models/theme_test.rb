@@ -52,6 +52,64 @@ class ThemeTest < ActiveSupport::TestCase
     assert_includes groups, :flash
   end
 
+  # -- Color validation --
+
+  test "accepts 6-digit hex colors" do
+    theme = Theme.new(user: users(:one), name: "Six digit", colors: { page_bg: "#123456" })
+    assert theme.valid?, theme.errors.full_messages.inspect
+  end
+
+  test "accepts 8-digit hex colors with alpha" do
+    theme = Theme.new(user: users(:one), name: "Eight digit", colors: { page_bg: "#12345678", text: "#aabbccdd" })
+    assert theme.valid?, theme.errors.full_messages.inspect
+  end
+
+  test "rejects 7-digit hex colors" do
+    theme = Theme.new(user: users(:one), name: "Seven digit", colors: { page_bg: "#1234567" })
+    assert_not theme.valid?
+    assert_includes theme.errors[:colors].to_sentence, "page_bg"
+  end
+
+  test "rejects 5-digit hex colors" do
+    theme = Theme.new(user: users(:one), name: "Five digit", colors: { page_bg: "#12345" })
+    assert_not theme.valid?
+    assert_includes theme.errors[:colors].to_sentence, "page_bg"
+  end
+
+  test "rejects hex without hash" do
+    theme = Theme.new(user: users(:one), name: "No hash", colors: { page_bg: "123456" })
+    assert_not theme.valid?
+    assert_includes theme.errors[:colors].to_sentence, "page_bg"
+  end
+
+  test "rejects invalid hex characters" do
+    theme = Theme.new(user: users(:one), name: "Bad chars", colors: { page_bg: "#gggggg" })
+    assert_not theme.valid?
+    assert_includes theme.errors[:colors].to_sentence, "page_bg"
+  end
+
+  test "to_css includes 8-digit hex with alpha" do
+    theme = Theme.new(
+      user: users(:one),
+      name: "Alpha theme",
+      colors: { page_bg: "#12345678", text: "#aabbccff" }
+    )
+    css = theme.to_css
+    assert_includes css, "--page-bg: #12345678;"
+    assert_includes css, "--text: #aabbccff;"
+  end
+
+  test "to_css_properties includes 8-digit hex with alpha" do
+    theme = Theme.new(
+      user: users(:one),
+      name: "Alpha inline",
+      colors: { page_bg: "#00000080", link: "#ff0000ff" }
+    )
+    css = theme.to_css_properties
+    assert_includes css, "--page-bg: #00000080;"
+    assert_includes css, "--link: #ff0000ff;"
+  end
+
   # -- Tags --
 
   test "tags default to empty array" do
