@@ -36,10 +36,10 @@
 
 .card
   %h2 Share this group
-  .share-url
-    %input{type: "text", value: group_url(@group.uuid), readonly: true, id: "group-share-url"}
-    %button.btn{onclick: "navigator.clipboard.writeText(document.getElementById('group-share-url').value); this.querySelector('span:first-child').textContent='Copied!'; setTimeout(() => this.querySelector('span:first-child').textContent='Copy', 2000)"}
-      %span Copy
+  .share-url{data: {controller: "clipboard"}}
+    %input{type: "text", value: group_url(@group.uuid), readonly: true, id: "group-share-url", data: {"clipboard-target": "source"}}
+    %button.btn{data: {action: "click->clipboard#copy"}}
+      %span{data: {"clipboard-target": "label"}} Copy
       %span{aria: {hidden: "true"}} ⧉
     = link_to group_url(@group.uuid), target: "_blank", rel: "noopener", class: "btn btn--secondary" do
       Open
