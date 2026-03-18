@@ -1,6 +1,10 @@
 require "test_helper"
 
 class GroupProfilesControllerTest < ActionDispatch::IntegrationTest
+  setup do
+    sign_in_as users(:one)
+  end
+
   test "show displays profile within group context" do
     group = groups(:friends)
     profile = profiles(:alice)
@@ -19,14 +23,6 @@ class GroupProfilesControllerTest < ActionDispatch::IntegrationTest
   test "show returns 404 for unknown group" do
     get group_profile_path(group_uuid: "nonexistent", uuid: profiles(:alice).uuid)
     assert_response :not_found
-  end
-
-  test "show works when logged in" do
-    sign_in_as users(:one)
-    group = groups(:friends)
-    profile = profiles(:alice)
-    get group_profile_path(group_uuid: group.uuid, uuid: profile.uuid)
-    assert_response :success
   end
 
   test "panel returns profile content fragment" do
@@ -93,5 +89,17 @@ class GroupProfilesControllerTest < ActionDispatch::IntegrationTest
     assert_response :success
     # default_shared theme has --page-bg: #1a1a2e
     assert_match "--page-bg: #1a1a2e", response.body
+  end
+
+  test "requires authentication" do
+    sign_out
+    get group_profile_path(group_uuid: groups(:friends).uuid, uuid: profiles(:alice).uuid)
+    assert_redirected_to new_session_path
+  end
+
+  test "panel requires authentication" do
+    sign_out
+    get panel_group_profile_path(group_uuid: groups(:friends).uuid, uuid: profiles(:alice).uuid)
+    assert_redirected_to new_session_path
   end
 end

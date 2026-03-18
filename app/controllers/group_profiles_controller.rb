@@ -1,6 +1,4 @@
 class GroupProfilesController < ApplicationController
-  allow_unauthenticated_access
-
   def show
     @group = Group.find_by!(uuid: params[:group_uuid])
     @group_theme = @group.theme
