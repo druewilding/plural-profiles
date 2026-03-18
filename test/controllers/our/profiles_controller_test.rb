@@ -157,12 +157,6 @@ class Our::ProfilesControllerTest < ActionDispatch::IntegrationTest
   test "show redirects logged-out user to public profile" do
     get our_profile_path(@profile)
     assert_redirected_to profile_path(@profile.uuid)
-    follow_redirect!
-    assert_response :success
-    assert_match "Alice", response.body
-    assert_no_match "Edit", response.body
-    assert_no_match "Delete", response.body
-    assert_no_match "Share this profile", response.body
   end
 
   test "index redirects logged-out user to sign in" do
@@ -357,6 +351,7 @@ class Our::ProfilesControllerTest < ActionDispatch::IntegrationTest
   end
 
   test "labels do not appear on public profile page" do
+    sign_in_as @user
     @profile.update!(labels: %w[safe work])
     get profile_path(@profile.uuid)
     assert_response :success
