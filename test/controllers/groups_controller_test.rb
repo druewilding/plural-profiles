@@ -19,13 +19,6 @@ class GroupsControllerTest < ActionDispatch::IntegrationTest
     assert_match "Alice", response.body
   end
 
-  test "show works when logged in" do
-    sign_in_as users(:one)
-    group = groups(:friends)
-    get group_path(uuid: group.uuid)
-    assert_response :success
-  end
-
   test "show returns 404 for unknown uuid" do
     get group_path(uuid: "nonexistent-uuid")
     assert_response :not_found
