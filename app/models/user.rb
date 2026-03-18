@@ -32,8 +32,10 @@ class User < ApplicationRecord
   end
 
   def deactivate!
-    sessions.destroy_all
-    update_column(:deactivated_at, Time.current)
+    self.class.transaction do
+      update!(deactivated_at: Time.current)
+      sessions.delete_all
+    end
   end
 
   def pending_email_change?
