@@ -22,6 +22,22 @@ class SessionsControllerTest < ActionDispatch::IntegrationTest
     assert_nil cookies[:session_id]
   end
 
+  test "create is rejected for a deactivated account" do
+    @user.deactivate!
+    post session_path, params: { email_address: @user.email_address, password: "Plur4l!Pr0files#2026" }
+
+    assert_redirected_to new_session_path
+    assert_nil cookies[:session_id]
+  end
+
+  test "existing session is invalidated when account is deactivated" do
+    sign_in_as @user
+    @user.deactivate!
+
+    get root_path
+    assert_redirected_to new_session_path
+  end
+
   test "destroy" do
     sign_in_as(User.take)
 
