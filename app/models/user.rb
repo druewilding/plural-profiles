@@ -27,6 +27,15 @@ class User < ApplicationRecord
     email_verified_at.present?
   end
 
+  def deactivated?
+    deactivated_at.present?
+  end
+
+  def deactivate!
+    sessions.destroy_all
+    update_column(:deactivated_at, Time.current)
+  end
+
   def pending_email_change?
     unverified_email_address.present?
   end
