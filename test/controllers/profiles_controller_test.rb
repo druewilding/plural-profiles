@@ -1,6 +1,10 @@
 require "test_helper"
 
 class ProfilesControllerTest < ActionDispatch::IntegrationTest
+  setup do
+    sign_in_as users(:one)
+  end
+
   test "show displays public profile by uuid" do
     profile = profiles(:alice)
     get profile_path(uuid: profile.uuid)
@@ -59,5 +63,11 @@ class ProfilesControllerTest < ActionDispatch::IntegrationTest
     get profile_path(uuid: profile.uuid)
     assert_response :success
     assert_no_match "theme-credit", response.body
+  end
+
+  test "requires authentication" do
+    sign_out
+    get profile_path(uuid: profiles(:alice).uuid)
+    assert_redirected_to new_session_path
   end
 end

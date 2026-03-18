@@ -1,6 +1,10 @@
 require "test_helper"
 
 class GroupProfilesControllerTest < ActionDispatch::IntegrationTest
+  setup do
+    sign_in_as users(:one)
+  end
+
   test "show displays profile within group context" do
     group = groups(:friends)
     profile = profiles(:alice)
@@ -93,5 +97,11 @@ class GroupProfilesControllerTest < ActionDispatch::IntegrationTest
     assert_response :success
     # default_shared theme has --page-bg: #1a1a2e
     assert_match "--page-bg: #1a1a2e", response.body
+  end
+
+  test "requires authentication" do
+    sign_out
+    get group_profile_path(group_uuid: groups(:friends).uuid, uuid: profiles(:alice).uuid)
+    assert_redirected_to new_session_path
   end
 end

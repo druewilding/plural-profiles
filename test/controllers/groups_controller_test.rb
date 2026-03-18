@@ -1,6 +1,10 @@
 require "test_helper"
 
 class GroupsControllerTest < ActionDispatch::IntegrationTest
+  setup do
+    sign_in_as users(:one)
+  end
+
   test "show displays public group by uuid" do
     group = groups(:friends)
     get group_path(uuid: group.uuid)
@@ -136,5 +140,11 @@ class GroupsControllerTest < ActionDispatch::IntegrationTest
     assert_response :success
     # default_shared theme has --page-bg: #1a1a2e
     assert_match "--page-bg: #1a1a2e", response.body
+  end
+
+  test "requires authentication" do
+    sign_out
+    get group_path(uuid: groups(:friends).uuid)
+    assert_redirected_to new_session_path
   end
 end
