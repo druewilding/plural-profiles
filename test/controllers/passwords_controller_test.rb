@@ -26,6 +26,32 @@ class PasswordsControllerTest < ActionDispatch::IntegrationTest
     assert_notice "reset instructions sent"
   end
 
+  test "create for a deactivated account redirects but sends no mail" do
+    @user.deactivate!
+    post passwords_path, params: { email_address: @user.email_address }
+    assert_enqueued_emails 0
+    assert_redirected_to new_session_path
+
+    follow_redirect!
+    assert_notice "reset instructions sent"
+  end
+
+  test "edit with a deactivated account token redirects away" do
+    token = @user.password_reset_token
+    @user.deactivate!
+    get edit_password_path(token)
+    assert_redirected_to new_password_path
+  end
+
+  test "update with a deactivated account token does not change password" do
+    token = @user.password_reset_token
+    @user.deactivate!
+    assert_no_changes -> { @user.reload.password_digest } do
+      put password_path(token), params: { password: "R3s3t!P4ssw0rd#2026", password_confirmation: "R3s3t!P4ssw0rd#2026" }
+    end
+    assert_redirected_to new_password_path
+  end
+
   test "edit" do
     get edit_password_path(@user.password_reset_token)
     assert_response :success

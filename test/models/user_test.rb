@@ -56,4 +56,32 @@ class UserTest < ActiveSupport::TestCase
     group_count = user.groups.count
     assert_difference("Group.count", -group_count) { user.destroy }
   end
+
+  # -- Deactivation --
+
+  test "deactivated? is false for a normal user" do
+    assert_not users(:one).deactivated?
+  end
+
+  test "deactivated? is true when deactivated_at is set" do
+    user = users(:one)
+    user.update_column(:deactivated_at, Time.current)
+    assert user.deactivated?
+  end
+
+  test "deactivate! sets deactivated_at" do
+    user = users(:one)
+    assert_nil user.deactivated_at
+    user.deactivate!
+    assert_not_nil user.reload.deactivated_at
+  end
+
+  test "deactivate! destroys all sessions" do
+    user = users(:one)
+    user.sessions.create!(user_agent: "test", ip_address: "127.0.0.1")
+    user.sessions.create!(user_agent: "test2", ip_address: "127.0.0.2")
+    assert user.sessions.any?
+    user.deactivate!
+    assert user.sessions.reload.empty?
+  end
 end
