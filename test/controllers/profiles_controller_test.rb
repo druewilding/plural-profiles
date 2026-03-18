@@ -5,7 +5,7 @@ class ProfilesControllerTest < ActionDispatch::IntegrationTest
     sign_in_as users(:one)
   end
 
-  test "show displays public profile by uuid" do
+  test "show displays profile by uuid when authenticated" do
     profile = profiles(:alice)
     get profile_path(uuid: profile.uuid)
     assert_response :success
@@ -24,7 +24,7 @@ class ProfilesControllerTest < ActionDispatch::IntegrationTest
     assert_response :not_found
   end
 
-  test "show displays heart emojis on public profile" do
+  test "show displays heart emojis on profile" do
     profile = profiles(:alice)
     profile.update!(heart_emojis: %w[36_red_heart 22_violet_heart])
     get profile_path(uuid: profile.uuid)
