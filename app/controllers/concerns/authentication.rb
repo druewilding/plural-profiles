@@ -29,7 +29,12 @@ module Authentication
       return nil unless cookies.signed[:session_id]
 
       session = Session.find_by(id: cookies.signed[:session_id])
-      return nil if session&.user&.deactivated?
+
+      if session&.user&.deactivated?
+        session.destroy
+        cookies.delete(:session_id)
+        return nil
+      end
 
       session
     end
