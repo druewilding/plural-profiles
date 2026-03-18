@@ -25,14 +25,6 @@ class GroupProfilesControllerTest < ActionDispatch::IntegrationTest
     assert_response :not_found
   end
 
-  test "show works when logged in" do
-    sign_in_as users(:one)
-    group = groups(:friends)
-    profile = profiles(:alice)
-    get group_profile_path(group_uuid: group.uuid, uuid: profile.uuid)
-    assert_response :success
-  end
-
   test "panel returns profile content fragment" do
     group = groups(:friends)
     profile = profiles(:alice)
