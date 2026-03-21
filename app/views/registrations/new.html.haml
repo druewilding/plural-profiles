@@ -20,7 +20,7 @@
 
     .form-group
       = form.label :username, "Account name (optional)"
-      = form.text_field :username, autocomplete: "username", minlength: 2, maxlength: 30, pattern: "[a-zA-Z0-9][a-zA-Z0-9_-]*[a-zA-Z0-9]|[a-zA-Z0-9]{2}", title: "2-30 characters: letters, numbers, underscores, hyphens"
+      = form.text_field :username, autocomplete: "username", minlength: 2, maxlength: 30, pattern: "^[a-zA-Z0-9][a-zA-Z0-9_-]{0,28}[a-zA-Z0-9]$", title: "2-30 characters: letters, numbers, underscores, hyphens"
       %p.form-hint An account name can be 2-30 characters. You can change it later.
 
     .form-group
