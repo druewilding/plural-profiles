@@ -50,6 +50,10 @@ class User < ApplicationRecord
     unverified_email_address.present?
   end
 
+  def self.human_attribute_name(attr, options = {})
+    attr.to_sym == :username ? "Account name" : super
+  end
+
   private
 
   def unverified_email_not_taken
