@@ -13,13 +13,14 @@ class User < ApplicationRecord
 
   USERNAME_FORMAT = /\A[a-z0-9](?:[a-z0-9]|[_-](?=[a-z0-9]))*[a-z0-9]?\z/
   RESERVED_USERNAMES = %w[
-    admin api help our support system health status dashboard settings
+    admin api help support system health status dashboard settings
     null undefined root www mail ftp
     account accounts login logout signup
     register password reset verify
     profile profiles group groups stats
     about our contact terms privacy security
-  ].freeze
+    theme themes docs documentation
+  ].uniq.freeze
 
   validates :email_address, presence: true, uniqueness: true, format: { with: URI::MailTo::EMAIL_REGEXP }
   validates :unverified_email_address, format: { with: URI::MailTo::EMAIL_REGEXP }, allow_blank: true
