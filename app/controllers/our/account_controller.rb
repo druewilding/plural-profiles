@@ -38,9 +38,21 @@ class Our::AccountController < ApplicationController
     redirect_to our_account_path, notice: "Preferences updated."
   end
 
+  def update_username
+    if Current.user.update(username_params)
+      redirect_to our_account_path, notice: "Account name updated."
+    else
+      render :show, status: :unprocessable_entity
+    end
+  end
+
   private
 
   def password_params
     params.permit(:password, :password_confirmation)
+  end
+
+  def username_params
+    params.require(:user).permit(:username)
   end
 end

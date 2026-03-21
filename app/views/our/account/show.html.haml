@@ -31,6 +31,28 @@
       = form.submit "Save preferences"
 
 .card
+  %h2 Account name
+  %p An account name lets others find and connect with you without sharing your email address.
+  - if Current.user.username_in_database.present?
+    %p
+      Current account name:
+      %strong= Current.user.username_in_database
+
+  = form_with model: Current.user, url: update_username_our_account_path, method: :patch do |form|
+    - if Current.user.errors[:username].any?
+      .error-messages
+        - Current.user.errors.full_messages_for(:username).each do |message|
+          %p= message
+
+    .form-group
+      = form.label :username, "Account name"
+      = form.text_field :username, minlength: 2, maxlength: 30, autocomplete: "username", pattern: "^[a-zA-Z0-9][a-zA-Z0-9_-]{0,28}[a-zA-Z0-9]$", title: "2-30 characters: letters, numbers, underscores, hyphens"
+      %p.form-hint 2-30 characters: letters, numbers, underscores, and hyphens.
+
+    .form-group
+      = form.submit Current.user.username_in_database.present? ? "Change account name" : "Set account name"
+
+.card
   %h2 Change email
   %p
     Current email:
