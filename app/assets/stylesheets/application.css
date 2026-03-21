@@ -104,6 +104,7 @@ body {
   border-radius: 3px;
   background: color-mix(in srgb, var(--danger-button-bg) 85%, transparent);
   color: var(--danger-button-text);
+  border: 1px solid color-mix(in srgb, var(--danger-button-border) 40%, transparent);
   vertical-align: middle;
   text-transform: uppercase;
 }
@@ -2331,7 +2332,7 @@ input[type="submit"].btn--small,
   font-size: 0.75rem;
   background: color-mix(in srgb, var(--primary-button-bg) 60%, transparent);
   color: var(--primary-button-text);
-  border: 1px solid color-mix(in srgb, var(--primary-button-text) 40%, transparent);
+  border: 1px solid color-mix(in srgb, var(--primary-button-border) 40%, transparent);
 }
 
 @media (forced-colors: active) {
