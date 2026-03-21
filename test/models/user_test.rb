@@ -84,4 +84,109 @@ class UserTest < ActiveSupport::TestCase
     user.deactivate!
     assert user.sessions.reload.empty?
   end
+
+  # -- Account name (username) --
+
+  test "account name is optional" do
+    user = users(:two)
+    user.username = nil
+    assert user.valid?
+  end
+
+  test "account name is normalised to lowercase" do
+    user = users(:two)
+    user.username = "  FooBar  "
+    user.valid?
+    assert_equal "foobar", user.username
+  end
+
+  test "blank account name becomes nil" do
+    user = users(:two)
+    user.username = "   "
+    user.valid?
+    assert_nil user.username
+  end
+
+  test "valid account names are accepted" do
+    user = users(:two)
+    %w[ab abc abc123 foo-bar foo_bar a1 a-b a_b abcdefghijklmnopqrst1234].each do |name|
+      user.username = name
+      assert user.valid?, "Expected '#{name}' to be valid but got: #{user.errors.full_messages}"
+    end
+  end
+
+  test "single character account name is invalid" do
+    user = users(:two)
+    user.username = "a"
+    assert_not user.valid?
+    assert user.errors[:username].any?
+  end
+
+  test "account name with leading underscore is invalid" do
+    user = users(:two)
+    user.username = "_abc"
+    assert_not user.valid?
+  end
+
+  test "account name with trailing hyphen is invalid" do
+    user = users(:two)
+    user.username = "abc-"
+    assert_not user.valid?
+  end
+
+  test "account name with consecutive underscores is invalid" do
+    user = users(:two)
+    user.username = "a__b"
+    assert_not user.valid?
+  end
+
+  test "account name with consecutive hyphens is invalid" do
+    user = users(:two)
+    user.username = "a--b"
+    assert_not user.valid?
+  end
+
+  test "account name with mixed consecutive special chars is invalid" do
+    user = users(:two)
+    user.username = "a-_b"
+    assert_not user.valid?
+  end
+
+  test "account name with spaces is invalid" do
+    user = users(:two)
+    user.username = "ab cd"
+    assert_not user.valid?
+  end
+
+  test "account name with @ is invalid" do
+    user = users(:two)
+    user.username = "ab@cd"
+    assert_not user.valid?
+  end
+
+  test "account name over 30 characters is invalid" do
+    user = users(:two)
+    user.username = "a" * 31
+    assert_not user.valid?
+    assert_includes user.errors[:username], "is too long (maximum is 30 characters)"
+  end
+
+  test "account name must be unique case-insensitively" do
+    users(:one).update!(username: "taken")
+    user = users(:two)
+    user.username = "TAKEN"
+    assert_not user.valid?
+    assert user.errors[:username].any?
+  end
+
+  test "two different users can both have no account name" do
+    users(:one).update!(username: nil)
+    users(:two).update!(username: nil)
+    assert users(:one).valid?
+    assert users(:two).valid?
+  end
+
+  test "human_attribute_name returns Account name for username" do
+    assert_equal "Account name", User.human_attribute_name(:username)
+  end
 end

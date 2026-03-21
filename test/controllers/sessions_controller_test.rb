@@ -46,4 +46,46 @@ class SessionsControllerTest < ActionDispatch::IntegrationTest
     assert_redirected_to new_session_path
     assert_empty cookies[:session_id]
   end
+
+  # -- Login with account name --
+
+  test "create with account name" do
+    users(:one).update!(username: "testuser")
+    post session_path, params: { login: "testuser", password: "Plur4l!Pr0files#2026" }
+
+    assert_redirected_to root_path
+    assert cookies[:session_id]
+  end
+
+  test "create with account name is case-insensitive" do
+    users(:one).update!(username: "testuser")
+    post session_path, params: { login: "TestUser", password: "Plur4l!Pr0files#2026" }
+
+    assert_redirected_to root_path
+    assert cookies[:session_id]
+  end
+
+  test "create with account name and wrong password fails" do
+    users(:one).update!(username: "testuser")
+    post session_path, params: { login: "testuser", password: "wrongpassword" }
+
+    assert_redirected_to new_session_path
+    assert_nil cookies[:session_id]
+  end
+
+  test "create with non-existent account name fails" do
+    post session_path, params: { login: "nobody", password: "Plur4l!Pr0files#2026" }
+
+    assert_redirected_to new_session_path
+    assert_nil cookies[:session_id]
+  end
+
+  test "create with account name is rejected for a deactivated account" do
+    users(:one).update!(username: "testuser")
+    users(:one).deactivate!
+    post session_path, params: { login: "testuser", password: "Plur4l!Pr0files#2026" }
+
+    assert_redirected_to new_session_path
+    assert_nil cookies[:session_id]
+  end
 end

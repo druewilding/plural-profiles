@@ -179,4 +179,73 @@ class Our::AccountControllerTest < ActionDispatch::IntegrationTest
     patch update_preferences_our_account_path, params: { override_themes: "1" }
     assert_redirected_to new_session_path
   end
+
+  # -- update_username --
+
+  test "set account name when none exists" do
+    sign_in_as @user
+    @user.update!(username: nil)
+    patch update_username_our_account_path, params: { user: { username: "newname" } }
+    assert_redirected_to our_account_path
+    follow_redirect!
+    assert_match "Account name updated", response.body
+    assert_equal "newname", @user.reload.username
+  end
+
+  test "change existing account name" do
+    sign_in_as @user
+    @user.update!(username: "oldname")
+    patch update_username_our_account_path, params: { user: { username: "newname" } }
+    assert_redirected_to our_account_path
+    assert_equal "newname", @user.reload.username
+  end
+
+  test "clear account name by submitting blank" do
+    sign_in_as @user
+    @user.update!(username: "oldname")
+    patch update_username_our_account_path, params: { user: { username: "" } }
+    assert_redirected_to our_account_path
+    assert_nil @user.reload.username
+  end
+
+  test "invalid account name returns unprocessable entity" do
+    sign_in_as @user
+    patch update_username_our_account_path, params: { user: { username: "_bad" } }
+    assert_response :unprocessable_entity
+  end
+
+  test "duplicate account name returns unprocessable entity" do
+    users(:two).update!(username: "taken")
+    sign_in_as @user
+    patch update_username_our_account_path, params: { user: { username: "taken" } }
+    assert_response :unprocessable_entity
+  end
+
+  test "account name is normalised to lowercase on save" do
+    sign_in_as @user
+    patch update_username_our_account_path, params: { user: { username: "MyCoolName" } }
+    assert_redirected_to our_account_path
+    assert_equal "mycoolname", @user.reload.username
+  end
+
+  test "update_username redirects unauthenticated user" do
+    patch update_username_our_account_path, params: { user: { username: "newname" } }
+    assert_redirected_to new_session_path
+  end
+
+  test "account page shows current account name" do
+    sign_in_as @user
+    @user.update!(username: "myname")
+    get our_account_path
+    assert_response :success
+    assert_match "myname", response.body
+  end
+
+  test "account page shows prompt when no account name set" do
+    sign_in_as @user
+    @user.update!(username: nil)
+    get our_account_path
+    assert_response :success
+    assert_match "Account name", response.body
+  end
 end
