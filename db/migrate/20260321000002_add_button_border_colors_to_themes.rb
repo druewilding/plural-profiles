@@ -14,6 +14,8 @@ class AddButtonBorderColorsToThemes < ActiveRecord::Migration[8.1]
     Theme.find_each do |theme|
       colors = theme.colors || {}
       BORDER_DEFAULTS.each do |border_key, config|
+        # Only set a default border color if it's missing or blank to keep existing custom values
+        next if colors[border_key].present?
         colors[border_key] = colors[config[:from]] || config[:fallback]
       end
       theme.update_column(:colors, colors)
