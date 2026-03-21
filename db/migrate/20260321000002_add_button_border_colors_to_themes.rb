@@ -1,4 +1,9 @@
 class AddButtonBorderColorsToThemes < ActiveRecord::Migration[8.1]
+  # Isolated model so the migration doesn't depend on the application Theme class.
+  class Theme < ActiveRecord::Base
+    self.table_name = "themes"
+  end
+
   BORDER_DEFAULTS = {
     "primary_button_border"   => { from: "primary_button_text",   fallback: "#58cc9d" },
     "secondary_button_border" => { from: "secondary_button_text", fallback: "#58cc9d" },
