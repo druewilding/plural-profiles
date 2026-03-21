@@ -28,6 +28,7 @@ Rails.application.routes.draw do
     patch :update_email
     delete :cancel_email_change
     patch :update_preferences
+    patch :update_username
   end
   resources :our_invite_codes, path: "our/invite-codes", controller: "our/invite_codes", only: %i[create destroy]
   resources :our_themes, path: "our/themes", controller: "our/themes" do
