@@ -109,6 +109,15 @@ class AccountNameTest < ApplicationSystemTestCase
     click_button "Sign in"
 
     assert_current_path root_path
+    within(".site-header") { click_link "Sign out" }
+    assert_no_link "Sign out"
+
+    # Email address should still work regardless of account name changes
+    fill_in "Email address or account name", with: @user.email_address
+    fill_in "Password", with: @password
+    click_button "Sign in"
+
+    assert_current_path root_path
   end
 
   test "account name is displayed in lowercase even when entered in mixed case" do
