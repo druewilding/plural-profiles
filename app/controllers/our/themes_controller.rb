@@ -28,8 +28,9 @@ class Our::ThemesController < ApplicationController
 
     imported = {}
     if params[:theme].present?
-      if params[:theme][:colors].present?
-        imported_colors = params[:theme][:colors].to_unsafe_h
+      raw_colors = params[:theme][:colors]
+      if raw_colors.is_a?(ActionController::Parameters) || raw_colors.is_a?(Hash)
+        imported_colors = raw_colors.to_unsafe_h
                             .transform_keys(&:to_s)
                             .slice(*Theme::THEMEABLE_PROPERTIES.keys)
         colors.merge!(imported_colors)
@@ -172,8 +173,10 @@ class Our::ThemesController < ApplicationController
     # Ensure only known tag values are stored
     permitted[:tags] = (permitted[:tags] || []).reject(&:blank?).uniq & Theme::TAGS.keys
     # Ensure only known colour keys are stored
-    if permitted[:colors].present?
+    if permitted[:colors].is_a?(ActionController::Parameters) || permitted[:colors].is_a?(Hash)
       permitted[:colors] = permitted[:colors].to_h.slice(*Theme::THEMEABLE_PROPERTIES.keys)
+    else
+      permitted.delete(:colors)
     end
     permitted
   end
