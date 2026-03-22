@@ -25,13 +25,30 @@ class Our::ThemesController < ApplicationController
     colors = Theme::THEMEABLE_PROPERTIES.transform_values { |v| v[:default] }
     default_source = Current.user.active_theme || Theme.site_default_theme
     colors.merge!(default_source.colors) if default_source
-    if params[:theme].present? && params[:theme][:colors].present?
-      imported = params[:theme][:colors].to_unsafe_h.transform_keys(&:to_s).slice(*Theme::THEMEABLE_PROPERTIES.keys)
-      colors.merge!(imported)
+
+    imported = {}
+    if params[:theme].present?
+      if params[:theme][:colors].present?
+        imported_colors = params[:theme][:colors].to_unsafe_h
+                            .transform_keys(&:to_s)
+                            .slice(*Theme::THEMEABLE_PROPERTIES.keys)
+        colors.merge!(imported_colors)
+      end
+      imported[:name] = params[:theme][:name] if params[:theme][:name].present?
+      imported[:credit] = params[:theme][:credit] if params[:theme][:credit].present?
+      imported[:credit_url] = params[:theme][:credit_url] if params[:theme][:credit_url].present?
+      imported[:notes] = params[:theme][:notes] if params[:theme][:notes].present?
+      imported[:tags] = Array(params[:theme][:tags]).reject(&:blank?) & Theme::TAGS.keys if params[:theme][:tags].present?
+      imported[:background_repeat] = params[:theme][:background_repeat] if Theme::BACKGROUND_REPEAT_OPTIONS.include?(params[:theme][:background_repeat])
+      imported[:background_size] = params[:theme][:background_size] if Theme::BACKGROUND_SIZE_OPTIONS.include?(params[:theme][:background_size])
+      imported[:background_position] = params[:theme][:background_position] if Theme::BACKGROUND_POSITION_OPTIONS.include?(params[:theme][:background_position])
+      imported[:background_attachment] = params[:theme][:background_attachment] if Theme::BACKGROUND_ATTACHMENT_OPTIONS.include?(params[:theme][:background_attachment])
     end
+
     @theme = Current.user.themes.build(
-      name: "New theme",
-      colors: colors
+      name: imported[:name] || "New theme",
+      colors: colors,
+      **imported.except(:name)
     )
   end
 

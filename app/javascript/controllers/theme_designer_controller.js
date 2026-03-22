@@ -27,7 +27,7 @@ function colorToHex(colorString) {
 }
 
 export default class extends Controller {
-  static targets = ["colorInput", "hexInput", "preview", "cssOutput",
+  static targets = ["colorInput", "hexInput", "preview", "jsonOutput",
                     "backgroundFileInput", "backgroundRepeat",
                     "backgroundSize", "backgroundPosition", "backgroundAttachment"]
 
@@ -100,16 +100,17 @@ export default class extends Controller {
     })
   }
 
-  // Regenerate the CSS output textarea
+  // Regenerate the JSON export textarea (colours only — other fields are static)
   updateCssOutput() {
-    if (!this.hasCssOutputTarget) return
+    if (!this.hasJsonOutputTarget) return
 
-    const lines = this.hexInputTargets.map(input => {
-      const prop = cssProp(input.dataset.property)
-      return `  ${prop}: ${input.value};`
+    const colors = {}
+    this.hexInputTargets.forEach(input => {
+      colors[input.dataset.property] = input.value
     })
 
-    this.cssOutputTarget.value = `:root {\n${lines.join("\n")}\n}`
+    const data = { plural_profiles_theme: 1, colors }
+    this.jsonOutputTarget.value = JSON.stringify(data, null, 2)
   }
 
   // Called when user selects a new background image file
