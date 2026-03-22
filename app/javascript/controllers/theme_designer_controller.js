@@ -56,7 +56,7 @@ export default class extends Controller {
     if (hexInput) hexInput.value = hexValue
 
     this.applyToPreview(property, hexValue)
-    this.updateCssOutput()
+    this.updateJsonOutput()
   }
 
   // Called when the hex text input changes
@@ -78,7 +78,7 @@ export default class extends Controller {
       // For 8-digit hex (with alpha), native color input doesn't support it, so skip syncing
 
       this.applyToPreview(property, value)
-      this.updateCssOutput()
+      this.updateJsonOutput()
     }
   }
 
@@ -102,7 +102,7 @@ export default class extends Controller {
   }
 
   // Regenerate the JSON export textarea with all current form values
-  updateCssOutput() {
+  updateJsonOutput() {
     if (!this.hasJsonOutputTarget) return
 
     const data = { plural_profiles_theme: 1 }
@@ -172,7 +172,7 @@ export default class extends Controller {
     if (this.hasBackgroundAttachmentTarget) {
       this.previewTarget.style.backgroundAttachment = this.backgroundAttachmentTarget.value
     }
-    this.updateCssOutput()
+    this.updateJsonOutput()
   }
 
 }
