@@ -30,6 +30,139 @@ class Group < ApplicationRecord
     copies.where("labels @> ?", labels.to_json)
   end
 
+  # Scans the descendant tree depth-first and returns an array of conflict
+  # hashes for sub-groups that already have copies with ALL of the given labels.
+  # The root group itself is not checked (it's the source being duplicated).
+  def scan_for_conflicts(labels)
+    conflicts = []
+    all_ids = reachable_group_ids - [ id ]
+    return conflicts if all_ids.empty?
+
+    children_map = build_children_map([ id ] + all_ids)
+    groups_by_id = Group.where(id: all_ids).index_by(&:id)
+
+    walk_tree_for_conflicts(id, children_map, groups_by_id, labels, conflicts)
+    conflicts
+  end
+
+  # Deep-copies this group and its entire tree.
+  #
+  # resolutions: a Hash of { original_group_id (string) => "reuse" | "copy" }
+  #   - "reuse": link the existing copy into the new tree instead of copying
+  #   - "copy" (or absent): create a fresh copy
+  #
+  # For reused groups:
+  #   - Their profiles and overrides are left as-is
+  #   - They are linked as children in the new tree structure
+  #
+  # For freshly copied groups:
+  #   - New UUID, new labels, avatar copied
+  #   - All profiles inside are freshly copied
+  #   - Inclusion overrides are recreated with remapped paths
+  #   - copied_from_id is set to the original's ID
+  #
+  # Everything happens in a single transaction.
+  def deep_duplicate(new_labels: [], resolutions: {})
+    group_map = {}   # old_id => new_or_reused_group
+    profile_map = {} # old_id => new_or_reused_profile
+    reused_group_ids = Set.new
+    skip_ids = Set.new
+
+    all_ids = reachable_group_ids
+    groups_to_process = Group.where(id: all_ids, user_id: user_id)
+                             .includes(:profiles, avatar_attachment: :blob)
+    groups_by_id = groups_to_process.index_by(&:id)
+    children_map = build_children_map(all_ids)
+
+    # Phase A: Walk tree depth-first, building group map while respecting resolutions.
+    # When a group is reused, all its descendants are skipped.
+    build_group_map_depth_first(
+      id, children_map, groups_by_id, new_labels, resolutions,
+      group_map, reused_group_ids, skip_ids
+    )
+
+    # Phase B: Build profile map for freshly-copied groups only.
+    # Profiles that appear in multiple fresh groups are copied once.
+    fresh_group_ids = group_map.keys.reject { |gid| reused_group_ids.include?(gid) || skip_ids.include?(gid) }
+    profile_ids = GroupProfile.where(group_id: fresh_group_ids).pluck(:profile_id).uniq
+    profiles_to_copy = Profile.where(id: profile_ids, user_id: user_id)
+                              .includes(avatar_attachment: :blob)
+
+    profiles_to_copy.each do |original_profile|
+      new_profile = original_profile.dup
+      new_profile.uuid = PluralProfilesUuid.generate
+      new_profile.labels = new_labels
+      new_profile.copied_from = original_profile
+      profile_map[original_profile.id] = new_profile
+    end
+
+    # Phase C: Execute everything in a transaction
+    ActiveRecord::Base.transaction do
+      # Save new groups (skip reused — they already exist)
+      group_map.each do |old_id, group|
+        next if skip_ids.include?(old_id)
+        group.save! if group.new_record?
+      end
+
+      # Save new profiles
+      profile_map.each_value(&:save!)
+
+      # Copy avatars for new groups
+      group_map.each do |old_id, new_group|
+        next if reused_group_ids.include?(old_id) || skip_ids.include?(old_id)
+        original = groups_by_id[old_id]
+        duplicate_avatar(original, new_group) if original&.avatar&.attached?
+      end
+
+      # Copy avatars for new profiles
+      profile_map.each do |old_id, new_profile|
+        original = profiles_to_copy.find { |p| p.id == old_id }
+        duplicate_avatar(original, new_profile) if original&.avatar&.attached?
+      end
+
+      # Recreate group_groups edges for non-skipped groups
+      GroupGroup.where(parent_group_id: group_map.keys, child_group_id: group_map.keys).each do |gg|
+        next if skip_ids.include?(gg.parent_group_id) || skip_ids.include?(gg.child_group_id)
+        new_parent = group_map[gg.parent_group_id]
+        new_child = group_map[gg.child_group_id]
+        next unless new_parent && new_child
+        GroupGroup.create!(parent_group: new_parent, child_group: new_child)
+      end
+
+      # Recreate group_profiles for freshly-copied groups
+      GroupProfile.where(group_id: fresh_group_ids).each do |gp|
+        new_group = group_map[gp.group_id]
+        new_profile = profile_map[gp.profile_id]
+        next unless new_group && new_profile
+        GroupProfile.create!(group: new_group, profile: new_profile)
+      end
+
+      # Recreate inclusion overrides for freshly-copied groups only
+      InclusionOverride.where(group_id: fresh_group_ids).each do |override|
+        new_root = group_map[override.group_id]
+        next unless new_root
+
+        new_path = override.path.map { |gid| group_map[gid]&.id }.compact
+        next if new_path.length != override.path.length
+
+        new_target_id = case override.target_type
+        when "Group"   then group_map[override.target_id]&.id
+        when "Profile" then profile_map[override.target_id]&.id
+        end
+        next unless new_target_id
+
+        InclusionOverride.create!(
+          group: new_root,
+          path: new_path,
+          target_type: override.target_type,
+          target_id: new_target_id
+        )
+      end
+    end
+
+    group_map[id] # Return the new root group
+  end
+
   # All group IDs reachable from this group via group_groups edges (recursive).
   # Used for circular-reference validation, UI exclusion lists, and tree building.
   def reachable_group_ids
@@ -331,6 +464,86 @@ class Group < ApplicationRecord
       repeated = seen_profile_ids.include?(profile.id)
       seen_profile_ids.add(profile.id)
       { profile: profile, repeated: repeated }
+    end
+  end
+
+  # -- Duplication helpers --------------------------------------------------
+
+  # Walk the tree depth-first looking for groups that already have copies
+  # with ALL of the given labels. Returns conflicts in depth-first order.
+  def walk_tree_for_conflicts(parent_id, children_map, groups_by_id, labels, conflicts)
+    (children_map[parent_id] || []).each do |entry|
+      group = groups_by_id[entry[:id]]
+      next unless group
+
+      existing = group.copies_with_labels(labels).first
+      if existing
+        conflicts << {
+          original_id: group.id,
+          original_type: "Group",
+          name: group.name,
+          existing_copy_id: existing.id,
+          existing_copy_name: existing.name,
+          existing_copy_labels: existing.labels
+        }
+      end
+
+      walk_tree_for_conflicts(group.id, children_map, groups_by_id, labels, conflicts)
+    end
+  end
+
+  # Walk the tree depth-first, building a group map. When a group is resolved
+  # as "reuse", its existing copy is linked and all descendants are skipped.
+  def build_group_map_depth_first(parent_id, children_map, groups_by_id, new_labels, resolutions, group_map, reused_group_ids, skip_ids)
+    original = groups_by_id[parent_id]
+    return unless original
+
+    resolution = resolutions[parent_id.to_s]
+    if resolution == "reuse"
+      existing_copy = original.copies_with_labels(new_labels).first
+      if existing_copy
+        group_map[parent_id] = existing_copy
+        reused_group_ids << parent_id
+        # Mark all descendants as skipped
+        mark_descendants_as_skipped(parent_id, children_map, skip_ids)
+        return
+      end
+    end
+
+    # Fresh copy (or root group being duplicated)
+    unless group_map.key?(parent_id)
+      new_group = original.dup
+      new_group.uuid = PluralProfilesUuid.generate
+      new_group.labels = new_labels
+      new_group.copied_from = original
+      group_map[parent_id] = new_group
+    end
+
+    (children_map[parent_id] || []).each do |entry|
+      build_group_map_depth_first(
+        entry[:id], children_map, groups_by_id, new_labels, resolutions,
+        group_map, reused_group_ids, skip_ids
+      )
+    end
+  end
+
+  # Recursively mark all descendants of a group as skipped.
+  def mark_descendants_as_skipped(parent_id, children_map, skip_ids)
+    (children_map[parent_id] || []).each do |entry|
+      skip_ids << entry[:id]
+      mark_descendants_as_skipped(entry[:id], children_map, skip_ids)
+    end
+  end
+
+  # Copy an Active Storage avatar from source to target.
+  def duplicate_avatar(source, target)
+    return unless source.avatar.attached?
+    source.avatar.blob.open do |tmp|
+      target.avatar.attach(
+        io: tmp,
+        filename: source.avatar.blob.filename,
+        content_type: source.avatar.blob.content_type
+      )
     end
   end
 

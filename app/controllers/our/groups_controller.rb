@@ -2,7 +2,7 @@ class Our::GroupsController < ApplicationController
   include OurSidebar
   allow_unauthenticated_access only: :show
   before_action :resume_session, only: :show
-  before_action :set_group, only: %i[ show edit update destroy manage_profiles add_profile remove_profile add_group remove_group regenerate_uuid manage_groups toggle_visibility ]
+  before_action :set_group, only: %i[ show edit update destroy manage_profiles add_profile remove_profile add_group remove_group regenerate_uuid manage_groups toggle_visibility duplicate duplicate_scan duplicate_resolve duplicate_resolve_post duplicate_confirm duplicate_execute ]
   before_action :validate_theme_choice, only: %i[create update]
 
   def index
@@ -182,6 +182,149 @@ class Our::GroupsController < ApplicationController
       format.html { redirect_to manage_groups_our_group_path(@group), notice: "Visibility updated." }
       format.json { render json: { hidden: hidden }, status: :ok }
     end
+  end
+
+  # -- Duplication wizard --------------------------------------------------
+
+  # Step 1: Show label input form
+  def duplicate
+  end
+
+  # Process Step 1: scan for conflicts and redirect
+  def duplicate_scan
+    labels = params[:labels_text].to_s.split(",").map(&:strip).reject(&:blank?).uniq
+
+    if labels.empty?
+      flash.now[:alert] = "Please enter at least one label for the copies."
+      render :duplicate, status: :unprocessable_entity
+      return
+    end
+
+    conflicts = @group.scan_for_conflicts(labels)
+
+    session[:duplication_wizard] = {
+      "source_group_id" => @group.id,
+      "labels" => labels,
+      "conflicts" => conflicts.map { |c| c.transform_keys(&:to_s) },
+      "resolutions" => {},
+      "current_conflict_index" => 0
+    }
+
+    if conflicts.empty?
+      redirect_to duplicate_confirm_our_group_path(@group)
+    else
+      redirect_to duplicate_resolve_our_group_path(@group)
+    end
+  end
+
+  # Step 2: Show one conflict at a time
+  def duplicate_resolve
+    wizard = session[:duplication_wizard]
+    unless wizard && wizard["source_group_id"] == @group.id
+      redirect_to duplicate_our_group_path(@group), alert: "Please start the duplication process again."
+      return
+    end
+
+    index = wizard["current_conflict_index"]
+    @conflict = wizard["conflicts"][index]
+    @conflict_number = index + 1
+    @total_conflicts = wizard["conflicts"].length
+    @original = Group.find(@conflict["original_id"])
+    @existing_copy = Group.find(@conflict["existing_copy_id"])
+    @labels = wizard["labels"]
+    @source = @group
+  end
+
+  # Process one conflict resolution and advance
+  def duplicate_resolve_post
+    wizard = session[:duplication_wizard]
+    unless wizard && wizard["source_group_id"] == @group.id
+      redirect_to duplicate_our_group_path(@group), alert: "Please start the duplication process again."
+      return
+    end
+
+    index = wizard["current_conflict_index"]
+    conflict = wizard["conflicts"][index]
+
+    # Record the user's choice
+    wizard["resolutions"][conflict["original_id"].to_s] = params[:resolution]
+
+    # If user chose "reuse", skip conflicts for descendants of this group
+    if params[:resolution] == "reuse"
+      reused_group = Group.find(conflict["original_id"])
+      descendant_ids = (reused_group.descendant_group_ids - [ reused_group.id ]).map(&:to_s).to_set
+      # Mark descendant conflicts as implicitly resolved
+      wizard["conflicts"].each_with_index do |c, i|
+        next if i <= index
+        if descendant_ids.include?(c["original_id"].to_s)
+          wizard["resolutions"][c["original_id"].to_s] = "reuse"
+        end
+      end
+    end
+
+    # Find next unresolved conflict
+    next_index = ((index + 1)...wizard["conflicts"].length).find do |i|
+      !wizard["resolutions"].key?(wizard["conflicts"][i]["original_id"].to_s)
+    end
+
+    if next_index
+      wizard["current_conflict_index"] = next_index
+      session[:duplication_wizard] = wizard
+      redirect_to duplicate_resolve_our_group_path(@group)
+    else
+      session[:duplication_wizard] = wizard
+      redirect_to duplicate_confirm_our_group_path(@group)
+    end
+  end
+
+  # Step 3: Show confirmation summary
+  def duplicate_confirm
+    wizard = session[:duplication_wizard]
+    unless wizard && wizard["source_group_id"] == @group.id
+      redirect_to duplicate_our_group_path(@group), alert: "Please start the duplication process again."
+      return
+    end
+
+    @labels = wizard["labels"]
+    @resolutions = wizard["resolutions"]
+    @source = @group
+
+    # Build lists for the summary
+    all_group_ids = @group.reachable_group_ids
+    reused_ids = @resolutions.select { |_, v| v == "reuse" }.keys.map(&:to_i).to_set
+
+    # Groups being reused also implicitly reuse their descendants
+    expanded_reused_ids = Set.new(reused_ids)
+    reused_ids.each do |rid|
+      (Group.find_by(id: rid)&.descendant_group_ids || []).each { |did| expanded_reused_ids << did }
+    end
+
+    copyable_ids = all_group_ids - expanded_reused_ids.to_a
+    @groups_to_copy = Group.where(id: copyable_ids).order(:name)
+
+    @groups_to_reuse = reused_ids.filter_map do |rid|
+      original = Group.find_by(id: rid)
+      next unless original
+      copy = original.copies_with_labels(@labels).first
+      next unless copy
+      [ original, copy ]
+    end
+  end
+
+  # Execute the duplication
+  def duplicate_execute
+    wizard = session[:duplication_wizard]
+    unless wizard && wizard["source_group_id"] == @group.id
+      redirect_to duplicate_our_group_path(@group), alert: "Please start the duplication process again."
+      return
+    end
+
+    labels = wizard["labels"]
+    resolutions = wizard["resolutions"]
+
+    new_group = @group.deep_duplicate(new_labels: labels, resolutions: resolutions)
+    session.delete(:duplication_wizard)
+    redirect_to our_group_path(new_group), notice: "Group duplicated with all sub-groups and profiles."
   end
 
   private

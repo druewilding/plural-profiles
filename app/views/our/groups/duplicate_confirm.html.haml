@@ -1,0 +1,35 @@
+- content_for(:title) { "Confirm duplication — Plural Profiles" }
+
+%h1 Confirm duplication
+
+.card
+  %p
+    Duplicating
+    %strong= @source.name
+    with label#{@labels.length > 1 ? "s" : ""}:
+    - @labels.each do |label|
+      %span.label-badge= label
+
+  - if @groups_to_copy.any?
+    %h3 Will be created as new copies
+    %ul
+      - @groups_to_copy.each do |group|
+        %li= group.name
+
+  - if @groups_to_reuse.any?
+    %h3 Existing copies will be linked into the new tree
+    %ul
+      - @groups_to_reuse.each do |original, copy|
+        %li
+          = original.name
+          %span.text-muted → using
+          = copy.name
+          - if copy.labels.any?
+            .label-badges
+              - copy.labels.each do |l|
+                %span.label-badge= l
+
+  = form_with url: duplicate_execute_our_group_path(@source), method: :post do |form|
+    .profile-actions
+      = form.submit "Confirm & duplicate", class: "btn"
+      = link_to "Start over", duplicate_our_group_path(@source), class: "btn btn--secondary"

@@ -581,4 +581,210 @@ class GroupTest < ActiveSupport::TestCase
     original.destroy
     assert_nil copy.reload.copied_from_id
   end
+
+  # -- scan_for_conflicts (Phase 6) --
+
+  test "scan_for_conflicts returns empty when no copies exist" do
+    alpha = groups(:alpha_clan)
+    conflicts = alpha.scan_for_conflicts([ "blue" ])
+    assert_empty conflicts
+  end
+
+  test "scan_for_conflicts returns conflicts for sub-groups with matching labeled copies" do
+    user = users(:three)
+    prism = groups(:prism_circle)
+    rogue = groups(:rogue_pack)
+
+    # Create copies with the "blue" label
+    user.groups.create!(name: "Prism Circle (blue)", copied_from: prism, labels: [ "blue" ])
+    user.groups.create!(name: "Rogue Pack (blue)", copied_from: rogue, labels: [ "blue" ])
+
+    echo = groups(:echo_shard)
+    conflicts = echo.scan_for_conflicts([ "blue" ])
+
+    assert_equal 2, conflicts.length
+    original_ids = conflicts.map { |c| c[:original_id] }
+    assert_includes original_ids, prism.id
+    assert_includes original_ids, rogue.id
+  end
+
+  test "scan_for_conflicts returns conflicts in depth-first order" do
+    user = users(:three)
+    prism = groups(:prism_circle)
+    rogue = groups(:rogue_pack)
+
+    user.groups.create!(name: "Prism Copy", copied_from: prism, labels: [ "blue" ])
+    user.groups.create!(name: "Rogue Copy", copied_from: rogue, labels: [ "blue" ])
+
+    spectrum = groups(:spectrum)
+    conflicts = spectrum.scan_for_conflicts([ "blue" ])
+
+    # Prism Circle should come before Rogue Pack (depth-first)
+    prism_index = conflicts.index { |c| c[:original_id] == prism.id }
+    rogue_index = conflicts.index { |c| c[:original_id] == rogue.id }
+    assert prism_index < rogue_index, "Prism Circle should appear before Rogue Pack in depth-first order"
+  end
+
+  test "scan_for_conflicts does not flag sub-groups without matching copies" do
+    user = users(:three)
+    prism = groups(:prism_circle)
+
+    # Create a copy with a different label
+    user.groups.create!(name: "Prism Circle (red)", copied_from: prism, labels: [ "red" ])
+
+    echo = groups(:echo_shard)
+    conflicts = echo.scan_for_conflicts([ "blue" ])
+    assert_empty conflicts
+  end
+
+  # -- deep_duplicate (Phase 6) --
+
+  test "deep_duplicate with no conflicts creates correct groups and profiles" do
+    echo = groups(:echo_shard)
+    initial_group_count = Group.count
+    initial_profile_count = Profile.count
+
+    new_root = echo.deep_duplicate(new_labels: [ "blue" ])
+
+    assert_not_nil new_root
+    assert new_root.persisted?
+    assert_equal [ "blue" ], new_root.labels
+    assert_equal echo, new_root.copied_from
+    assert_not_equal echo.uuid, new_root.uuid
+
+    # Echo Shard tree: Echo Shard -> Prism Circle -> Rogue Pack
+    # That's 3 groups total, plus profiles: Mirage (in echo_shard), Ember + Stray (in prism_circle), Stray (in rogue_pack)
+    # Unique profiles: Mirage, Ember, Stray = 3
+    assert_equal initial_group_count + 3, Group.count
+    assert_equal initial_profile_count + 3, Profile.count
+  end
+
+  test "deep_duplicate copies have correct copied_from_id" do
+    echo = groups(:echo_shard)
+    new_root = echo.deep_duplicate(new_labels: [ "blue" ])
+
+    assert_equal echo, new_root.copied_from
+
+    # Check child groups
+    prism_copy = Group.where(copied_from: groups(:prism_circle), labels: [ "blue" ].to_json).or(
+      Group.where(copied_from: groups(:prism_circle)).where("labels @> ?", [ "blue" ].to_json)
+    ).first
+    assert_not_nil prism_copy, "Prism Circle should have been copied"
+    assert_equal groups(:prism_circle), prism_copy.copied_from
+  end
+
+  test "deep_duplicate copies have new UUIDs" do
+    echo = groups(:echo_shard)
+    original_uuids = Group.where(id: echo.reachable_group_ids).pluck(:uuid)
+
+    echo.deep_duplicate(new_labels: [ "test" ])
+
+    new_groups = Group.where("labels @> ?", [ "test" ].to_json)
+    new_groups.each do |g|
+      assert_not_includes original_uuids, g.uuid, "Copied group should have a new UUID"
+    end
+  end
+
+  test "deep_duplicate copies have the specified labels" do
+    echo = groups(:echo_shard)
+    echo.deep_duplicate(new_labels: [ "blue", "safe" ])
+
+    new_groups = Group.where("labels @> ?", [ "blue", "safe" ].to_json).where.not(id: echo.reachable_group_ids)
+    assert new_groups.count >= 3, "All copied groups should have the specified labels"
+
+    new_profiles = Profile.where("labels @> ?", [ "blue", "safe" ].to_json)
+    assert new_profiles.count >= 1, "Copied profiles should have the specified labels"
+  end
+
+  test "deep_duplicate recreates group-group edges" do
+    echo = groups(:echo_shard)
+    new_root = echo.deep_duplicate(new_labels: [ "blue" ])
+
+    # Echo Shard (blue) should have Prism Circle (blue) as child
+    assert_equal 1, new_root.child_groups.count
+    prism_copy = new_root.child_groups.first
+    assert_equal groups(:prism_circle), prism_copy.copied_from
+
+    # Prism Circle (blue) should have Rogue Pack (blue) as child
+    assert_equal 1, prism_copy.child_groups.count
+    rogue_copy = prism_copy.child_groups.first
+    assert_equal groups(:rogue_pack), rogue_copy.copied_from
+  end
+
+  test "deep_duplicate recreates group-profile links" do
+    echo = groups(:echo_shard)
+    new_root = echo.deep_duplicate(new_labels: [ "blue" ])
+
+    # Echo Shard has Mirage
+    mirage_copy = new_root.profiles.find { |p| p.copied_from == profiles(:mirage) }
+    assert_not_nil mirage_copy, "Echo Shard copy should have Mirage copy"
+  end
+
+  test "deep_duplicate profiles appearing in multiple groups are copied once" do
+    echo = groups(:echo_shard)
+    echo.deep_duplicate(new_labels: [ "dup_test" ])
+
+    # Stray appears in both prism_circle and rogue_pack
+    stray_copies = Profile.where(copied_from: profiles(:stray)).where("labels @> ?", [ "dup_test" ].to_json)
+    assert_equal 1, stray_copies.count, "Stray should be copied only once even though it appears in two groups"
+  end
+
+  test "deep_duplicate with reuse resolution links existing copy" do
+    user = users(:three)
+    prism = groups(:prism_circle)
+    rogue = groups(:rogue_pack)
+
+    # Pre-create copies
+    prism_copy = user.groups.create!(name: "Prism Circle (blue)", copied_from: prism, labels: [ "blue" ])
+    user.groups.create!(name: "Rogue Pack (blue)", copied_from: rogue, labels: [ "blue" ])
+
+    echo = groups(:echo_shard)
+    resolutions = { prism.id.to_s => "reuse" }
+
+    initial_group_count = Group.count
+    new_root = echo.deep_duplicate(new_labels: [ "blue" ], resolutions: resolutions)
+
+    # Should have created only the root copy (Echo Shard blue)
+    # Prism Circle is reused, and Rogue Pack is a descendant of reused Prism → skipped
+    assert_equal initial_group_count + 1, Group.count
+
+    # The reused Prism Circle copy should be linked as a child
+    assert_includes new_root.child_groups.map(&:id), prism_copy.id
+  end
+
+  test "deep_duplicate with reuse resolution skips descendants of reused group" do
+    user = users(:three)
+    prism = groups(:prism_circle)
+    rogue = groups(:rogue_pack)
+
+    user.groups.create!(name: "Prism Circle (blue)", copied_from: prism, labels: [ "blue" ])
+    rogue_copy = user.groups.create!(name: "Rogue Pack (blue)", copied_from: rogue, labels: [ "blue" ])
+
+    echo = groups(:echo_shard)
+    resolutions = { prism.id.to_s => "reuse" }
+
+    echo.deep_duplicate(new_labels: [ "blue" ], resolutions: resolutions)
+
+    # Since Prism was reused and Rogue is a descendant, no new Rogue copy should exist
+    # beyond the pre-created one
+    rogue_copies = Group.where(copied_from: rogue).where("labels @> ?", [ "blue" ].to_json)
+    assert_equal 1, rogue_copies.count, "Rogue Pack should not have been duplicated again"
+    assert_equal rogue_copy.id, rogue_copies.first.id
+  end
+
+  test "deep_duplicate recreates inclusion overrides with remapped paths" do
+    # Alpha Clan has an override: hide Rogue Pack at [spectrum, prism_circle]
+    alpha = groups(:alpha_clan)
+    initial_override_count = InclusionOverride.count
+
+    new_root = alpha.deep_duplicate(new_labels: [ "override_test" ])
+
+    new_overrides = InclusionOverride.where(group_id: new_root.reachable_group_ids)
+                                     .where.not(group_id: alpha.reachable_group_ids)
+
+    # The original has overrides on alpha_clan; the copy should have remapped overrides
+    # on the freshly-copied groups
+    assert new_overrides.count > 0 || InclusionOverride.count > initial_override_count,
+           "Inclusion overrides should be recreated for freshly copied groups"
+  end
 end

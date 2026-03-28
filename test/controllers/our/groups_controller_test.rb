@@ -856,6 +856,116 @@ class Our::GroupsControllerTest < ActionDispatch::IntegrationTest
     assert_no_match "Clear filter", response.body
   end
 
+  # -- Duplication wizard (Phase 6) --
+
+  test "duplicate renders label input form" do
+    sign_in_as users(:three)
+    group = groups(:echo_shard)
+    get duplicate_our_group_path(group)
+    assert_response :success
+    assert_match "Duplicate group", response.body
+    assert_match group.name, response.body
+  end
+
+  test "duplicate_scan with empty labels returns error" do
+    sign_in_as users(:three)
+    group = groups(:echo_shard)
+    post duplicate_scan_our_group_path(group), params: { labels_text: "" }
+    assert_response :unprocessable_entity
+    assert_match "at least one label", response.body
+  end
+
+  test "duplicate_scan with no conflicts redirects to confirm" do
+    sign_in_as users(:three)
+    group = groups(:echo_shard)
+    post duplicate_scan_our_group_path(group), params: { labels_text: "blue" }
+    assert_redirected_to duplicate_confirm_our_group_path(group)
+  end
+
+  test "duplicate_scan with conflicts redirects to resolve" do
+    user = users(:three)
+    sign_in_as user
+    prism = groups(:prism_circle)
+    user.groups.create!(name: "Prism Circle (blue)", copied_from: prism, labels: [ "blue" ])
+
+    group = groups(:echo_shard)
+    post duplicate_scan_our_group_path(group), params: { labels_text: "blue" }
+    assert_redirected_to duplicate_resolve_our_group_path(group)
+  end
+
+  test "duplicate_resolve shows conflict page" do
+    user = users(:three)
+    sign_in_as user
+    prism = groups(:prism_circle)
+    user.groups.create!(name: "Prism Circle (blue)", copied_from: prism, labels: [ "blue" ])
+
+    group = groups(:echo_shard)
+    # First set up wizard state
+    post duplicate_scan_our_group_path(group), params: { labels_text: "blue" }
+    follow_redirect!
+
+    assert_response :success
+    assert_match "Conflict 1", response.body
+    assert_match prism.name, response.body
+  end
+
+  test "duplicate_resolve POST with reuse skips descendant conflicts" do
+    user = users(:three)
+    sign_in_as user
+    prism = groups(:prism_circle)
+    rogue = groups(:rogue_pack)
+    user.groups.create!(name: "Prism Copy", copied_from: prism, labels: [ "blue" ])
+    user.groups.create!(name: "Rogue Copy", copied_from: rogue, labels: [ "blue" ])
+
+    group = groups(:echo_shard)
+    post duplicate_scan_our_group_path(group), params: { labels_text: "blue" }
+    # Resolve prism as reuse — should skip rogue and go to confirm
+    post duplicate_resolve_our_group_path(group), params: { resolution: "reuse" }
+    assert_redirected_to duplicate_confirm_our_group_path(group)
+  end
+
+  test "duplicate_confirm shows summary page" do
+    sign_in_as users(:three)
+    group = groups(:echo_shard)
+    # Set up wizard state with no conflicts
+    post duplicate_scan_our_group_path(group), params: { labels_text: "blue" }
+    follow_redirect!
+    assert_response :success
+    assert_match "Confirm duplication", response.body
+    assert_match group.name, response.body
+  end
+
+  test "duplicate_execute creates the tree and redirects" do
+    sign_in_as users(:three)
+    group = groups(:echo_shard)
+    post duplicate_scan_our_group_path(group), params: { labels_text: "blue" }
+
+    assert_difference("Group.count", 3) do
+      post duplicate_execute_our_group_path(group)
+    end
+    # Redirects to the newly created root group (the copy of echo_shard)
+    new_root = Group.where(copied_from: group).where("labels @> ?", [ "blue" ].to_json).first
+    assert_redirected_to our_group_path(new_root)
+    follow_redirect!
+    assert_match "Group duplicated", response.body
+  end
+
+  test "duplicate_execute clears session wizard state" do
+    sign_in_as users(:three)
+    group = groups(:echo_shard)
+    post duplicate_scan_our_group_path(group), params: { labels_text: "blue" }
+    post duplicate_execute_our_group_path(group)
+    # Attempting to access confirm after execution should redirect to duplicate start
+    get duplicate_confirm_our_group_path(group)
+    assert_redirected_to duplicate_our_group_path(group)
+  end
+
+  test "duplicate requires authentication" do
+    group = groups(:echo_shard)
+    get duplicate_our_group_path(group)
+    assert_redirected_to new_session_path
+  end
+
   private
 
   def sign_in_as(user)

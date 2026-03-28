@@ -2331,6 +2331,56 @@ input[type="submit"].btn--small,
   }
 }
 
+/* ── Duplication wizard ──────────────────────────────────── */
+.duplicate-comparison {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1rem;
+  margin: 1rem 0;
+}
+
+.duplicate-comparison__card {
+  padding: 1rem;
+  border: 1px solid var(--pane-border);
+  border-radius: 0.5rem;
+  background: var(--pane-bg);
+}
+
+.duplicate-comparison__item {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.duplicate-comparison__description {
+  font-size: 0.875rem;
+  color: var(--text);
+  opacity: 0.8;
+}
+
+.radio-group {
+  margin-bottom: 0.75rem;
+}
+
+.radio-group input[type="radio"] {
+  margin-right: 0.5rem;
+}
+
+@media (max-width: 600px) {
+  .duplicate-comparison {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (forced-colors: active) {
+  .duplicate-comparison__card {
+    border-color: ButtonText;
+  }
+  .radio-group input[type="radio"] {
+    accent-color: Highlight;
+  }
+}
+
 /* ── Label badges ───────────────────────────────────────── */
 .label-badges {
   display: flex;
