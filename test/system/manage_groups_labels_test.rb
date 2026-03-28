@@ -22,7 +22,7 @@ class ManageGroupsLabelsTest < ApplicationSystemTestCase
     @profile.update!(labels: %w[helper featured])
     visit manage_groups_our_group_path(@group)
     # Find the profile node by unique name and class
-    within find(".tree-editor__leaf--profile", text: @profile.name) do
+    within find(".tree-editor__leaf--profile", text: @profile.name, match: :first) do
       assert_selector ".label-badges .label-badge", text: "helper"
       assert_selector ".label-badges .label-badge", text: "featured"
     end
