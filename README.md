@@ -8,7 +8,7 @@ A web app for pluralfolk to create and share multiple profiles. Each account can
 
 - **Multiple profiles per account** — each with a name, pronouns, description, avatar image (with alt text), and optional heart emojis
 - **Groups** — organise profiles into named groups with a description and avatar
-- **Group nesting** — groups can contain other groups, forming trees of arbitrary depth. Each item (group or profile) in the tree can be individually hidden from the parent group's public view using a simple checkbox, with hiding cascading to all descendants
+- **Group nesting** — groups can contain other groups, forming trees of arbitrary depth. Each item (group or profile) in the tree can be individually hidden from the parent group's shared view using a simple checkbox, with hiding cascading to all descendants
 - **Path-scoped visibility** — when the same group appears at multiple points in a tree (diamond pattern), visibility overrides are scoped to the specific traversal path. Hiding a profile via one path doesn't affect its visibility via another path within the same root group
 - **Deep inclusion overrides** — per-item hidden state is stored in `inclusion_overrides`, scoped to a root group and a full traversal path (array of group IDs from root to the target's container). This enables precise, context-dependent control without affecting the target's own view or any other parent's view
 - **Labels** — profiles and groups can be tagged with labels (stored as a jsonb array). Labels appear in the management UI and can be used to filter listings. They're also central to the duplication feature
@@ -22,7 +22,7 @@ A web app for pluralfolk to create and share multiple profiles. Each account can
 - **Shareable UUID URLs** — every profile and group gets a unique URL (e.g. `/profiles/:uuid`, `/groups/:uuid`). Currently these require sign-in to view
 - **UUID regeneration** — profiles and groups can regenerate their share URL at any time
 - **Privacy-conscious sharing** — visitors can only see what they're linked to; there's no way to browse from one profile to discover other profiles or groups
-- **Interactive group explorer** — public group pages feature a tree sidebar that lazy-loads content panels via AJAX, with a flat no-JS fallback for progressive enhancement
+- **Interactive group explorer** — shared group pages feature a tree sidebar that lazy-loads content panels via AJAX, with a flat no-JS fallback for progressive enhancement
 
 ### Themes
 
@@ -31,7 +31,7 @@ A web app for pluralfolk to create and share multiple profiles. Each account can
 - **Shared themes** — admins can share themes so all users can browse and duplicate them
 - **Site default theme** — one shared theme can be designated as the site default (applied when no other theme is active)
 - **Theme import/export** — themes can be exported as JSON and imported by pasting JSON or legacy CSS `:root {}` blocks
-- **Override preference** — accounts can choose to always use their own theme on public pages instead of the page's assigned theme
+- **Override preference** — accounts can choose to always use their own theme on shared pages instead of the page's assigned theme
 - **Tag filtering** — themes can be tagged (e.g. `dark`, `light`, `warm-colours`, `high-contrast`) and filtered by tag in the theme browser
 - **Background images** — themes support a background image with configurable repeat, size, position, and attachment
 
@@ -260,10 +260,10 @@ bin/rubocop -a
 | `/our/groups`                  | Manage your groups (auth required)               |
 | `/our/groups/:id/duplicate`    | Duplicate a group tree (multi-step wizard)       |
 | `/our/themes`                  | Manage and browse themes (auth required)         |
-| `/profiles/:uuid`              | Public profile page                              |
-| `/groups/:uuid`                | Public group page (interactive tree explorer)    |
-| `/groups/:uuid/profiles/:uuid` | Public profile viewed within a group             |
-| `/stats`                       | Public aggregate stats page                      |
+| `/profiles/:uuid`              | Shared profile page                              |
+| `/groups/:uuid`                | Shared group page (interactive tree explorer)    |
+| `/groups/:uuid/profiles/:uuid` | Shared profile viewed within a group             |
+| `/stats`                       | Shared aggregate stats page                      |
 
 ## Project structure
 
@@ -276,10 +276,10 @@ app/
 │   │   ├── groups_controller.rb        # CRUD + manage members + duplication wizard
 │   │   ├── invite_codes_controller.rb  # Invite code generation and deletion
 │   │   └── themes_controller.rb        # Theme CRUD, activate, share, import/export
-│   ├── profiles_controller.rb          # Public profile page
-│   ├── groups_controller.rb            # Public group page + panel (AJAX tree content)
-│   ├── group_profiles_controller.rb    # Public profile-within-group page + panel
-│   ├── stats_controller.rb            # Public stats page
+│   ├── profiles_controller.rb          # Shared profile page
+│   ├── groups_controller.rb            # Shared group page + panel (AJAX tree content)
+│   ├── group_profiles_controller.rb    # Shared profile-within-group page + panel
+│   ├── stats_controller.rb            # Shared stats page
 │   ├── registrations_controller.rb     # Sign up (validates invite code)
 │   └── email_verifications_controller.rb
 ├── models/
@@ -299,16 +299,16 @@ app/
 │   ├── spoiler_controller.js            # Toggle ||spoiler|| text visibility
 │   ├── theme_designer_controller.js     # Live theme preview, colour sync, JSON export
 │   ├── theme_import_controller.js       # Import JSON or CSS :root {} blocks
-│   ├── tree_controller.js              # Public group tree explorer with lazy-loaded panels
+│   ├── tree_controller.js              # Shared group tree explorer with lazy-loaded panels
 │   └── visibility_toggle_controller.js  # Async toggle for inclusion overrides
 ├── views/
 │   ├── our/profiles/    # Profile management views (HAML)
 │   ├── our/groups/      # Group management + duplication wizard views (HAML)
 │   ├── our/themes/      # Theme management + designer views (HAML)
 │   ├── our/account/     # Account settings views (HAML)
-│   ├── profiles/        # Public profile view
-│   ├── groups/          # Public group view + tree explorer
-│   └── group_profiles/  # Public profile-in-group view
+│   ├── profiles/        # Shared profile view
+│   ├── groups/          # Shared group view + tree explorer
+│   └── group_profiles/  # Shared profile-in-group view
 └── assets/
     └── stylesheets/
         └── application.css   # Hand-written CSS with custom colour palette
