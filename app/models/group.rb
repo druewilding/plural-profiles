@@ -155,7 +155,12 @@ class Group < ApplicationRecord
       profile_map[original_profile.id] = new_profile
     end
 
-    # Phase C: Execute everything in a transaction
+    # Phase C: Execute everything in a transaction.
+    # Avatar copying is intentionally done AFTER the transaction (below) because
+    # Active Storage writes the blob file via an after_create_commit callback —
+    # if attach is called inside a transaction the IO is read after commit, by
+    # which point any tempfile opened inside the transaction would already be
+    # closed, causing "IOError: closed stream".
     ActiveRecord::Base.transaction do
       # Save new groups (skip reused — they already exist)
       group_map.each do |old_id, group|
@@ -166,20 +171,6 @@ class Group < ApplicationRecord
       # Save new profiles (skip reused — they already exist)
       profile_map.each do |old_id, profile|
         profile.save! unless reused_profile_ids.include?(old_id)
-      end
-
-      # Copy avatars for new groups
-      group_map.each do |old_id, new_group|
-        next if reused_group_ids.include?(old_id) || skip_ids.include?(old_id)
-        original = groups_by_id[old_id]
-        duplicate_avatar(original, new_group) if original&.avatar&.attached?
-      end
-
-      # Copy avatars for new profiles (skip reused)
-      profile_map.each do |old_id, new_profile|
-        next if reused_profile_ids.include?(old_id)
-        original = profiles_by_id[old_id]
-        duplicate_avatar(original, new_profile) if original&.avatar&.attached?
       end
 
       # Recreate group_groups edges for non-skipped groups
@@ -220,6 +211,20 @@ class Group < ApplicationRecord
           target_id: new_target_id
         )
       end
+    end
+
+    # Copy avatars after the transaction so Active Storage's after_create_commit
+    # callback can read the IO without hitting a closed stream.
+    group_map.each do |old_id, new_group|
+      next if reused_group_ids.include?(old_id) || skip_ids.include?(old_id)
+      original = groups_by_id[old_id]
+      duplicate_avatar(original, new_group) if original&.avatar&.attached?
+    end
+
+    profile_map.each do |old_id, new_profile|
+      next if reused_profile_ids.include?(old_id)
+      original = profiles_by_id[old_id]
+      duplicate_avatar(original, new_profile) if original&.avatar&.attached?
     end
 
     group_map[id] # Return the new root group
@@ -693,14 +698,20 @@ class Group < ApplicationRecord
   end
 
   # Copy an Active Storage avatar from source to target.
+  # Uses blob.open (tempfile-backed) to stream the download without loading
+  # the entire file into memory. Must be called outside a transaction so that
+  # Active Storage's after_create_commit callback can read the IO synchronously
+  # before the tempfile is closed.
   def duplicate_avatar(source, target)
     return unless source.avatar.attached?
     blob = source.avatar.blob
-    target.avatar.attach(
-      io: StringIO.new(blob.download),
-      filename: blob.filename,
-      content_type: blob.content_type
-    )
+    blob.open do |tempfile|
+      target.avatar.attach(
+        io: tempfile,
+        filename: blob.filename,
+        content_type: blob.content_type
+      )
+    end
   end
 
   def generate_uuid
