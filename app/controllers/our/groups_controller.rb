@@ -317,9 +317,10 @@ class Our::GroupsController < ApplicationController
     resolutions = wizard["resolutions"]
     profile_resolutions = wizard["profile_resolutions"] || {}
 
-    new_group = @group.deep_duplicate(
+    result = @group.deep_duplicate(
       new_labels: labels, resolutions: resolutions, profile_resolutions: profile_resolutions
     )
+    new_group = result[:group]
     session.delete(:duplication_wizard)
     redirect_to our_group_path(new_group), notice: "Group duplicated with all sub-groups and profiles."
   end

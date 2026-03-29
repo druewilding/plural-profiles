@@ -776,7 +776,7 @@ class GroupTest < ActiveSupport::TestCase
     initial_group_count = Group.count
     initial_profile_count = Profile.count
 
-    new_root = echo.deep_duplicate(new_labels: [ "blue" ])
+    new_root = echo.deep_duplicate(new_labels: [ "blue" ])[:group]
 
     assert_not_nil new_root
     assert new_root.persisted?
@@ -793,7 +793,7 @@ class GroupTest < ActiveSupport::TestCase
 
   test "deep_duplicate copies have correct copied_from_id" do
     echo = groups(:echo_shard)
-    new_root = echo.deep_duplicate(new_labels: [ "blue" ])
+    new_root = echo.deep_duplicate(new_labels: [ "blue" ])[:group]
 
     assert_equal echo, new_root.copied_from
 
@@ -830,7 +830,7 @@ class GroupTest < ActiveSupport::TestCase
 
   test "deep_duplicate recreates group-group edges" do
     echo = groups(:echo_shard)
-    new_root = echo.deep_duplicate(new_labels: [ "blue" ])
+    new_root = echo.deep_duplicate(new_labels: [ "blue" ])[:group]
 
     # Echo Shard (blue) should have Prism Circle (blue) as child
     assert_equal 1, new_root.child_groups.count
@@ -845,7 +845,7 @@ class GroupTest < ActiveSupport::TestCase
 
   test "deep_duplicate recreates group-profile links" do
     echo = groups(:echo_shard)
-    new_root = echo.deep_duplicate(new_labels: [ "blue" ])
+    new_root = echo.deep_duplicate(new_labels: [ "blue" ])[:group]
 
     # Echo Shard has Mirage
     mirage_copy = new_root.profiles.find { |p| p.copied_from == profiles(:mirage) }
@@ -874,7 +874,7 @@ class GroupTest < ActiveSupport::TestCase
     resolutions = { prism.id.to_s => "reuse" }
 
     initial_group_count = Group.count
-    new_root = echo.deep_duplicate(new_labels: [ "blue" ], resolutions: resolutions)
+    new_root = echo.deep_duplicate(new_labels: [ "blue" ], resolutions: resolutions)[:group]
 
     # Should have created only the root copy (Echo Shard blue)
     # Prism Circle is reused, and Rogue Pack is a descendant of reused Prism → skipped
@@ -909,7 +909,7 @@ class GroupTest < ActiveSupport::TestCase
     alpha = groups(:alpha_clan)
     initial_override_count = InclusionOverride.count
 
-    new_root = alpha.deep_duplicate(new_labels: [ "override_test" ])
+    new_root = alpha.deep_duplicate(new_labels: [ "override_test" ])[:group]
 
     new_overrides = InclusionOverride.where(group_id: new_root.reachable_group_ids)
                                      .where.not(group_id: alpha.reachable_group_ids)
@@ -951,7 +951,7 @@ class GroupTest < ActiveSupport::TestCase
     prism = groups(:prism_circle)
     profile_resolutions = { stray.id.to_s => "reuse" }
 
-    new_root = prism.deep_duplicate(new_labels: [ "green" ], profile_resolutions: profile_resolutions)
+    new_root = prism.deep_duplicate(new_labels: [ "green" ], profile_resolutions: profile_resolutions)[:group]
 
     # The reused stray copy should appear as a profile in the new prism copy
     assert_includes new_root.profile_ids, stray_copy.id,
@@ -966,7 +966,7 @@ class GroupTest < ActiveSupport::TestCase
     prism = groups(:prism_circle)
     profile_resolutions = { stray.id.to_s => "copy" }
 
-    new_root = prism.deep_duplicate(new_labels: [ "green" ], profile_resolutions: profile_resolutions)
+    new_root = prism.deep_duplicate(new_labels: [ "green" ], profile_resolutions: profile_resolutions)[:group]
 
     # Stray should have been copied (creating a second copy)
     stray_copies = Profile.where(copied_from: stray).where("labels @> ?", [ "green" ].to_json)
@@ -987,7 +987,7 @@ class GroupTest < ActiveSupport::TestCase
     echo = groups(:echo_shard)
     profile_resolutions = { stray.id.to_s => "reuse" }
 
-    new_root = echo.deep_duplicate(new_labels: [ "green" ], profile_resolutions: profile_resolutions)
+    new_root = echo.deep_duplicate(new_labels: [ "green" ], profile_resolutions: profile_resolutions)[:group]
 
     # Find the new prism and rogue copies
     prism_copy = new_root.child_groups.find { |g| g.copied_from == groups(:prism_circle) }

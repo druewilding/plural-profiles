@@ -214,21 +214,22 @@ class Group < ApplicationRecord
       end
     end
 
-    # Copy avatars after the transaction so Active Storage's after_create_commit
-    # callback can read the IO without hitting a closed stream.
+    # Build avatar mapping for background job instead of copying inline.
+    avatar_mappings = { "groups" => [], "profiles" => [] }
+
     group_map.each do |old_id, new_group|
       next if reused_group_ids.include?(old_id) || skip_ids.include?(old_id)
       original = groups_by_id[old_id]
-      duplicate_avatar(original, new_group) if original&.avatar&.attached?
+      avatar_mappings["groups"] << [ original.id, new_group.id ] if original&.avatar&.attached?
     end
 
     profile_map.each do |old_id, new_profile|
       next if reused_profile_ids.include?(old_id)
       original = profiles_by_id[old_id]
-      duplicate_avatar(original, new_profile) if original&.avatar&.attached?
+      avatar_mappings["profiles"] << [ original.id, new_profile.id ] if original&.avatar&.attached?
     end
 
-    group_map[id] # Return the new root group
+    { group: group_map[id], avatar_mappings: avatar_mappings }
   end
 
   # All group IDs reachable from this group via group_groups edges (recursive).
