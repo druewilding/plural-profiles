@@ -575,6 +575,27 @@ class GroupTest < ActiveSupport::TestCase
     assert_empty original.copies_with_labels([ "blue" ])
   end
 
+  test "copies_with_labels finds transitive copies (copy of a copy)" do
+    original = users(:one).groups.create!(name: "Original")
+    copy_purple = users(:one).groups.create!(name: "Copy (purple)", copied_from: original, labels: [ "purple" ])
+    copy_yellow = users(:one).groups.create!(name: "Copy (yellow)", copied_from: copy_purple, labels: [ "yellow" ])
+
+    result = original.copies_with_labels([ "yellow" ])
+    assert_includes result, copy_yellow
+    assert_not_includes result, copy_purple
+  end
+
+  test "copies_with_labels finds deeply nested transitive copies" do
+    original = users(:one).groups.create!(name: "Original")
+    gen1 = users(:one).groups.create!(name: "Gen 1", copied_from: original, labels: [ "a" ])
+    gen2 = users(:one).groups.create!(name: "Gen 2", copied_from: gen1, labels: [ "b" ])
+    gen3 = users(:one).groups.create!(name: "Gen 3", copied_from: gen2, labels: [ "c" ])
+
+    result = original.copies_with_labels([ "c" ])
+    assert_includes result, gen3
+    assert_equal 1, result.count
+  end
+
   test "deleting the original nullifies copied_from_id on copies" do
     original = users(:one).groups.create!(name: "Original")
     copy = users(:one).groups.create!(name: "Copy", copied_from: original)

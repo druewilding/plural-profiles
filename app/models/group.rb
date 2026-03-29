@@ -26,8 +26,22 @@ class Group < ApplicationRecord
   end
 
   # Returns copies of this group that have ALL of the given labels.
+  # Follows the full copy lineage chain (copies of copies) using a recursive CTE,
+  # so a grandchild copy (A → B → C) is found when searching from A.
   def copies_with_labels(labels)
-    copies.where("labels @> ?", labels.to_json)
+    sql = <<~SQL.squish
+      WITH RECURSIVE copy_tree AS (
+        SELECT id FROM groups WHERE copied_from_id = :root_id
+        UNION
+        SELECT g.id FROM groups g
+        INNER JOIN copy_tree ct ON g.copied_from_id = ct.id
+      )
+      SELECT id FROM copy_tree
+    SQL
+    all_copy_ids = Group.connection.select_values(
+      Group.sanitize_sql([ sql, root_id: id ])
+    ).map(&:to_i)
+    Group.where(id: all_copy_ids).where("labels @> ?", labels.to_json)
   end
 
   # Scans the descendant tree depth-first and returns an array of conflict

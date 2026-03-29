@@ -73,8 +73,22 @@ class Profile < ApplicationRecord
   end
 
   # Returns copies of this profile that have ALL of the given labels.
+  # Follows the full copy lineage chain (copies of copies) using a recursive CTE,
+  # so a grandchild copy (A → B → C) is found when searching from A.
   def copies_with_labels(labels)
-    copies.where("labels @> ?", labels.to_json)
+    sql = <<~SQL.squish
+      WITH RECURSIVE copy_tree AS (
+        SELECT id FROM profiles WHERE copied_from_id = :root_id
+        UNION
+        SELECT p.id FROM profiles p
+        INNER JOIN copy_tree ct ON p.copied_from_id = ct.id
+      )
+      SELECT id FROM copy_tree
+    SQL
+    all_copy_ids = Profile.connection.select_values(
+      Profile.sanitize_sql([ sql, root_id: id ])
+    ).map(&:to_i)
+    Profile.where(id: all_copy_ids).where("labels @> ?", labels.to_json)
   end
 
   def self.heart_emoji_display_name(heart)
