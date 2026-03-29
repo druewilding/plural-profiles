@@ -28,7 +28,7 @@
         .radio-group
           = form.radio_button :resolution, "copy", id: "resolution_copy", data: { action: "duplicate-resolution#choose" }
           = form.label :resolution, "Create a new copy", for: "resolution_copy"
-          %p.form-hint A brand new copy will be made from the original, ignoring the existing copy.
+          %p.form-hint A brand new copy will be made from the original.
 
       .duplicate-comparison__column
         .duplicate-comparison__card
