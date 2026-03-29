@@ -22,7 +22,7 @@ class DuplicateGroupTest < ApplicationSystemTestCase
     assert_text group.name
     assert_text "blue"
 
-    click_button "Confirm & duplicate"
+    click_button "Confirm and duplicate"
 
     assert_text "Group duplicated"
   end
@@ -47,7 +47,7 @@ class DuplicateGroupTest < ApplicationSystemTestCase
     click_button "Next"
 
     assert_text "Confirm duplication"
-    click_button "Confirm & duplicate"
+    click_button "Confirm and duplicate"
 
     assert_text "Group duplicated"
   end
@@ -75,7 +75,7 @@ class DuplicateGroupTest < ApplicationSystemTestCase
 
     # Should go straight to confirm (Rogue Pack conflict skipped)
     assert_text "Confirm duplication"
-    click_button "Confirm & duplicate"
+    click_button "Confirm and duplicate"
 
     assert_text "Group duplicated"
   end
@@ -109,7 +109,7 @@ class DuplicateGroupTest < ApplicationSystemTestCase
     click_button "Next"
 
     assert_text "Confirm duplication"
-    click_link "Start over"
+    click_link "Cancel"
 
     assert_text "Duplicate group"
   end

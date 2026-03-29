@@ -5,7 +5,7 @@
 .card
   %p
     %strong= @original.name
-    already has a copy with the label#{@labels.length > 1 ? "s" : ""}
+    already has a copy with #{@labels.length > 1 ? "labels" : "label"}
     - @labels.each do |label|
       %span.label-badge= label
 

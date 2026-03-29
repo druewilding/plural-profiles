@@ -6,7 +6,7 @@
   %p
     This will duplicate
     %strong= @source.name
-    with label#{@labels.length > 1 ? "s" : ""}:
+    with #{@labels.length > 1 ? "labels" : "label"}
     - @labels.each do |label|
       %span.label-badge= label
   - has_reuse = @resolutions.any? { |_, v| v == "reuse" } || (@profile_resolutions || {}).any? { |_, v| v == "reuse" }
@@ -43,6 +43,6 @@
             = render "our/groups/duplication_preview_profile_node", entry: entry, new_labels: @labels
 
 .profile-actions
+  = link_to "Cancel", duplicate_our_group_path(@source), class: "btn btn--secondary"
   = form_with url: duplicate_execute_our_group_path(@source), method: :post do |form|
-    = form.submit "Confirm & duplicate", class: "btn"
-  = link_to "Start over", duplicate_our_group_path(@source), class: "btn btn--secondary"
+    = form.submit "Confirm and duplicate", class: "btn"
