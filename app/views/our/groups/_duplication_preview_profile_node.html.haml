@@ -1,9 +1,12 @@
 -# Profile leaf node for the duplication preview tree.
--# Locals: entry (hash with :profile, :action), new_labels
+-# Locals: entry (hash with :profile, :action, :hidden, :cascade_hidden), new_labels
 - profile = entry[:profile]
 - action = entry[:action]
+- hidden = entry[:hidden]
+- cascade_hidden = entry[:cascade_hidden]
+- effectively_hidden = hidden || cascade_hidden
 
-.tree-editor__leaf.tree-editor__leaf--profile
+.tree-editor__leaf.tree-editor__leaf--profile{class: ("tree-editor__node--hidden" if effectively_hidden)}
   .tree-editor__item-info
     - if profile.avatar.attached?
       = image_tag profile.avatar.variant(resize_to_fill: [24, 24]), class: "tree__avatar", width: 24, height: 24, alt: ""
@@ -15,10 +18,10 @@
       .label-badges
         - new_labels.each do |label|
           %span.label-badge= label
-      %span.tree-editor__tag.tree-editor__tag--new new copy
     - else
       - if profile.labels.any?
         .label-badges
           - profile.labels.each do |label|
             %span.label-badge= label
       %span.tree-editor__tag.tree-editor__tag--reuse existing copy
+    %span.tree-editor__tag.tree-editor__tag--hidden hidden

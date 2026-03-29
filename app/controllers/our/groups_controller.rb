@@ -292,11 +292,19 @@ class Our::GroupsController < ApplicationController
     # Build the full preview tree with new/reuse annotations
     @preview_tree = @group.duplication_preview_tree(labels: @labels, resolutions: @resolutions)
 
-    # Root-level profiles (always newly created)
+    # Root-level profiles (always newly created), with hidden flags from overrides
+    overrides = @group.send(:overrides_index)
     @root_profiles = @group.profiles
                            .includes(avatar_attachment: :blob)
                            .order(:name)
-                           .map { |p| { profile: p, action: "new" } }
+                           .map do |p|
+                             {
+                               profile: p,
+                               action: "new",
+                               hidden: overrides.include?([ [], "Profile", p.id ]),
+                               cascade_hidden: false
+                             }
+                           end
   end
 
   # Execute the duplication

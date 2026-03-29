@@ -301,17 +301,19 @@ class Group < ApplicationRecord
 
   # Build a preview tree for the duplication confirmation page.
   # Shows the full tree annotated with whether each group/profile
-  # will be newly created or reused from an existing copy.
+  # will be newly created or reused from an existing copy, and
+  # whether each item is hidden via inclusion overrides.
   # Returns an array of nodes:
-  #   { group:, action: "new"|"reuse", directly_reused:, reuse_target:, profiles:, children: }
+  #   { group:, action:, directly_reused:, reuse_target:, hidden:, cascade_hidden:, profiles:, children: }
   # Profiles carry:
-  #   { profile:, action: "new"|"reuse" }
+  #   { profile:, action:, hidden:, cascade_hidden: }
   def duplication_preview_tree(labels:, resolutions:)
     all_ids = reachable_group_ids
     groups_by_id = Group.where(id: all_ids)
                         .includes(:profiles, avatar_attachment: :blob)
                         .index_by(&:id)
     children_map = build_children_map(all_ids)
+    overrides = overrides_index
 
     reused_ids = resolutions.select { |_, v| v == "reuse" }.keys.map(&:to_i).to_set
     expanded_reused_ids = Set.new(reused_ids)
@@ -321,7 +323,7 @@ class Group < ApplicationRecord
       (group.descendant_group_ids - [ group.id ]).each { |did| expanded_reused_ids << did }
     end
 
-    build_duplication_preview(id, children_map, groups_by_id, labels, reused_ids, expanded_reused_ids)
+    build_duplication_preview(id, [], children_map, groups_by_id, labels, reused_ids, expanded_reused_ids, overrides, false)
   end
 
   # Build a tree for the management UI. Shows ALL groups and profiles
@@ -416,7 +418,7 @@ class Group < ApplicationRecord
 
   # -- Duplication preview tree (duplication_preview_tree) ------------------
 
-  def build_duplication_preview(parent_id, children_map, groups_by_id, labels, reused_ids, expanded_reused_ids)
+  def build_duplication_preview(parent_id, current_path, children_map, groups_by_id, labels, reused_ids, expanded_reused_ids, overrides, ancestor_hidden)
     (children_map[parent_id] || [])
       .filter_map { |entry| groups_by_id[entry[:id]] ? [ groups_by_id[entry[:id]], entry ] : nil }
       .sort_by { |g, _| g.name }
@@ -425,9 +427,17 @@ class Group < ApplicationRecord
         is_directly_reused = reused_ids.include?(g.id)
         action = is_reused ? "reuse" : "new"
         reuse_target = is_directly_reused ? g.copies_with_labels(labels).first : nil
+        hidden = overrides.include?([ current_path, "Group", g.id ])
+        effectively_hidden = hidden || ancestor_hidden
+        child_path = current_path + [ g.id ]
 
         profile_entries = g.profiles.map do |profile|
-          { profile: profile, action: action }
+          {
+            profile: profile,
+            action: action,
+            hidden: overrides.include?([ child_path, "Profile", profile.id ]),
+            cascade_hidden: effectively_hidden
+          }
         end
 
         {
@@ -435,8 +445,10 @@ class Group < ApplicationRecord
           action: action,
           directly_reused: is_directly_reused,
           reuse_target: reuse_target,
+          hidden: hidden,
+          cascade_hidden: ancestor_hidden,
           profiles: profile_entries,
-          children: build_duplication_preview(g.id, children_map, groups_by_id, labels, reused_ids, expanded_reused_ids)
+          children: build_duplication_preview(g.id, child_path, children_map, groups_by_id, labels, reused_ids, expanded_reused_ids, overrides, effectively_hidden)
         }
       end
   end
