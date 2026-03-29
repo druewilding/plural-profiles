@@ -2357,23 +2357,11 @@ input[type="submit"].btn--small,
   margin: 1rem 0;
 }
 
-.duplicate-comparison__column {
-  display: flex;
-  flex-direction: column;
-  gap: 0.75rem;
-}
-
 .duplicate-comparison__card {
   padding: 1rem;
   border: 1px solid var(--pane-border);
   border-radius: 0.5rem;
   background: var(--pane-bg);
-}
-
-.duplicate-comparison__card > .radio-group {
-  margin-top: auto;
-  padding-top: 1rem;
-  margin-bottom: 0;
 }
 
 .duplicate-comparison__item {
