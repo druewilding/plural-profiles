@@ -964,6 +964,36 @@ class Our::GroupsControllerTest < ActionDispatch::IntegrationTest
     assert response.body.scan("blue").length > 1, "Label 'blue' should appear on tree items"
   end
 
+  test "duplicate_confirm shows new label on profiles inside directly-reused groups" do
+    # Regression: inherited-reuse profile nodes (action=reuse, directly_reused=false)
+    # were not showing the new label because the partial checked profile.labels
+    # (empty on the original) instead of new_labels.
+    #
+    # Tree: Echo Shard → Prism Circle → Rogue Pack (reused) → Stray (inherited-reuse)
+    # Stray is also a direct profile of Prism Circle (action=new → label shown correctly).
+    # The bug only affected Stray's occurrence inside the reused Rogue Pack.
+    user = users(:three)
+    sign_in_as user
+    rogue = groups(:rogue_pack)
+    user.groups.create!(name: "Rogue Copy", copied_from: rogue, labels: [ "green" ])
+
+    group = groups(:echo_shard)
+    post duplicate_scan_our_group_path(group), params: { labels_text: "green" }
+    # Rogue Pack has a conflict — resolve it as reuse
+    post duplicate_resolve_our_group_path(group), params: { resolution: "reuse" }
+    follow_redirect!
+    assert_response :success
+
+    # "green" badges expected (exact count; off-by-one would indicate the bug):
+    #   intro card (1) + Echo Shard root (1) + Mirage/new (1) +
+    #   Prism Circle/new (1) + Ember/new (1) + Stray-in-prism/new (1) +
+    #   Rogue Pack/reuse via reuse_target (1) + Stray-in-rogue/inherited-reuse (1) = 8
+    # Before the fix, Stray-in-rogue showed nothing → count was 7.
+    badge_count = response.body.scan('<span class="label-badge">green</span>').length
+    assert_equal 8, badge_count,
+      "Expected 'green' label on all tree nodes including inherited-reuse profiles (Stray inside Rogue Pack), got #{badge_count}"
+  end
+
   test "duplicate_confirm does not show reuse legend when no resolutions use reuse" do
     sign_in_as users(:three)
     group = groups(:echo_shard)

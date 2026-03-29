@@ -26,9 +26,9 @@
         .label-badges
           - reuse_target.labels.each do |label|
             %span.label-badge= label
-      - elsif profile.labels.any?
+      - elsif new_labels.any?
         .label-badges
-          - profile.labels.each do |label|
+          - new_labels.each do |label|
             %span.label-badge= label
       %span.tree-editor__tag.tree-editor__tag--reuse existing copy
     %span.tree-editor__tag.tree-editor__tag--hidden hidden
