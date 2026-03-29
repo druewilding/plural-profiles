@@ -121,6 +121,7 @@ class Group < ApplicationRecord
     profile_ids = GroupProfile.where(group_id: fresh_group_ids).pluck(:profile_id).uniq
     profiles_to_copy = Profile.where(id: profile_ids, user_id: user_id)
                               .includes(avatar_attachment: :blob)
+    profiles_by_id = profiles_to_copy.index_by(&:id)
 
     profiles_to_copy.each do |original_profile|
       if profile_resolutions[original_profile.id.to_s] == "reuse"
@@ -162,7 +163,7 @@ class Group < ApplicationRecord
       # Copy avatars for new profiles (skip reused)
       profile_map.each do |old_id, new_profile|
         next if reused_profile_ids.include?(old_id)
-        original = profiles_to_copy.find { |p| p.id == old_id }
+        original = profiles_by_id[old_id]
         duplicate_avatar(original, new_profile) if original&.avatar&.attached?
       end
 
