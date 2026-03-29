@@ -262,4 +262,53 @@ class DuplicateGroupTest < ApplicationSystemTestCase
     click_button "Confirm and duplicate"
     assert_text "Group duplicated"
   end
+
+  test "reversed label order still triggers conflict resolution" do
+    # Duplicate Prism Circle with "black, white"
+    prism = groups(:prism_circle)
+    visit our_group_path(prism)
+    click_link "Duplicate"
+
+    fill_in "Labels for all copies", with: "black, white"
+    click_button "Next"
+
+    assert_text "Confirm duplication"
+    click_button "Confirm and duplicate"
+    assert_text "Group duplicated"
+
+    # Now duplicate Echo Shard with labels in reversed order: "white, black"
+    echo = groups(:echo_shard)
+    visit our_group_path(echo)
+    click_link "Duplicate"
+
+    fill_in "Labels for all copies", with: "white, black"
+    click_button "Next"
+
+    # Should still detect the conflict despite reversed input order
+    assert_text "Group question 1"
+    assert_text prism.name
+
+    choose "Create a new copy"
+    click_button "Next"
+
+    # Rogue Pack also has a copy (created as child of Prism Circle's copy)
+    assert_text "Group question 2"
+    assert_text groups(:rogue_pack).name
+
+    choose "Create a new copy"
+    click_button "Next"
+
+    # Profile conflicts — Ember and Stray were also copied in step 1
+    assert_text "Profile question 1"
+    choose "Create a new copy"
+    click_button "Next"
+
+    assert_text "Profile question 2"
+    choose "Create a new copy"
+    click_button "Next"
+
+    assert_text "Confirm duplication"
+    click_button "Confirm and duplicate"
+    assert_text "Group duplicated"
+  end
 end
