@@ -1,6 +1,6 @@
 .pane
   .pane__header
-    %h1 Duplicating group…
+    %h1 Duplicating group
 
   .pane__body
     .duplication-progress{ data: { controller: "progress-poll",
@@ -9,6 +9,5 @@
                                            max: @task.total_avatars,
                                            data: { "progress-poll-target" => "bar" },
                                            aria: { label: "Duplication progress" } }
-      %p.duplication-progress__status{ aria: { live: "polite" },
-                                        data: { "progress-poll-target" => "status" } }
-        #{@task.copied_avatars} of #{@task.total_avatars} completed
+      %p.duplication-progress__status
+        Please wait while your group is being copied. This shouldn't take long.
