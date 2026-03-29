@@ -15,11 +15,12 @@
       .duplicate-comparison__item
         - if @original.avatar.attached?
           = image_tag @original.avatar.variant(resize_to_fill: [64, 64]), class: "avatar avatar--small", width: 64, height: 64, alt: @original.avatar_alt_text.presence || "", loading: "lazy"
-        %strong= @original.name
-        - if @original.labels.any?
-          .label-badges
-            - @original.labels.each do |l|
-              %span.label-badge= l
+        .name-with-labels
+          %strong= @original.name
+          - if @original.labels.any?
+            .label-badges
+              - @original.labels.each do |l|
+                %span.label-badge= l
         - if @original.description.present?
           %p.duplicate-comparison__description= truncate(@original.description, length: 120)
 
@@ -28,11 +29,12 @@
       .duplicate-comparison__item
         - if @existing_copy.avatar.attached?
           = image_tag @existing_copy.avatar.variant(resize_to_fill: [64, 64]), class: "avatar avatar--small", width: 64, height: 64, alt: @existing_copy.avatar_alt_text.presence || "", loading: "lazy"
-        %strong= @existing_copy.name
-        - if @existing_copy.labels.any?
-          .label-badges
-            - @existing_copy.labels.each do |l|
-              %span.label-badge= l
+        .name-with-labels
+          %strong= @existing_copy.name
+          - if @existing_copy.labels.any?
+            .label-badges
+              - @existing_copy.labels.each do |l|
+                %span.label-badge= l
         - if @existing_copy.description.present?
           %p.duplicate-comparison__description= truncate(@existing_copy.description, length: 120)
 
