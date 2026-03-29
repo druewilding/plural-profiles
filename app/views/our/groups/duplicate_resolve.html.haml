@@ -26,7 +26,7 @@
                   - @original.labels.each do |l|
                     %span.label-badge= l
             - if @original.description.present?
-              %p.duplicate-comparison__description= truncate(@original.description, length: 120)
+              %p.duplicate-comparison__description= truncate(@original.description, length: 500)
         .radio-group
           = form.radio_button :resolution, "copy", id: "resolution_copy", data: { action: "duplicate-resolution#choose" }
           = form.label :resolution, "Create a new copy", for: "resolution_copy"
