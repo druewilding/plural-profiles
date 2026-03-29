@@ -905,7 +905,7 @@ class Our::GroupsControllerTest < ActionDispatch::IntegrationTest
     follow_redirect!
 
     assert_response :success
-    assert_match "Group Conflict 1", response.body
+    assert_match "Group question 1", response.body
     assert_match prism.name, response.body
   end
 
@@ -1115,7 +1115,7 @@ class Our::GroupsControllerTest < ActionDispatch::IntegrationTest
     follow_redirect!
 
     assert_response :success
-    assert_match "Profile Conflict 1", response.body
+    assert_match "Profile question 1", response.body
     assert_match stray.name, response.body
   end
 
@@ -1160,7 +1160,7 @@ class Our::GroupsControllerTest < ActionDispatch::IntegrationTest
     follow_redirect!
 
     assert_response :success
-    assert_match "Group Conflict 1", response.body
+    assert_match "Group question 1", response.body
     assert_match rogue.name, response.body
   end
 

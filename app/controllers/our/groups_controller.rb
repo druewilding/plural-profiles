@@ -238,14 +238,14 @@ class Our::GroupsController < ApplicationController
       @conflict = wizard["group_conflicts"][index]
       @conflict_number = index + 1
       @total_conflicts = wizard["group_conflicts"].length
-      @conflict_phase_label = "Group Conflict"
+      @conflict_phase_label = "Group question"
     else
       index = wizard["current_profile_conflict_index"]
       active = wizard["active_profile_conflicts"]
       @conflict = active[index]
       @conflict_number = index + 1
       @total_conflicts = active.length
-      @conflict_phase_label = "Profile Conflict"
+      @conflict_phase_label = "Profile question"
     end
 
     klass = @conflict["original_type"].constantize

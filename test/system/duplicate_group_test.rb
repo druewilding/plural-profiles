@@ -39,7 +39,7 @@ class DuplicateGroupTest < ApplicationSystemTestCase
     click_button "Next"
 
     # Should show conflict resolution
-    assert_text "Conflict 1"
+    assert_text "Group question 1"
     assert_text prism.name
 
     # Choose to create a new copy (only 1 conflict — Prism Circle; Rogue Pack has no copy)
@@ -66,7 +66,7 @@ class DuplicateGroupTest < ApplicationSystemTestCase
     click_button "Next"
 
     # Should show conflict for Prism Circle
-    assert_text "Conflict 1"
+    assert_text "Group question 1"
     assert_text prism.name
 
     # Choose to reuse — should skip Rogue Pack conflict entirely
@@ -172,7 +172,7 @@ class DuplicateGroupTest < ApplicationSystemTestCase
     click_button "Next"
 
     # Should show conflict — choose reuse
-    assert_text "Conflict 1"
+    assert_text "Group question 1"
     choose "Use the existing copy"
     click_button "Next"
 
