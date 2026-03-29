@@ -270,7 +270,7 @@ class Group < ApplicationRecord
       .where(target_type: "Profile")
       .where("path = '[]'::jsonb")
       .pluck(:target_id)
-    profiles.where.not(id: hidden_profile_ids).order(:name)
+    profiles.where.not(id: hidden_profile_ids).order_by_name_and_labels
   end
 
   # Collect all profiles from this group and all descendant groups,
@@ -352,7 +352,7 @@ class Group < ApplicationRecord
   #   { profile:, hidden:, cascade_hidden:, container_path: }
   def management_root_profiles
     overrides = overrides_index
-    profiles.includes(avatar_attachment: :blob).order(:name).map do |profile|
+    profiles.includes(avatar_attachment: :blob).order_by_name_and_labels.map do |profile|
       {
         profile: profile,
         hidden: overrides.include?([ [], "Profile", profile.id ]),
@@ -389,7 +389,7 @@ class Group < ApplicationRecord
     (children_map[parent_id] || [])
       .filter_map { |entry| groups_by_id[entry[:id]] ? [ groups_by_id[entry[:id]], entry ] : nil }
       .reject { |g, _| overrides.include?([ current_path, "Group", g.id ]) }
-      .sort_by { |g, _| g.name }
+      .sort_by { |g, _| g.name_and_label_sort_key }
       .flat_map do |g, _entry|
         child_path = current_path + [ g.id ]
         [ g, *walk_descendants(g.id, child_path, children_map, groups_by_id, overrides) ]
@@ -402,7 +402,7 @@ class Group < ApplicationRecord
     (children_map[parent_id] || [])
       .filter_map { |entry| groups_by_id[entry[:id]] ? [ groups_by_id[entry[:id]], entry ] : nil }
       .reject { |g, _| overrides.include?([ current_path, "Group", g.id ]) }
-      .sort_by { |g, _| g.name }
+      .sort_by { |g, _| g.name_and_label_sort_key }
       .map do |g, _entry|
         child_path = current_path + [ g.id ]
         visible_profiles = g.profiles.reject { |p| overrides.include?([ child_path, "Profile", p.id ]) }
@@ -421,7 +421,7 @@ class Group < ApplicationRecord
   def build_duplication_preview(parent_id, current_path, children_map, groups_by_id, labels, reused_ids, expanded_reused_ids, overrides, ancestor_hidden)
     (children_map[parent_id] || [])
       .filter_map { |entry| groups_by_id[entry[:id]] ? [ groups_by_id[entry[:id]], entry ] : nil }
-      .sort_by { |g, _| g.name }
+      .sort_by { |g, _| g.name_and_label_sort_key }
       .map do |g, _entry|
         is_reused = expanded_reused_ids.include?(g.id)
         is_directly_reused = reused_ids.include?(g.id)
@@ -458,7 +458,7 @@ class Group < ApplicationRecord
   def build_management_tree(parent_id, current_path, children_map, groups_by_id, overrides, ancestor_hidden)
     (children_map[parent_id] || [])
       .filter_map { |entry| groups_by_id[entry[:id]] ? [ groups_by_id[entry[:id]], entry ] : nil }
-      .sort_by { |g, _| g.name }
+      .sort_by { |g, _| g.name_and_label_sort_key }
       .map do |g, _entry|
         hidden = overrides.include?([ current_path, "Group", g.id ])
         effectively_hidden = hidden || ancestor_hidden
