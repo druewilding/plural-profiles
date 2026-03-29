@@ -224,4 +224,42 @@ class DuplicateGroupTest < ApplicationSystemTestCase
     assert_selector ".label-badge", text: "first"
     assert_selector ".label-badge", text: "second"
   end
+
+  test "multi-label duplicate then higher-level duplicate triggers conflict resolution" do
+    # Step 1: Duplicate Prism Circle with "black, white" — no conflicts, straight to confirm.
+    prism = groups(:prism_circle)
+    visit our_group_path(prism)
+    click_link "Duplicate"
+
+    fill_in "Labels for all copies", with: "black, white"
+    click_button "Next"
+
+    assert_text "Confirm duplication"
+    click_button "Confirm and duplicate"
+    assert_text "Group duplicated"
+
+    # Step 2: Duplicate Echo Shard (which contains Prism Circle) with the same labels.
+    # Because a copy of Prism Circle with BOTH "black" and "white" now exists,
+    # we should hit the conflict resolution screen — not jump straight to confirm.
+    echo = groups(:echo_shard)
+    visit our_group_path(echo)
+    click_link "Duplicate"
+
+    fill_in "Labels for all copies", with: "black, white"
+    click_button "Next"
+
+    assert_text "Group question 1"
+    assert_text prism.name
+
+    # Resolve by reusing the existing copy — should skip Rogue Pack conflict too
+    choose "Use the existing copy"
+    click_button "Next"
+
+    assert_text "Confirm duplication"
+    assert_selector ".label-badge", text: "black"
+    assert_selector ".label-badge", text: "white"
+
+    click_button "Confirm and duplicate"
+    assert_text "Group duplicated"
+  end
 end
