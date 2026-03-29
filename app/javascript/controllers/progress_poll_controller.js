@@ -1,11 +1,10 @@
 import { Controller } from "@hotwired/stimulus"
 
 export default class extends Controller {
-  static targets = ["counter"]
+  static targets = ["bar", "status"]
   static values = {
     url: String,
-    interval: { type: Number, default: 2000 },
-    redirectNotice: { type: String, default: "" }
+    interval: { type: Number, default: 2000 }
   }
 
   connect() {
@@ -25,7 +24,9 @@ export default class extends Controller {
       if (!response.ok) return
 
       const data = await response.json()
-      this.counterTarget.textContent = `Copied ${data.copied} of ${data.total} avatars`
+      this.barTarget.value = data.copied
+      this.barTarget.max = data.total
+      this.statusTarget.textContent = `${data.copied} of ${data.total} completed`
 
       if (data.redirect_url) {
         clearInterval(this.timer)

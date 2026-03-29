@@ -4,10 +4,11 @@
 
   .pane__body
     .duplication-progress{ data: { controller: "progress-poll",
-                                    "progress-poll-url-value" => duplicate_status_our_group_path(@group, task_id: @task.id),
-                                    "progress-poll-redirect-notice-value" => "Group duplicated with all sub-groups and profiles." } }
-      %p.duplication-progress__message
-        Copying avatars…
-      .duplication-progress__counter{ data: { "progress-poll-target" => "counter" } }
-        Copied #{@task.copied_avatars} of #{@task.total_avatars} avatars
-      .duplication-progress__spinner
+                                    "progress-poll-url-value" => duplicate_status_our_group_path(@group, task_id: @task.id) } }
+      %progress.duplication-progress__bar{ value: @task.copied_avatars,
+                                           max: @task.total_avatars,
+                                           data: { "progress-poll-target" => "bar" },
+                                           aria: { label: "Duplication progress" } }
+      %p.duplication-progress__status{ aria: { live: "polite" },
+                                        data: { "progress-poll-target" => "status" } }
+        #{@task.copied_avatars} of #{@task.total_avatars} completed
