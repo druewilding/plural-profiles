@@ -446,12 +446,19 @@ class Our::GroupsController < ApplicationController
       @conflict_phase_label = "Profile question"
     end
 
-    klass = @conflict["original_type"].constantize
+    conflict_type = @conflict["original_type"]
+    unless %w[Group Profile].include?(conflict_type)
+      session.delete(:duplication_wizard)
+      redirect_to duplicate_our_group_path(@group), alert: "Something went wrong. Please start the duplication process again."
+      return
+    end
+
+    klass = conflict_type.constantize
     @original = klass.find(@conflict["original_id"])
     @existing_copy = klass.find(@conflict["existing_copy_id"])
     @labels = wizard["labels"]
     @source = @group
-    @conflict_type = @conflict["original_type"]
+    @conflict_type = conflict_type
   end
 
   def set_group
