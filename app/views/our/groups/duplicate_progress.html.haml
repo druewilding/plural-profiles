@@ -3,5 +3,11 @@
     %h1 Duplicating group…
 
   .pane__body
-    %p Copying avatars in the background…
-    %p= @task.progress_text
+    .duplication-progress{ data: { controller: "progress-poll",
+                                    "progress-poll-url-value" => duplicate_status_our_group_path(@group, task_id: @task.id),
+                                    "progress-poll-redirect-notice-value" => "Group duplicated with all sub-groups and profiles." } }
+      %p.duplication-progress__message
+        Copying avatars…
+      .duplication-progress__counter{ data: { "progress-poll-target" => "counter" } }
+        Copied #{@task.copied_avatars} of #{@task.total_avatars} avatars
+      .duplication-progress__spinner

@@ -2488,3 +2488,37 @@ input[type="submit"].btn--small,
     color: LinkText;
   }
 }
+
+/* ── Duplication progress page ───────────────────────────── */
+.duplication-progress {
+  text-align: center;
+  padding: 2rem 1rem;
+}
+
+.duplication-progress__counter {
+  font-size: 1.25rem;
+  font-weight: 600;
+  color: var(--heading);
+  margin: 1rem 0;
+}
+
+.duplication-progress__spinner {
+  width: 2rem;
+  height: 2rem;
+  margin: 1rem auto;
+  border: 3px solid var(--pane-border);
+  border-top-color: var(--primary-button-bg);
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+@media (forced-colors: active) {
+  .duplication-progress__spinner {
+    border-color: ButtonFace;
+    border-top-color: Highlight;
+  }
+}
