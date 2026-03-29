@@ -1181,4 +1181,51 @@ class GroupTest < ActiveSupport::TestCase
       assert_equal "reuse", entry[:action], "Profile #{entry[:profile].name} in reused group should be reuse"
     end
   end
+
+  # -- stale reuse targets --
+
+  test "duplication_preview_tree downgrades group to new when reuse target no longer exists" do
+    user = users(:three)
+    prism = groups(:prism_circle)
+
+    # Simulate the scan step finding a copy, yielding a "reuse" resolution
+    copy = user.groups.create!(name: "Prism Copy", copied_from: prism, labels: [ "blue" ])
+    resolutions = { prism.id.to_s => "reuse" }
+
+    # The copy disappears before the confirm step (deleted or labels changed)
+    copy.destroy!
+
+    echo = groups(:echo_shard)
+    tree = echo.duplication_preview_tree(labels: [ "blue" ], resolutions: resolutions)
+
+    prism_node = tree.find { |n| n[:group] == prism }
+    assert prism_node
+    assert_equal "new", prism_node[:action],
+      "Group should be downgraded to 'new' when the reuse target no longer exists"
+    assert_not prism_node[:directly_reused]
+    assert_nil prism_node[:reuse_target]
+  end
+
+  test "duplication_preview_tree downgrades profile to new when reuse target no longer exists" do
+    user = users(:three)
+    stray = profiles(:stray)
+
+    # Simulate the scan step finding a copy, yielding a "reuse" resolution
+    copy = user.profiles.create!(name: "Stray (blue)", copied_from: stray, labels: [ "blue" ])
+    profile_resolutions = { stray.id.to_s => "reuse" }
+
+    # The copy disappears before the confirm step
+    copy.destroy!
+
+    echo = groups(:echo_shard)
+    tree = echo.duplication_preview_tree(labels: [ "blue" ], resolutions: {}, profile_resolutions: profile_resolutions)
+
+    prism_node = tree.find { |n| n[:group] == groups(:prism_circle) }
+    stray_entry = prism_node[:profiles].find { |e| e[:profile] == stray }
+    assert stray_entry
+    assert_equal "new", stray_entry[:action],
+      "Profile should be downgraded to 'new' when the reuse target no longer exists"
+    assert_not stray_entry[:directly_reused]
+    assert_nil stray_entry[:reuse_target]
+  end
 end

@@ -377,6 +377,14 @@ class Group < ApplicationRecord
     overrides = overrides_index
 
     reused_ids = resolutions.select { |_, v| v == "reuse" }.keys.map(&:to_i).to_set
+
+    # Validate that reuse targets still exist; silently downgrade stale ones to "new"
+    # so the preview never claims a copy will be reused when it no longer exists.
+    reused_ids.select! do |rid|
+      group = groups_by_id[rid]
+      group && group.copies_with_labels(labels).first.present?
+    end
+
     expanded_reused_ids = Set.new(reused_ids)
     reused_ids.each do |rid|
       group = groups_by_id[rid]
@@ -498,9 +506,16 @@ class Group < ApplicationRecord
             directly_reused_profile = false
             reuse_target_profile = nil
           elsif profile_resolutions[profile.id.to_s] == "reuse"
-            profile_action = "reuse"
-            directly_reused_profile = true
             reuse_target_profile = profile.copies_with_labels(labels).first
+            if reuse_target_profile
+              profile_action = "reuse"
+              directly_reused_profile = true
+            else
+              # Copy no longer exists; downgrade to "new" so the preview is accurate
+              profile_action = "new"
+              directly_reused_profile = false
+              reuse_target_profile = nil
+            end
           else
             profile_action = "new"
             directly_reused_profile = false
