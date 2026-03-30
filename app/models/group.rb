@@ -218,13 +218,13 @@ class Group < ApplicationRecord
     group_map.each do |old_id, new_group|
       next if reused_group_ids.include?(old_id) || skip_ids.include?(old_id)
       original = groups_by_id[old_id]
-      duplicate_avatar(original, new_group) if original&.avatar&.attached?
+      reattach_avatar(original, new_group) if original&.avatar&.attached?
     end
 
     profile_map.each do |old_id, new_profile|
       next if reused_profile_ids.include?(old_id)
       original = profiles_by_id[old_id]
-      duplicate_avatar(original, new_profile) if original&.avatar&.attached?
+      reattach_avatar(original, new_profile) if original&.avatar&.attached?
     end
 
     group_map[id] # Return the new root group
@@ -697,21 +697,14 @@ class Group < ApplicationRecord
     end
   end
 
-  # Copy an Active Storage avatar from source to target.
-  # Uses blob.open (tempfile-backed) to stream the download without loading
-  # the entire file into memory. Must be called outside a transaction so that
-  # Active Storage's after_create_commit callback can read the IO synchronously
-  # before the tempfile is closed.
-  def duplicate_avatar(source, target)
+  # Attach an Active Storage avatar blob from source to target by sharing the
+  # existing blob reference — no file download or re-upload needed.
+  # Active Storage manages the blob lifecycle: purging an attachment only
+  # deletes the blob when there are no other attachments using that blob, so
+  # shared blobs remain valid for other records.
+  def reattach_avatar(source, target)
     return unless source.avatar.attached?
-    blob = source.avatar.blob
-    blob.open do |tempfile|
-      target.avatar.attach(
-        io: tempfile,
-        filename: blob.filename,
-        content_type: blob.content_type
-      )
-    end
+    target.avatar.attach(source.avatar.blob)
   end
 
   def generate_uuid
