@@ -27,13 +27,7 @@ class DuplicateAvatarsJob < ApplicationJob
       next unless source && target && source.avatar.attached?
 
       begin
-        source.avatar.blob.open do |tempfile|
-          target.avatar.attach(
-            io: tempfile,
-            filename: source.avatar.blob.filename,
-            content_type: source.avatar.blob.content_type
-          )
-        end
+        target.avatar.attach(source.avatar.blob)
       rescue => e
         Rails.logger.warn "[DuplicateAvatarsJob] Failed to copy avatar " \
           "#{klass.name}##{source_id} → ##{target_id}: #{e.message}"

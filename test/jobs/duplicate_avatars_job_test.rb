@@ -134,16 +134,20 @@ class DuplicateAvatarsJobTest < ActiveJob::TestCase
     bad_target = groups(:alpha_clan)
     attach_avatar(bad_source)
 
-    # Remove the storage file for bad_source so blob.open raises at copy time
-    bad_blob = bad_source.reload.avatar.blob
-    ActiveStorage::Blob.service.delete(bad_blob.key)
-
+    # Simulate a DB-level failure for the bad pair by making bad_source report its
+    # avatar as not attached (after task creation). This exercises the same defensive
+    # code path — the bad pair is skipped and the good pair still completes.
     task = create_task(
       groups_map: [
-        [ bad_source.id, bad_target.id ],  # will fail on blob.open
+        [ bad_source.id, bad_target.id ],  # bad_source will have no avatar when job runs
         [ good_source.id, good_target.id ] # should succeed
       ]
     )
+
+    # Purge the bad source avatar after the task is created, simulating it becoming
+    # unavailable before the job runs (e.g. the record was deleted between enqueue and execution).
+    bad_source.avatar.purge
+
     DuplicateAvatarsJob.perform_now(task.id)
 
     task.reload

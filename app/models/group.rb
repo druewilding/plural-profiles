@@ -699,21 +699,13 @@ class Group < ApplicationRecord
     end
   end
 
-  # Copy an Active Storage avatar from source to target.
-  # Uses blob.open (tempfile-backed) to stream the download without loading
-  # the entire file into memory. Must be called outside a transaction so that
-  # Active Storage's after_create_commit callback can read the IO synchronously
-  # before the tempfile is closed.
+  # Attach an Active Storage avatar blob from source to target by sharing the
+  # existing blob reference — no file download or re-upload needed.
+  # Active Storage's FK constraint ensures the blob is only purged when all
+  # attachments referencing it are removed.
   def duplicate_avatar(source, target)
     return unless source.avatar.attached?
-    blob = source.avatar.blob
-    blob.open do |tempfile|
-      target.avatar.attach(
-        io: tempfile,
-        filename: blob.filename,
-        content_type: blob.content_type
-      )
-    end
+    target.avatar.attach(source.avatar.blob)
   end
 
   def generate_uuid
