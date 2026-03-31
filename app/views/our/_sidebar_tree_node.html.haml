@@ -1,0 +1,51 @@
+-# Recursive sidebar tree node.
+-# Locals: node (hash with :group, :profiles, :children, :repeated)
+- group = node[:group]
+- profiles = Array(node[:profiles])
+- children = Array(node[:children])
+- is_active = (@group && @group.id == group.id)
+- has_children = children.any? || profiles.any?
+
+- if has_children
+  %li.sidebar-tree__folder
+    %details{open: true, data: { controller: "details-persist", "details-persist-key-value": "sidebar-group-#{group.id}" }}
+      %summary.sidebar-tree__row{class: ("sidebar-tree__row--active" if is_active)}
+        - if group.avatar.attached?
+          = image_tag group.avatar.variant(resize_to_fill: [24, 24]), class: "sidebar-tree__avatar", width: 24, height: 24, alt: group.avatar_alt_text.presence || "", loading: "lazy"
+        = link_to our_group_path(group), class: "sidebar-tree__link" do
+          - if node[:repeated]
+            %span.sidebar-tree__label.sidebar-tree__label--repeated= group.name
+          - else
+            %span.sidebar-tree__label= group.name
+        - group.labels.each do |label|
+          %span.label-badge.label-badge--sidebar= label
+      %ul.sidebar-tree__children
+        - children.each do |child_node|
+          = render "our/sidebar_tree_node", node: child_node
+        - profiles.each do |entry|
+          - profile = entry[:profile]
+          %li.sidebar-tree__leaf{class: ("sidebar-tree__leaf--active" if @profile && @profile.id == profile.id)}
+            - if profile.avatar.attached?
+              = image_tag profile.avatar.variant(resize_to_fill: [24, 24]), class: "sidebar-tree__avatar", width: 24, height: 24, alt: profile.avatar_alt_text.presence || "", loading: "lazy"
+            - else
+              %span.sidebar-tree__avatar.sidebar-tree__avatar--placeholder
+                = render "shared/plural_pride_logo"
+            = link_to our_profile_path(profile), class: "sidebar-tree__link" do
+              - if entry[:repeated]
+                %span.sidebar-tree__label.sidebar-tree__label--repeated= profile.name
+              - else
+                %span.sidebar-tree__label= profile.name
+            - profile.labels.each do |label|
+              %span.label-badge.label-badge--sidebar= label
+- else
+  -# Group with no children and no profiles — render as a simple leaf
+  %li.sidebar-tree__leaf{class: ("sidebar-tree__leaf--active" if is_active)}
+    - if group.avatar.attached?
+      = image_tag group.avatar.variant(resize_to_fill: [24, 24]), class: "sidebar-tree__avatar", width: 24, height: 24, alt: group.avatar_alt_text.presence || "", loading: "lazy"
+    = link_to our_group_path(group), class: "sidebar-tree__link" do
+      - if node[:repeated]
+        %span.sidebar-tree__label.sidebar-tree__label--repeated= group.name
+      - else
+        %span.sidebar-tree__label= group.name
+    - group.labels.each do |label|
+      %span.label-badge.label-badge--sidebar= label
