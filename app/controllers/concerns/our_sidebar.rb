@@ -10,7 +10,8 @@ module OurSidebar
   def set_sidebar_data
     return unless authenticated?
 
-    @sidebar_profiles = Current.user.profiles.order_by_name_and_labels
-    @sidebar_groups = Current.user.groups.order_by_name_and_labels
+    sidebar = Current.user.sidebar_tree
+    @sidebar_trees = sidebar[:trees]
+    @sidebar_orphan_profiles = sidebar[:orphan_profiles]
   end
 end

@@ -2,41 +2,34 @@
   %ul.sidebar__list
     %li{class: "sidebar__item sidebar__item--action #{('sidebar__item--active' if current_page?(root_path))}"}
       = link_to "Home", root_path, class: "sidebar__link sidebar__link--action"
+    %li.sidebar__item.sidebar__item--action
+      = link_to "New group", new_our_group_path, class: "sidebar__link sidebar__link--action"
+    %li.sidebar__item.sidebar__item--action
+      = link_to "New profile", new_our_profile_path, class: "sidebar__link sidebar__link--action"
 
   %hr
 
-  %ul.sidebar__list
-    %li{class: "sidebar__item sidebar__item--action #{('sidebar__item--active' if current_page?(new_our_group_path))}"}
-      = link_to "New group", new_our_group_path, class: "sidebar__link sidebar__link--action"
   %details{open: true, data: { controller: "details-persist", "details-persist-key-value": "sidebar-groups" }}
     %summary Groups
-    %ul.sidebar__list
-      - @sidebar_groups.each do |group|
-        %li{class: "sidebar__item #{('sidebar__item--active' if @group && @group.id == group.id)}"}
-          - if group.avatar.attached?
-            = image_tag group.avatar.variant(resize_to_fill: [24, 24]), class: "sidebar__avatar", width: 24, height: 24, alt: group.avatar_alt_text.presence || "", loading: "lazy"
-          = link_to group.name, our_group_path(group), class: "sidebar__link"
-          - if group.labels.any?
-            - group.labels.each do |label|
-              %span.label-badge.label-badge--sidebar= label
+    %ul.sidebar-tree
+      - @sidebar_trees.each do |node|
+        = render "our/sidebar_tree_node", node: node
 
-  %hr
+  - if @sidebar_orphan_profiles.any?
+    %hr
 
-  %ul.sidebar__list
-    %li{class: "sidebar__item sidebar__item--action #{('sidebar__item--active' if current_page?(new_our_profile_path))}"}
-      = link_to "New profile", new_our_profile_path, class: "sidebar__link sidebar__link--action"
-  %details{open: true, data: { controller: "details-persist", "details-persist-key-value": "sidebar-profiles" }}
-    %summary Profiles
-    %ul.sidebar__list
-      - @sidebar_profiles.each do |profile|
-        %li{class: "sidebar__item #{('sidebar__item--active' if @profile && @profile.id == profile.id)}"}
-          - if profile.avatar.attached?
-            = image_tag profile.avatar.variant(resize_to_fill: [24, 24]), class: "sidebar__avatar", width: 24, height: 24, alt: profile.avatar_alt_text.presence || "", loading: "lazy"
-          - else
-            %span.sidebar__avatar.sidebar__avatar--placeholder
-              = render "shared/plural_pride_logo"
-          = link_to profile.name, our_profile_path(profile), class: "sidebar__link"
-          - if profile.labels.any?
+    %details{open: true, data: { controller: "details-persist", "details-persist-key-value": "sidebar-ungrouped" }}
+      %summary Ungrouped profiles
+      %ul.sidebar-tree
+        - @sidebar_orphan_profiles.each do |profile|
+          %li.sidebar-tree__leaf{class: ("sidebar-tree__leaf--active" if @profile && @profile.id == profile.id)}
+            - if profile.avatar.attached?
+              = image_tag profile.avatar.variant(resize_to_fill: [24, 24]), class: "sidebar-tree__avatar", width: 24, height: 24, alt: profile.avatar_alt_text.presence || "", loading: "lazy"
+            - else
+              %span.sidebar-tree__avatar.sidebar-tree__avatar--placeholder
+                = render "shared/plural_pride_logo"
+            = link_to our_profile_path(profile), class: "sidebar-tree__link" do
+              %span.sidebar-tree__label= profile.name
             - profile.labels.each do |label|
               %span.label-badge.label-badge--sidebar= label
 
