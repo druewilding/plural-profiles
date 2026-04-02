@@ -913,7 +913,8 @@ button:hover,
   font-size: 1rem;
 }
 
-.profile-card .label-badges {
+.profile-card .label-badges,
+.profile-card .pronouns {
   justify-content: center;
 }
 
