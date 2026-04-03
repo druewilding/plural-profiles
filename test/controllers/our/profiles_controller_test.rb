@@ -376,8 +376,8 @@ class Our::ProfilesControllerTest < ActionDispatch::IntegrationTest
     bob.update!(labels: %w[private])
     get our_profiles_path(label: "public")
     assert_response :success
-    assert_select ".main-content h2 a", text: "Alice"
-    assert_select ".main-content h2 a", text: "Bob", count: 0
+    assert_select ".main-content h3 a", text: "Alice"
+    assert_select ".main-content h3 a", text: "Bob", count: 0
   end
 
   test "index filter returns no profiles when no match" do

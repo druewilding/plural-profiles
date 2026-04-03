@@ -763,8 +763,8 @@ class Our::GroupsControllerTest < ActionDispatch::IntegrationTest
     everyone.update!(labels: %w[public])
     get our_groups_path(label: "close")
     assert_response :success
-    assert_select ".main-content h2 a", text: "Friends"
-    assert_select ".main-content h2 a", text: "Everyone", count: 0
+    assert_select ".main-content h3 a", text: "Friends"
+    assert_select ".main-content h3 a", text: "Everyone", count: 0
   end
 
   # -- Theme dropdown --
