@@ -1,17 +1,17 @@
 - content_for(:title) { @group.name + " — Plural Profiles" }
 
-.profile-title
-  %h1= @group.name
-  - if @group.labels.any?
-    .label-badges
-      - @group.labels.each do |label|
-        %span.label-badge= label
-
 .card
   .card__header
     - if @group.avatar.attached?
       = link_to rails_blob_path(@group.avatar, disposition: "inline"), target: "_blank", rel: "noopener", title: "Click to see full size" do
         = image_tag @group.avatar.variant(resize_to_fill: [96, 96]), class: "avatar avatar--large", width: 96, height: 96, alt: @group.avatar_alt_text.presence || "", loading: "lazy"
+
+    .name-with-labels
+      %h1= @group.name
+      - if @group.labels.any?
+        .label-badges
+          - @group.labels.each do |label|
+            %span.label-badge= label
 
   %div
     - if @group.description.present?
@@ -36,7 +36,9 @@
     = link_to "Delete", our_group_path(@group), data: { turbo_method: :delete, turbo_confirm: "Are you sure? This will only delete the group and its relationships, not the profiles or child groups themselves." }, class: "btn btn--danger"
 
 .card
-  %h2 Share this group
+  .card__header
+    %h2 Share this group
+
   .share-url{data: {controller: "clipboard"}}
     %input{type: "text", value: group_url(@group.uuid), readonly: true, id: "group-share-url", data: {"clipboard-target": "source"}}
     %button.btn{data: {action: "click->clipboard#copy"}}
@@ -87,5 +89,3 @@
     %p
       No profiles in this group yet.
       = link_to "Add some!", manage_profiles_our_group_path(@group)
-
-%p= link_to "← Back to our groups", our_groups_path

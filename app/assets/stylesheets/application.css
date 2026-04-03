@@ -527,12 +527,14 @@ h2 { font-size: 1.4rem; }
   gap: 0.5rem;
 }
 
+.name-with-labels h1,
 .name-with-labels h2 {
   margin-bottom: 0;
 }
 
 .name-with-labels .label-badges {
   margin-top: 0;
+  transform: translateY(-0.15em);
 }
 
 h2 a { color: inherit; }
