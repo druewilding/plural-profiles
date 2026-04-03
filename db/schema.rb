@@ -42,19 +42,6 @@ ActiveRecord::Schema[8.1].define(version: 2026_04_01_000001) do
     t.index ["blob_id", "variation_digest"], name: "index_active_storage_variant_records_uniqueness", unique: true
   end
 
-  create_table "duplication_tasks", force: :cascade do |t|
-    t.jsonb "avatar_mappings", default: {}, null: false
-    t.integer "copied_avatars", default: 0, null: false
-    t.datetime "created_at", null: false
-    t.bigint "group_id", null: false
-    t.string "status", default: "pending", null: false
-    t.integer "total_avatars", default: 0, null: false
-    t.datetime "updated_at", null: false
-    t.bigint "user_id", null: false
-    t.index ["group_id"], name: "index_duplication_tasks_on_group_id"
-    t.index ["user_id"], name: "index_duplication_tasks_on_user_id"
-  end
-
   create_table "group_groups", force: :cascade do |t|
     t.bigint "child_group_id", null: false
     t.datetime "created_at", null: false
@@ -186,8 +173,6 @@ ActiveRecord::Schema[8.1].define(version: 2026_04_01_000001) do
 
   add_foreign_key "active_storage_attachments", "active_storage_blobs", column: "blob_id"
   add_foreign_key "active_storage_variant_records", "active_storage_blobs", column: "blob_id"
-  add_foreign_key "duplication_tasks", "groups"
-  add_foreign_key "duplication_tasks", "users"
   add_foreign_key "group_groups", "groups", column: "child_group_id"
   add_foreign_key "group_groups", "groups", column: "parent_group_id"
   add_foreign_key "group_profiles", "groups"
