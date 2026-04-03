@@ -15,7 +15,7 @@
         - if params[:label]
           = link_to "Clear filter", our_groups_path, class: "filter-bar__clear"
 
-  -else
+  - else
     %p You haven't created any groups yet.
 
 - if @groups.any?
