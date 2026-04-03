@@ -37,11 +37,13 @@ class ThemeTest < ActiveSupport::TestCase
   end
 
   test "to_css_properties includes derived tree-guide and avatar-placeholder-border using theme text color" do
-    theme = themes(:dark_forest)
-    text_color = theme.color_for("text")
+    # Use a text colour that differs from the default (#5ea389) so the test fails
+    # if to_css_properties accidentally falls back to the default instead of the
+    # theme's overridden value.
+    theme = Theme.new(user: users(:one), name: "Custom text", colors: { "text" => "#abcdef" })
     css = theme.to_css_properties
-    assert_includes css, "--tree-guide: color-mix(in srgb, #{text_color} 30%, transparent);"
-    assert_includes css, "--avatar-placeholder-border: color-mix(in srgb, #{text_color} 50%, transparent);"
+    assert_includes css, "--tree-guide: color-mix(in srgb, #abcdef 30%, transparent);"
+    assert_includes css, "--avatar-placeholder-border: color-mix(in srgb, #abcdef 50%, transparent);"
   end
 
   test "to_css generates a full root block" do
