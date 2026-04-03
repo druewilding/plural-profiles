@@ -9,3 +9,6 @@
     .label-badges
       - group.labels.each do |label|
         %span.label-badge= label
+  - if local_assigns[:action_label]
+    .profile-card__action-spacer
+    = link_to action_label, action_path, data: ({ turbo_method: action_method } if local_assigns[:action_method]), class: local_assigns.fetch(:action_class, "btn btn--small")

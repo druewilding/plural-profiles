@@ -929,7 +929,7 @@ button:hover,
 
 .profile-card__action-spacer {
   flex: 1;
-  min-height: 0.5rem;
+  min-height: 1rem;
 }
 
 /* Profile header (show pages) — edge-to-edge banner inside .card */
