@@ -855,7 +855,7 @@ class Our::GroupsControllerTest < ActionDispatch::IntegrationTest
     group = groups(:echo_shard)
     get duplicate_our_group_path(group)
     assert_response :success
-    assert_match "Duplicate group", response.body
+    assert_match "Duplicate #{group.name}", response.body
     assert_match group.name, response.body
   end
 
