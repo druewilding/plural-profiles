@@ -115,8 +115,8 @@ This allows plural folk to model complex, Venn-diagram-style group arrangements 
 git clone git@github.com:druewilding/plural-profiles.git
 cd plural-profiles
 
-# Update RVM to the latest version (ensures current Homebrew formula compatibility)
-rvm get head
+# Update RVM to the latest stable version (ensures current Homebrew formula compatibility)
+rvm get stable
 
 # Install Ruby 3.3.10 and use the project gemset
 # (RVM picks up .ruby-version and .ruby-gemset automatically)
