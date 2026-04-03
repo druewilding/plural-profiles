@@ -2320,6 +2320,10 @@ input[type="submit"].btn--small,
   .form-divider {
     border-top-color: GrayText;
   }
+
+  .sidebar hr {
+    border-top-color: CanvasText;
+  }
 }
 
 /* ── Inline heart emojis in descriptions ────────────────── */
