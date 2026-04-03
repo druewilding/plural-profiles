@@ -30,3 +30,11 @@
           action_path: add_profile_our_group_path(@group, profile_id: profile.id),
           action_method: :post,
           action_class: "btn btn--small"
+
+- if @available_profiles.empty? && @group.profiles.empty?
+  .card
+    %p There are no profiles available to add here right now.
+    %p
+      You can
+      = link_to "create a profile", new_our_profile_path
+      first, then come back to add it to this group.

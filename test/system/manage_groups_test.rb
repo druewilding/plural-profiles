@@ -85,6 +85,22 @@ class ManageGroupsTest < ApplicationSystemTestCase
     assert_text "Group removed."
   end
 
+  # -- Empty state (no groups available, no existing tree) --
+
+  test "does not show empty state when groups are available to add" do
+    visit manage_groups_our_group_path(groups(:alpha_clan))
+
+    assert_no_text "There are no groups available to add here right now."
+    assert_selector ".profile-grid"
+  end
+
+  test "does not show empty state when a tree exists" do
+    visit manage_groups_our_group_path(groups(:alpha_clan))
+
+    assert_selector ".tree-editor"
+    assert_no_text "There are no groups available to add here right now."
+  end
+
   # -- Verifying public effects --
 
   test "removing sub-group via manage groups removes it from public view" do
@@ -110,5 +126,30 @@ class ManageGroupsTest < ApplicationSystemTestCase
     within(".explorer__sidebar") do
       assert_no_text "Spectrum"
     end
+  end
+end
+
+# Separate class so setup signs in as a single-group account (user :two / family).
+class ManageGroupsEmptyStateTest < ApplicationSystemTestCase
+  setup do
+    @user = users(:two)
+    sign_in_via_browser
+  end
+
+  test "shows empty state message when account has only one group" do
+    visit manage_groups_our_group_path(groups(:family))
+
+    assert_text "There are no groups available to add here right now."
+    assert_text "You can"
+    assert_text "first, then come back to add it to this group."
+    assert_no_selector ".profile-grid"
+  end
+
+  test "create a group link in empty state navigates to new group page" do
+    visit manage_groups_our_group_path(groups(:family))
+
+    click_link "create a group"
+
+    assert_current_path new_our_group_path
   end
 end

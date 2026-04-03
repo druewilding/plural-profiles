@@ -49,3 +49,11 @@
           action_path: add_group_our_group_path(@group, group_id: group.id),
           action_method: :post,
           action_class: "btn btn--small"
+
+- if @available_groups.empty? && !has_tree
+  .card
+    %p There are no groups available to add here right now.
+    %p
+      You can
+      = link_to "create a group", new_our_group_path
+      first, then come back to add it to this group.
