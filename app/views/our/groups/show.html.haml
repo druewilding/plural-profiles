@@ -54,31 +54,9 @@
 - if @group.child_groups.any?
   .profile-grid
     - @group.child_groups.order(:name).each do |child|
-      .card.profile-card
-        - if child.avatar.attached?
-          = image_tag child.avatar.variant(resize_to_fill: [64, 64]), class: "avatar", width: 64, height: 64, alt: child.avatar_alt_text.presence || "", loading: "lazy"
-        - else
-          .avatar.avatar--placeholder
-            = render "shared/plural_pride_logo"
-        %h3= link_to child.name, our_group_path(child)
-        - if child.labels.any?
-          .label-badges
-            - child.labels.each do |label|
-              %span.label-badge= label
+      = render "group_card", group: child
 
 - if @group.profiles.any?
   .profile-grid
     - @group.profiles.order(:name).each do |profile|
-      .card.profile-card
-        - if profile.avatar.attached?
-          = image_tag profile.avatar.variant(resize_to_fill: [64, 64]), class: "avatar", width: 64, height: 64, alt: profile.avatar_alt_text.presence || "", loading: "lazy"
-        - else
-          .avatar.avatar--placeholder
-            = render "shared/plural_pride_logo"
-        %h3= link_to profile.name, our_profile_path(profile)
-        - if profile.labels.any?
-          .label-badges
-            - profile.labels.each do |label|
-              %span.label-badge= label
-        - if profile.pronouns.present?
-          %span.pronouns= profile.pronouns
+      = render "our/profiles/profile_card", profile: profile
