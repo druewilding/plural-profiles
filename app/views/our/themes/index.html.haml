@@ -1,27 +1,19 @@
 - content_for(:title) { "Themes — Plural Profiles" }
 
-%h1 Themes
+.card
+  .card__header
+    %h1 Themes
 
-- if @active_theme
-  %details.theme-section{open: true, data: { controller: "details-persist", "details-persist-key-value": "active-theme" }}
-    %summary.theme-section__summary Active theme
-    .card-list
-      = render "our/themes/theme_card", theme: @active_theme, section: "active"
+  .theme-heading__active
+    - if @active_theme
+      %span.theme-heading__active-label
+        Active theme:
+        %strong= link_to @active_theme.name, our_theme_path(@active_theme)
+      = link_to "Deactivate", deactivate_our_themes_path, data: { turbo_method: :patch }, class: "btn btn--small btn--secondary"
+    - else
+      %span.theme-heading__active-label No active theme — using site default.
 
-.theme-tag-filter
-  %span.theme-tag-filter__label Filter themes by tags:
-  - Theme::TAGS.each do |value, label|
-    - active = @filter_tags.include?(value)
-    - new_tags = active ? @filter_tags - [value] : @filter_tags + [value]
-    = link_to label, our_themes_path(tags: new_tags), class: "tag tag--filter #{'tag--filter-active' if active}"
-  - if @filter_tags.any?
-    = link_to "Clear filter", our_themes_path, class: "theme-tag-filter__clear"
-
-
-%details.theme-section{open: true, data: { controller: "details-persist", "details-persist-key-value": "our-themes" }}
-  %summary.theme-section__summary Our themes
-
-  .theme-import{data: { controller: "theme-import", "theme-import-new-url-value": new_our_theme_path }}
+  .theme-heading__actions{data: { controller: "theme-import", "theme-import-new-url-value": new_our_theme_path }}
     = link_to "New theme", new_our_theme_path, class: "btn"
     %button.btn.btn--outline{type: "button", data: { action: "click->theme-import#open" }} Import theme
 
@@ -35,25 +27,37 @@
           %button.btn{type: "submit"} Import
           %button.btn.btn--secondary{type: "button", data: { action: "click->theme-import#close" }} Cancel
 
-  - if @our_themes.any?
-    .card-list
-      - @our_themes.each do |theme|
-        = render "our/themes/theme_card", theme: theme, section: "our"
-  - elsif @filter_tags.any?
-    .card
-      %p No themes match the selected tags.
-  - elsif @active_theme.nil?
-    .card
-      %p You haven't created any themes yet. Themes let you customise the colours used across the site.
+  - if @our_themes.any? || @any_shared_themes
+    .filter-bar
+      %span.filter-bar__label Filter by tags:
+      - Theme::TAGS.each do |value, label|
+        - active = @filter_tags.include?(value)
+        - new_tags = active ? @filter_tags - [value] : @filter_tags + [value]
+        = link_to label, our_themes_path(tags: new_tags), class: "btn btn--small #{active ? '' : ' btn--secondary'}"
+      - if @filter_tags.any?
+        = link_to "Clear filter", our_themes_path, class: "filter-bar__clear"
 
+%details.card.theme-section-card{open: true, data: { controller: "details-persist", "details-persist-key-value": "our-themes" }}
+  %summary.card__header.theme-section-card__header
+    %h2 Our themes
+
+  - if @our_themes.any?
+    .theme-list
+      - @our_themes.each do |theme|
+        = render "our/themes/theme_row", theme: theme, section: "our"
+  - elsif @filter_tags.any?
+    %p.theme-section-card__empty No themes match the selected tags.
+  - elsif @active_theme.nil?
+    %p.theme-section-card__empty You haven't created any themes yet. Create one to customise your colours.
 
 - if @any_shared_themes
-  %details.theme-section{open: true, data: { controller: "details-persist", "details-persist-key-value": "shared-themes" }}
-    %summary.theme-section__summary Shared themes
+  %details.card.theme-section-card{open: true, data: { controller: "details-persist", "details-persist-key-value": "shared-themes" }}
+    %summary.card__header.theme-section-card__header
+      %h2 Shared themes
+
     - if @shared_themes.any?
-      .card-list
+      .theme-list
         - @shared_themes.each do |theme|
-          = render "our/themes/theme_card", theme: theme, section: "shared"
+          = render "our/themes/theme_row", theme: theme, section: "shared"
     - elsif @filter_tags.any?
-      .card
-        %p No themes match the selected tags.
+      %p.theme-section-card__empty No shared themes match the selected tags.

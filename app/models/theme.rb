@@ -131,9 +131,15 @@ class Theme < ApplicationRecord
     "avatar-placeholder-border" => 50
   }.freeze
 
+  SWATCH_PROPERTIES = %w[page_bg pane_bg heading link primary_button_bg].freeze
+
   # Returns the colour for a property, falling back to the default
   def color_for(property)
     colors&.dig(property.to_s) || THEMEABLE_PROPERTIES.dig(property.to_s, :default)
+  end
+
+  def swatch_colors
+    SWATCH_PROPERTIES.map { |prop| color_for(prop) }
   end
 
   # Generates a CSS string of custom property overrides

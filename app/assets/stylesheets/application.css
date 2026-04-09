@@ -801,25 +801,11 @@ button:hover,
   padding: 1rem 1.5rem;
 }
 
-.card--stacked {
-  padding: 1rem 1.5rem;
-}
-
-.card--stacked .card__main {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-}
-
 .card__tags {
   display: flex;
   flex-wrap: wrap;
   gap: 0.35rem;
   margin-top: 0.6rem;
-}
-
-.theme-card__notes {
-  font-style: italic;
 }
 
 .card__header {
@@ -1555,27 +1541,7 @@ details[open] > .tree-editor__summary::before {
   }
 }
 
-/* Tag filter pills on the themes index */
-.theme-tag-filter {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  gap: 0.4rem;
-  margin-bottom: 1.25rem;
-}
 
-.theme-tag-filter__label {
-  font-size: 0.85rem;
-  color: var(--text);
-  margin-right: 0.25rem;
-  white-space: nowrap;
-  flex-basis: 100%;
-}
-
-.theme-tag-filter__clear {
-  font-size: 0.8rem;
-  margin-left: 0.25rem;
-}
 
 .tag--filter {
   background-color: color-mix(in srgb, var(--input-border) 15%, transparent);
@@ -1614,20 +1580,7 @@ details[open] > .tree-editor__summary::before {
   }
 }
 
-.theme-section__summary {
-  color: var(--heading);
-  cursor: pointer;
-  font-size: 1.4rem;
-  font-weight: bold;
-  margin-block-start: 0;
-  margin-block-end: 0.83em;
-}
 
-@media (forced-colors: active) {
-  .theme-section__summary {
-    color: CanvasText;
-  }
-}
 
 .tree-editor__tag {
   display: inline-block;
@@ -2506,12 +2459,7 @@ input[type="submit"].btn--small,
 
 /* ── Import theme dialog ────────────────────────────────── */
 
-.theme-import {
-  display: flex;
-  gap: 0.5rem;
-  flex-wrap: wrap;
-  margin-bottom: 1.5rem;
-}
+
 
 .import-dialog {
   background-color: var(--pane-bg);
@@ -2742,4 +2690,271 @@ input[type="submit"].btn--small,
   .theme-credit a {
     color: LinkText;
   }
+}
+
+/* ── Theme index: rows ──────────────────────────────────── */
+
+.theme-row {
+  display: flex;
+  align-items: flex-start;
+  gap: 1rem;
+  padding: 0.875rem 2rem;
+  border-bottom: 1px solid var(--pane-border);
+}
+
+.theme-row:last-child {
+  border-bottom: none;
+}
+
+.theme-row--active {
+  border-left: 3px solid var(--link);
+  padding-left: calc(2rem - 3px);
+}
+
+.theme-row__info {
+  flex: 1;
+  min-width: 0;
+}
+
+.theme-row__name-line {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+}
+
+.theme-row__name-line h3 {
+  margin: 0;
+  font-size: 1rem;
+}
+
+.theme-row__credit {
+  font-size: 0.85rem;
+  margin: 0.15rem 0 0;
+}
+
+.theme-row__notes {
+  font-size: 0.85rem;
+  font-style: italic;
+  margin: 0.2rem 0 0;
+}
+
+.theme-row__tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.3rem;
+  margin-top: 0.4rem;
+}
+
+.theme-row__end {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  flex-shrink: 0;
+  padding-top: 0.1rem;
+}
+
+/* ── Theme swatches ─────────────────────────────────────── */
+
+.theme-swatches {
+  display: flex;
+  flex-shrink: 0;
+}
+
+.theme-swatches__dot {
+  width: 18px;
+  height: 18px;
+  border-radius: 0;
+  border: 1px solid color-mix(in srgb, var(--pane-border) 60%, transparent);
+  margin-left: -1px;
+}
+
+.theme-swatches__dot:first-child {
+  border-radius: 3px 0 0 3px;
+  margin-left: 0;
+}
+
+.theme-swatches__dot:last-child {
+  border-radius: 0 3px 3px 0;
+}
+
+@media (forced-colors: active) {
+  .theme-swatches {
+    display: none;
+  }
+}
+
+/* ── Action dropdown ────────────────────────────────────── */
+
+.action-dropdown {
+  position: relative;
+  flex-shrink: 0;
+}
+
+.action-dropdown__trigger {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  padding: 0.35rem 0.65rem;
+  border-radius: 4px;
+  cursor: pointer;
+  color: var(--secondary-button-text);
+  background-color: var(--secondary-button-bg);
+  border: 1px solid var(--secondary-button-border);
+  font-size: 0.85rem;
+  font-weight: 500;
+  line-height: 1.4;
+  list-style: none;
+  user-select: none;
+  white-space: nowrap;
+}
+
+.action-dropdown__trigger:hover {
+  background-color: color-mix(in srgb, var(--secondary-button-bg) 70%, transparent);
+}
+
+.action-dropdown__trigger::after {
+  content: " ▾";
+  font-size: 0.7rem;
+  opacity: 0.8;
+}
+
+.action-dropdown__trigger::-webkit-details-marker,
+.action-dropdown__trigger::marker {
+  display: none;
+}
+
+.action-dropdown__menu {
+  position: absolute;
+  right: 0;
+  top: calc(100% + 4px);
+  z-index: 10;
+  min-width: 170px;
+  background-color: var(--pane-bg);
+  border: 1px solid var(--pane-border);
+  border-radius: 8px;
+  padding: 0.35rem 0;
+  box-shadow: 0 4px 12px color-mix(in srgb, black 25%, transparent);
+}
+
+.action-dropdown__item {
+  display: block;
+  padding: 0.5rem 1rem;
+  color: var(--text);
+  text-decoration: none;
+  font-size: 0.9rem;
+  white-space: nowrap;
+}
+
+.action-dropdown__item:hover {
+  background-color: color-mix(in srgb, var(--text) 8%, transparent);
+  text-decoration: none;
+  color: var(--text);
+}
+
+.action-dropdown__item--danger {
+  color: var(--danger-button-bg);
+}
+
+.action-dropdown__item--danger:hover {
+  color: var(--danger-button-bg);
+}
+
+.action-dropdown__divider {
+  border: none;
+  border-top: 1px solid var(--pane-border);
+  margin: 0.35rem 0;
+}
+
+@media (forced-colors: active) {
+  .action-dropdown__trigger {
+    border: 1px solid ButtonText;
+  }
+
+  .action-dropdown__trigger:hover {
+    outline: 1px solid ButtonText;
+  }
+
+  .action-dropdown__menu {
+    border: 2px solid ButtonText;
+  }
+
+  .action-dropdown__item:hover {
+    outline: 1px solid Highlight;
+  }
+}
+
+/* ── Theme heading card ─────────────────────────────────── */
+
+.theme-heading__active {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+  margin-bottom: 0.75rem;
+}
+
+.theme-heading__active-label {
+  font-size: 0.95rem;
+  flex: 1;
+}
+
+.theme-heading__actions {
+  display: flex;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+}
+
+.theme-heading__active + .theme-heading__actions {
+  margin-top: 0.25rem;
+}
+
+.theme-heading__actions + .filter-bar {
+  margin-top: 1rem;
+  margin-bottom: 0;
+}
+
+/* ── Theme section cards (collapsible) ──────────────────── */
+
+/* padding: 2rem inherited from .card — do NOT override to 0 or the
+   card__header negative-margin trick breaks. Instead, .theme-list
+   uses negative margins to bleed its rows to the card edges. */
+.theme-section-card {
+  /* inherits .card styles — no overrides needed */
+}
+
+.theme-section-card__header {
+  cursor: pointer;
+  list-style: none;
+  user-select: none;
+}
+
+.theme-section-card__header::-webkit-details-marker,
+.theme-section-card__header::marker {
+  display: none;
+}
+
+.theme-section-card__header h2 {
+  margin: 0;
+}
+
+.theme-section-card__header h2::before {
+  content: "▾ ";
+  font-size: 0.8em;
+  opacity: 0.7;
+}
+
+details.theme-section-card:not([open]) .theme-section-card__header h2::before {
+  content: "▸ ";
+}
+
+/* Bleed theme rows to the card edges, cancelling the 2rem card padding
+   on left, right, and bottom. Do NOT use overflow:hidden — it clips dropdowns. */
+.theme-list {
+  margin: 0 -2rem -2rem;
+}
+
+.theme-section-card__empty {
+  margin: 0;
+  font-size: 0.95rem;
 }
