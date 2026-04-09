@@ -144,7 +144,9 @@ body {
 
 .sidebar {
   position: sticky;
+  overflow-y: auto;
   top: 2rem;
+  max-height: calc(100vh - 4rem);
   align-self: start;
   background-color: var(--pane-bg);
   border-radius: 8px;
