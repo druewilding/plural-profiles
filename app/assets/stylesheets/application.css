@@ -2835,7 +2835,7 @@ input[type="submit"].btn--small,
   border: 1px solid var(--pane-border);
   border-radius: 8px;
   padding: 0.35rem 0;
-  box-shadow: 0 4px 12px color-mix(in srgb, black 25%, transparent);
+  box-shadow: 0 4px 12px color-mix(in srgb, var(--pane-border) 25%, transparent);
 }
 
 .action-dropdown__item {
