@@ -15,8 +15,8 @@
         %span.theme-heading__active-label No active theme — using site default.
 
     .theme-heading__actions{data: { controller: "theme-import", "theme-import-new-url-value": new_our_theme_path }}
-      = link_to "New theme", new_our_theme_path, class: "btn btn--small"
-      %button.btn.btn--small.btn--outline{type: "button", data: { action: "click->theme-import#open" }} Import theme
+      = link_to "New theme", new_our_theme_path, class: "btn"
+      %button.btn.btn--outline{type: "button", data: { action: "click->theme-import#open" }} Import theme
 
       %dialog.import-dialog{data: { "theme-import-target": "dialog", action: "click->theme-import#backdropClick" }}
         %form{data: { action: "submit->theme-import#import" }}

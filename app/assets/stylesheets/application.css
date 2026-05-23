@@ -2902,7 +2902,6 @@ input[type="submit"].btn--small,
 
 .theme-heading__active-label {
   font-size: 0.95rem;
-  flex: 1;
 }
 
 .theme-heading__actions {
