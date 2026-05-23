@@ -2928,6 +2928,10 @@ input[type="submit"].btn--small,
   user-select: none;
 }
 
+.card__header.theme-section-card__header {
+  margin-bottom: 0;
+}
+
 .theme-section-card__header::-webkit-details-marker,
 .theme-section-card__header::marker {
   display: none;
@@ -2939,12 +2943,20 @@ input[type="submit"].btn--small,
 
 .theme-section-card__header h2::before {
   content: "▾ ";
-  font-size: 0.8em;
   opacity: 0.7;
 }
 
 details.theme-section-card:not([open]) .theme-section-card__header h2::before {
   content: "▸ ";
+}
+
+details.theme-section-card:not([open]) {
+  padding-bottom: 0;
+}
+
+details.theme-section-card:not([open]) .theme-section-card__header {
+  margin-bottom: 0;
+  border-radius: 7px;
 }
 
 /* Bleed theme rows to the card edges, cancelling the 2rem card padding
@@ -2954,6 +2966,6 @@ details.theme-section-card:not([open]) .theme-section-card__header h2::before {
 }
 
 .theme-section-card__empty {
-  margin: 0;
+  margin: 1.5rem 0 0 0;
   font-size: 0.95rem;
 }
