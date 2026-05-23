@@ -279,6 +279,7 @@ class DuplicateGroupTest < ApplicationSystemTestCase
     # Now duplicate Echo Shard with labels in reversed order: "white, black"
     echo = groups(:echo_shard)
     visit our_group_path(echo)
+    assert_current_path our_group_path(echo)
     click_link "Duplicate"
 
     fill_in "Labels for all copies", with: "white, black"

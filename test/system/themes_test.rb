@@ -8,6 +8,7 @@ class ThemesTest < ApplicationSystemTestCase
     visit our_themes_path
 
     within(:css, "[data-theme-section='shared'][data-theme-id='#{themes(:ocean_shared).id}']") do
+      find("summary.action-dropdown__trigger").click
       assert_link "Make default"
       assert_no_link "Remove default"
     end
@@ -18,6 +19,7 @@ class ThemesTest < ApplicationSystemTestCase
     visit our_themes_path
 
     within(:css, "[data-theme-section='shared'][data-theme-id='#{themes(:default_shared).id}']") do
+      find("summary.action-dropdown__trigger").click
       assert_link "Remove default"
       assert_no_link "Make default"
     end
@@ -28,14 +30,16 @@ class ThemesTest < ApplicationSystemTestCase
     visit our_themes_path
 
     within(:css, "[data-theme-section='shared'][data-theme-id='#{themes(:ocean_shared).id}']") do
+      find("summary.action-dropdown__trigger").click
       click_link "Make default"
     end
 
     assert_text "'Ocean Shared' is now the default theme"
 
     within(:css, "[data-theme-section='shared'][data-theme-id='#{themes(:ocean_shared).id}']") do
-      assert_link "Remove default"
       assert_text "Default theme"
+      find("summary.action-dropdown__trigger").click
+      assert_link "Remove default"
     end
   end
 
@@ -44,14 +48,16 @@ class ThemesTest < ApplicationSystemTestCase
     visit our_themes_path
 
     within(:css, "[data-theme-section='shared'][data-theme-id='#{themes(:default_shared).id}']") do
+      find("summary.action-dropdown__trigger").click
       click_link "Remove default"
     end
 
     assert_text "'Default Shared' is no longer the default theme"
 
     within(:css, "[data-theme-section='shared'][data-theme-id='#{themes(:default_shared).id}']") do
-      assert_link "Make default"
       assert_no_text "Default theme"
+      find("summary.action-dropdown__trigger").click
+      assert_link "Make default"
     end
   end
 
@@ -67,7 +73,7 @@ class ThemesTest < ApplicationSystemTestCase
     sign_in_via_browser(users(:two))
     visit our_themes_path
 
-    within(".card", text: "Default Shared") do
+    within(:css, "[data-theme-section='shared'][data-theme-id='#{themes(:default_shared).id}']") do
       assert_text "Default theme"
     end
   end
