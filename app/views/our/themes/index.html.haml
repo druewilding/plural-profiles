@@ -28,7 +28,7 @@
             %button.btn{type: "submit"} Import
             %button.btn.btn--secondary{type: "button", data: { action: "click->theme-import#close" }} Cancel
 
-- if @our_themes.any? || @any_shared_themes
+- if @our_themes.any? || @any_shared_themes || @filter_tags.any?
   .card
     .card__header
       %h2 Filter themes
