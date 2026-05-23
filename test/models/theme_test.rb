@@ -28,6 +28,21 @@ class ThemeTest < ActiveSupport::TestCase
     assert_equal "#0e2e24", theme.color_for("page_bg")
   end
 
+  test "swatch_colors returns five colours in SWATCH_PROPERTIES order" do
+    theme = themes(:dark_forest)
+    swatches = theme.swatch_colors
+    assert_equal Theme::SWATCH_PROPERTIES.length, swatches.length
+    Theme::SWATCH_PROPERTIES.each_with_index do |prop, i|
+      assert_equal theme.color_for(prop), swatches[i]
+    end
+  end
+
+  test "swatch_colors falls back to defaults when colours are absent" do
+    theme = Theme.new(user: users(:one), name: "Empty", colors: {})
+    expected = Theme::SWATCH_PROPERTIES.map { |prop| Theme::THEMEABLE_PROPERTIES.dig(prop, :default) }
+    assert_equal expected, theme.swatch_colors
+  end
+
   test "to_css_properties generates inline style string" do
     theme = themes(:dark_forest)
     css = theme.to_css_properties
