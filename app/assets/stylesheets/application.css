@@ -2854,14 +2854,6 @@ input[type="submit"].btn--small,
   color: var(--text);
 }
 
-.action-dropdown__item--danger {
-  color: var(--danger-button-bg);
-}
-
-.action-dropdown__item--danger:hover {
-  color: var(--danger-button-bg);
-}
-
 .action-dropdown__divider {
   border: none;
   border-top: 1px solid var(--pane-border);
@@ -2870,19 +2862,24 @@ input[type="submit"].btn--small,
 
 @media (forced-colors: active) {
   .action-dropdown__trigger {
-    border: 1px solid ButtonText;
+    border: 1px solid CanvasText;
   }
 
   .action-dropdown__trigger:hover {
-    outline: 1px solid ButtonText;
+    outline: 1px solid CanvasText;
   }
 
   .action-dropdown__menu {
-    border: 2px solid ButtonText;
+    border: 2px solid CanvasText;
+  }
+
+  .action-dropdown__divider {
+    border-top-color: CanvasText;
   }
 
   .action-dropdown__item:hover {
-    outline: 1px solid Highlight;
+    font-weight: bold;
+    background-color: Highlight;
   }
 }
 
