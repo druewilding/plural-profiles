@@ -36,7 +36,7 @@
       - Theme::TAGS.each do |value, label|
         - active = @filter_tags.include?(value)
         - new_tags = active ? @filter_tags - [value] : @filter_tags + [value]
-        = link_to label, our_themes_path(tags: new_tags), class: "btn btn--small #{active ? '' : ' btn--secondary'}"
+        = link_to label, our_themes_path(tags: new_tags), class: "tag tag--filter #{active ? '' : ' tag--filter-active'}"
       - if @filter_tags.any?
         = link_to "Clear filter", our_themes_path, class: "filter-bar__clear"
 

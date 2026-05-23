@@ -2662,7 +2662,6 @@ input[type="submit"].btn--small,
   font-size: 0.8rem;
   color: var(--link);
   text-decoration: underline;
-  padding: 0.35rem 0;
 }
 
 /* ── Theme credit footer bar ─────────────────────────────── */
