@@ -2885,12 +2885,20 @@ input[type="submit"].btn--small,
 
 /* ── Theme heading card ─────────────────────────────────── */
 
+.theme-heading__bar {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+}
+
 .theme-heading__active {
   display: flex;
   align-items: center;
   gap: 0.5rem;
   flex-wrap: wrap;
-  margin-bottom: 0.75rem;
+  flex: 1;
+  min-width: 200px;
 }
 
 .theme-heading__active-label {
@@ -2902,14 +2910,10 @@ input[type="submit"].btn--small,
   display: flex;
   gap: 0.5rem;
   flex-wrap: wrap;
+  flex-shrink: 0;
 }
 
-.theme-heading__active + .theme-heading__actions {
-  margin-top: 0.25rem;
-}
-
-.theme-heading__actions + .filter-bar {
-  margin-top: 1rem;
+.card > .filter-bar {
   margin-bottom: 0;
 }
 
