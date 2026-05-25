@@ -4,7 +4,6 @@
 
 .theme-preview__section
   %h2 Theme preview
-  %p This is body text on the page background. Here is a #{link_to "sample link", "#"} in a sentence.
 
 .theme-preview__section
   .card
@@ -23,8 +22,18 @@
       element.
 
 .theme-preview__section
+  %h3 Profile card
+  .profile-grid
+    .card.profile-card
+      .avatar.avatar--large.avatar--placeholder
+        = render "shared/plural_pride_logo"
+      %h3 Example Profile
+      %span.pronouns they/them
+
+.theme-preview__section
   .card
-    %h3 Form controls
+    .card__header
+      %h3 Form controls
     .form-group
       %label Text input
       %input{type: "text", placeholder: "Sample text", value: "Field input"}
@@ -36,18 +45,14 @@
       %label.checkbox-label
         %input{type: "checkbox", checked: true, disabled: true}
         Checkbox option
-    %br
+
+.theme-preview__section
+  .card
+    .card__header
+      %h3 Buttons
     %button.btn Main button
     %button.btn.btn--secondary Default button
     %button.btn.btn--danger Danger button
-
-  %br
-  .theme-preview__section
-    %h3 Buttons outside panes
-    .theme-preview__buttons
-      %button.btn Main button
-      %button.btn.btn--secondary Default button
-      %button.btn.btn--danger Danger button
 
 %br
 .theme-preview__section
@@ -55,15 +60,5 @@
   .flash.flash--notice This is a notice message.
   .flash.flash--alert This is an alert message.
   .flash.flash--warning This is a warning message.
-
-%br
-.theme-preview__section
-  %h3 Profile card
-  .profile-grid
-    .card.profile-card
-      .avatar.avatar--large.avatar--placeholder
-        = render "shared/plural_pride_logo"
-      %h3 Example Profile
-      %span.pronouns they/them
 
 
