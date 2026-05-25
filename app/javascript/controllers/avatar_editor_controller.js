@@ -25,7 +25,7 @@ export default class extends Controller {
 
     // When JS is active, start with the dialog closed (it has `open` in the HTML
     // for no-JS users so they can still access the form fields inline).
-    this.dialogTarget.close()
+    if (this.dialogTarget.open) this.dialogTarget.close()
 
     // Close dialog on Escape — native behaviour fires `cancel` event on <dialog>
     this.dialogTarget.addEventListener("cancel", (e) => {
