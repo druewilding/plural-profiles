@@ -1177,6 +1177,12 @@ details[open] .details-close {
   border-radius: 0;
 }
 
+/* When JS is active, hide the avatar editor dialog unless it's open as a modal.
+   Without JS, the dialog has [open] and renders inline so users can access the fields. */
+.js .avatar-editor-dialog:not(:modal) {
+  display: none;
+}
+
 /* Avatar editor dialog */
 .avatar-editor__current {
   display: flex;

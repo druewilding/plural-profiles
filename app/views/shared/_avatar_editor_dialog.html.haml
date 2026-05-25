@@ -30,7 +30,7 @@
       - else
         Add avatar
 
-  %dialog.avatar-editor-dialog{data: {"avatar-editor-target": "dialog"}}
+  %dialog.avatar-editor-dialog{open: true, data: {"avatar-editor-target": "dialog"}}
     %h2.avatar-editor-dialog__title
       - if record.avatar.attached?
         Edit avatar
