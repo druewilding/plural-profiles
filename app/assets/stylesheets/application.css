@@ -1183,6 +1183,20 @@ details[open] .details-close {
   display: none;
 }
 
+/* Without JS, override the browser's default `position: absolute` on <dialog>
+   so it flows inline with the form instead of overlapping other content. */
+html:not(.js) .avatar-editor-dialog {
+  position: static;
+  width: auto;
+  max-height: none;
+  margin: 0;
+}
+
+html:not(.js) .avatar-editor__current,
+html:not(.js) .avatar-editor-dialog__actions {
+  display: none;
+}
+
 /* Avatar editor dialog */
 .avatar-editor__current {
   display: flex;
