@@ -1166,14 +1166,14 @@ details[open] .details-close {
 .avatar--circle,
 .avatar--circle.avatar--placeholder,
 .sidebar-tree__avatar--circle,
-.tree__avatar--circle {
+.tree__avatar.tree__avatar--circle {
   border-radius: 50%;
 }
 
 .avatar--square,
 .avatar--square.avatar--placeholder,
 .sidebar-tree__avatar--square,
-.tree__avatar--square {
+.tree__avatar.tree__avatar--square {
   border-radius: 0;
 }
 
