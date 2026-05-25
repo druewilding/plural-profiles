@@ -1296,13 +1296,6 @@ html:not(.js) .avatar-editor-dialog__actions {
   margin-top: 1.25rem;
 }
 
-.avatar-editor-dialog__current-preview {
-  display: flex;
-  align-items: center;
-  gap: 0.75rem;
-  margin-bottom: 1rem;
-}
-
 @media (forced-colors: active) {
   .avatar-editor-dialog {
     border: 2px solid ButtonText;
