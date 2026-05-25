@@ -11,7 +11,7 @@
     %details{open: true, data: { controller: "details-persist", "details-persist-key-value": "sidebar-group-#{group.id}" }}
       %summary.sidebar-tree__row{class: ("sidebar-tree__row--active" if is_active)}
         - if group.avatar.attached?
-          = image_tag group.avatar.variant(resize_to_fill: [24, 24]), class: "sidebar-tree__avatar", width: 24, height: 24, alt: group.avatar_alt_text.presence || "", loading: "lazy"
+          = image_tag group.avatar.variant(resize_to_fill: [24, 24]), class: "sidebar-tree__avatar #{avatar_shape_class(group, prefix: 'sidebar-tree__avatar')}".strip, width: 24, height: 24, alt: group.avatar_alt_text.presence || "", loading: "lazy"
         = link_to our_group_path(group), class: "sidebar-tree__link" do
           - if node[:repeated]
             %span.sidebar-tree__label.sidebar-tree__label--repeated= group.name
@@ -26,7 +26,7 @@
           - profile = entry[:profile]
           %li.sidebar-tree__leaf{class: ("sidebar-tree__leaf--active" if @profile && @profile.id == profile.id)}
             - if profile.avatar.attached?
-              = image_tag profile.avatar.variant(resize_to_fill: [24, 24]), class: "sidebar-tree__avatar", width: 24, height: 24, alt: profile.avatar_alt_text.presence || "", loading: "lazy"
+              = image_tag profile.avatar.variant(resize_to_fill: [24, 24]), class: "sidebar-tree__avatar #{avatar_shape_class(profile, prefix: 'sidebar-tree__avatar')}".strip, width: 24, height: 24, alt: profile.avatar_alt_text.presence || "", loading: "lazy"
             - else
               %span.sidebar-tree__avatar.sidebar-tree__avatar--placeholder
                 = render "shared/plural_pride_logo"
@@ -41,7 +41,7 @@
   -# Group with no children and no profiles — render as a simple leaf
   %li.sidebar-tree__leaf{class: ("sidebar-tree__leaf--active" if is_active)}
     - if group.avatar.attached?
-      = image_tag group.avatar.variant(resize_to_fill: [24, 24]), class: "sidebar-tree__avatar", width: 24, height: 24, alt: group.avatar_alt_text.presence || "", loading: "lazy"
+      = image_tag group.avatar.variant(resize_to_fill: [24, 24]), class: "sidebar-tree__avatar #{avatar_shape_class(group, prefix: 'sidebar-tree__avatar')}".strip, width: 24, height: 24, alt: group.avatar_alt_text.presence || "", loading: "lazy"
     = link_to our_group_path(group), class: "sidebar-tree__link" do
       - if node[:repeated]
         %span.sidebar-tree__label.sidebar-tree__label--repeated= group.name

@@ -27,7 +27,7 @@
         %h3 Original
         .duplicate-comparison__item
           - if @original.avatar.attached?
-            = image_tag @original.avatar.variant(resize_to_fill: [64, 64]), class: "avatar avatar--small", width: 64, height: 64, alt: @original.avatar_alt_text.presence || "", loading: "lazy"
+            = image_tag @original.avatar.variant(resize_to_fill: [64, 64]), class: "avatar avatar--small #{avatar_shape_class(@original)}".strip, width: 64, height: 64, alt: @original.avatar_alt_text.presence || "", loading: "lazy"
           .name-with-labels
             %strong= @original.name
             - if @conflict_type == "Profile" && @original.pronouns.present?
@@ -42,7 +42,7 @@
         %h3 Existing copy
         .duplicate-comparison__item
           - if @existing_copy.avatar.attached?
-            = image_tag @existing_copy.avatar.variant(resize_to_fill: [64, 64]), class: "avatar avatar--small", width: 64, height: 64, alt: @existing_copy.avatar_alt_text.presence || "", loading: "lazy"
+            = image_tag @existing_copy.avatar.variant(resize_to_fill: [64, 64]), class: "avatar avatar--small #{avatar_shape_class(@existing_copy)}".strip, width: 64, height: 64, alt: @existing_copy.avatar_alt_text.presence || "", loading: "lazy"
           .name-with-labels
             %strong= @existing_copy.name
             - if @conflict_type == "Profile" && @existing_copy.pronouns.present?

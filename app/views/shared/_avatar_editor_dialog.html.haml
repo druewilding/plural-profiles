@@ -1,0 +1,93 @@
+-# Locals:
+-#   record       — the Profile or Group instance
+-#   form         — the form_with builder object
+-#   param_prefix — "profile" or "group" (used for the remove_avatar checkbox name)
+-#
+-# Must be rendered inside a form_with block. The <dialog> is a child of the
+-# form element so all its inputs submit with the main form.
+
+.avatar-editor{data: {controller: "avatar-editor"}}
+  .avatar-editor__current
+    - if record.avatar.attached?
+      = image_tag record.avatar.variant(resize_to_fill: [64, 64]),
+                  class: "avatar #{avatar_shape_class(record)}".strip,
+                  width: 64,
+                  height: 64,
+                  alt: record.avatar_alt_text.presence || "",
+                  loading: "lazy",
+                  data: {"avatar-editor-target": "mainPreview"}
+      .avatar.avatar--placeholder{hidden: true, data: {"avatar-editor-target": "mainPlaceholder"}}
+        = render "shared/plural_pride_logo"
+    - else
+      %img.avatar{width: 64, height: 64, alt: "", hidden: true, src: "",
+                  data: {"avatar-editor-target": "mainPreview"}}
+      .avatar.avatar--placeholder{data: {"avatar-editor-target": "mainPlaceholder"}}
+        = render "shared/plural_pride_logo"
+
+    %button.btn.btn--secondary{type: "button", data: {action: "click->avatar-editor#open"}}
+      - if record.avatar.attached?
+        Edit avatar
+      - else
+        Add avatar
+
+  %dialog.avatar-editor-dialog{data: {"avatar-editor-target": "dialog"}}
+    %h2.avatar-editor-dialog__title
+      - if record.avatar.attached?
+        Edit avatar
+      - else
+        Add avatar
+
+    .avatar-editor-dialog__preview
+      - if record.avatar.attached?
+        = image_tag record.avatar.variant(resize_to_fill: [96, 96]),
+                    class: "avatar avatar--large #{avatar_shape_class(record)}".strip,
+                    width: 96,
+                    height: 96,
+                    alt: "",
+                    loading: "lazy",
+                    data: {"avatar-editor-target": "dialogPreview"}
+        .avatar.avatar--large.avatar--placeholder{hidden: true, data: {"avatar-editor-target": "dialogPlaceholder"}}
+          = render "shared/plural_pride_logo"
+      - else
+        %img.avatar.avatar--large{width: 96, height: 96, alt: "", hidden: true, src: "",
+                                  data: {"avatar-editor-target": "dialogPreview"}}
+        .avatar.avatar--large.avatar--placeholder{data: {"avatar-editor-target": "dialogPlaceholder"}}
+          = render "shared/plural_pride_logo"
+
+    .form-group
+      = form.label :avatar, "New image (up to 2 MB)"
+      = form.file_field :avatar,
+                        accept: "image/jpeg, image/png, image/webp",
+                        data: {"avatar-editor-target": "fileInput",
+                               action: "change->avatar-editor#onFileChange"}
+
+    .form-group
+      %label Shape
+      .avatar-shape-picker
+        - HasAvatar::AVATAR_SHAPES.each do |shape|
+          %label.avatar-shape-picker__option
+            = form.radio_button :avatar_shape, shape,
+                                data: {"avatar-editor-target": "shapeInput",
+                                       action: "change->avatar-editor#onShapeChange"}
+            .avatar-shape-picker__sample{"class" => "avatar-shape-picker__sample--#{shape}"}
+            = shape.capitalize
+
+    .form-group
+      = form.label :avatar_alt_text, "Avatar description"
+      = form.text_field :avatar_alt_text,
+                        placeholder: "Describe the image for screen readers",
+                        data: {"avatar-editor-target": "altTextField"}
+
+    - if record.persisted? && record.avatar.attached?
+      .form-group
+        %label.checkbox-label
+          = check_box_tag "#{param_prefix}[remove_avatar]",
+                          "1",
+                          false,
+                          data: {"avatar-editor-target": "removeCheckbox",
+                                 action: "change->avatar-editor#onRemoveChange"}
+          Remove avatar
+
+    .avatar-editor-dialog__actions
+      %button.btn{type: "button", data: {action: "click->avatar-editor#close"}} Done
+      %button.btn.btn--secondary{type: "button", data: {action: "click->avatar-editor#cancel"}} Cancel
