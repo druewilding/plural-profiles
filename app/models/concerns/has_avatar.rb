@@ -3,11 +3,13 @@ module HasAvatar
 
   AVATAR_CONTENT_TYPES = %w[image/png image/jpeg image/webp].freeze
   AVATAR_MAX_SIZE = 2.megabytes
+  AVATAR_SHAPES = %w[circle rounded square].freeze
 
   included do
     has_one_attached :avatar
     validate :avatar_content_type_allowed
     validate :avatar_size_allowed
+    validates :avatar_shape, inclusion: { in: AVATAR_SHAPES }
   end
 
   private

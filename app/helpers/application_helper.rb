@@ -30,6 +30,14 @@ module ApplicationHelper
     end
   end
 
+  def avatar_shape_class(record)
+    case record.avatar_shape
+    when "circle" then "avatar--circle"
+    when "square" then "avatar--square"
+    else ""
+    end
+  end
+
   private
 
   def replace_heart_emojis(html)
