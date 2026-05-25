@@ -71,6 +71,24 @@ class Our::ProfilesControllerTest < ActionDispatch::IntegrationTest
     assert_equal "Alice Updated", @profile.reload.name
   end
 
+  test "update saves avatar_shape" do
+    sign_in_as @user
+    patch our_profile_path(@profile), params: {
+      profile: { name: @profile.name, avatar_shape: "circle" }
+    }
+    assert_redirected_to our_profile_path(@profile)
+    assert_equal "circle", @profile.reload.avatar_shape
+  end
+
+  test "update rejects invalid avatar_shape" do
+    sign_in_as @user
+    patch our_profile_path(@profile), params: {
+      profile: { name: @profile.name, avatar_shape: "triangle" }
+    }
+    assert_response :unprocessable_entity
+    assert_not_equal "triangle", @profile.reload.avatar_shape
+  end
+
   test "update with avatar upload" do
     sign_in_as @user
     patch our_profile_path(@profile), params: {
