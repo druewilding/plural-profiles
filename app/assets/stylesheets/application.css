@@ -166,6 +166,38 @@ body {
   margin: 2rem 0;
 }
 
+.form-section-summary {
+  cursor: pointer;
+  font-size: 1rem;
+  font-weight: 600;
+  color: var(--heading);
+  list-style: none;
+  user-select: none;
+  padding: 0.25rem 0;
+}
+
+.form-section-summary::-webkit-details-marker,
+.form-section-summary::marker {
+  display: none;
+}
+
+.form-section-summary::before {
+  content: "▶ ";
+  font-size: 0.75rem;
+  opacity: 0.6;
+}
+
+details[open] > .form-section-summary::before {
+  content: "▼ ";
+}
+
+@media (forced-colors: active) {
+  .form-section-summary {
+    outline: 1px solid ButtonText;
+    padding: 0.25rem 0.5rem;
+  }
+}
+
 .terms {
   background: var(--pane-bg);
   border: 1px solid var(--pane-border);
