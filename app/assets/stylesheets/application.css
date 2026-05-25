@@ -1162,6 +1162,156 @@ details[open] .details-close {
   font-size: 0.9rem;
 }
 
+/* Avatar shape modifiers */
+.avatar--circle,
+.avatar--circle.avatar--placeholder,
+.sidebar-tree__avatar--circle,
+.tree__avatar.tree__avatar--circle {
+  border-radius: 50%;
+}
+
+.avatar--square,
+.avatar--square.avatar--placeholder,
+.sidebar-tree__avatar--square,
+.tree__avatar.tree__avatar--square {
+  border-radius: 0;
+}
+
+/* When JS is active, hide the avatar editor dialog unless it's open as a modal.
+   Without JS, the dialog has [open] and renders inline so users can access the fields. */
+.js .avatar-editor-dialog:not(:modal) {
+  display: none;
+}
+
+/* Without JS, override the browser's default `position: absolute` on <dialog>
+   so it flows inline with the form instead of overlapping other content. */
+html:not(.js) .avatar-editor-dialog {
+  position: static;
+  width: auto;
+  max-height: none;
+  margin: 0;
+}
+
+html:not(.js) .avatar-editor__current,
+html:not(.js) .avatar-editor-dialog__actions {
+  display: none;
+}
+
+/* Avatar editor dialog */
+.avatar-editor__current {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.avatar-editor-dialog {
+  background-color: var(--pane-bg);
+  border: 1px solid var(--pane-border);
+  border-radius: 8px;
+  color: var(--text);
+  padding: 1.5rem;
+  width: min(480px, 90vw);
+  max-height: 90vh;
+  overflow-y: auto;
+}
+
+.avatar-editor-dialog::backdrop {
+  background-color: color-mix(in srgb, var(--page-bg) 60%, transparent);
+}
+
+.avatar-editor-dialog__title {
+  font-size: 1.2rem;
+  font-weight: 600;
+  color: var(--heading);
+  margin: 0 0 1.25rem;
+}
+
+.avatar-editor-dialog__preview {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 1.25rem;
+}
+
+.avatar-editor-dialog__preview img,
+.avatar-editor-dialog__preview .avatar--placeholder {
+  width: 96px;
+  height: 96px;
+}
+
+.avatar-shape-picker {
+  display: flex;
+  gap: 1rem;
+  margin-bottom: 1.25rem;
+}
+
+.avatar-shape-picker__option {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.4rem;
+  cursor: pointer;
+  font-size: 0.85rem;
+  color: var(--text);
+}
+
+.avatar-shape-picker__option input[type="radio"] {
+  position: absolute;
+  opacity: 0;
+  pointer-events: none;
+}
+
+.avatar-shape-picker__sample {
+  width: 48px;
+  height: 48px;
+  background-color: var(--input-border);
+  outline: 2px solid transparent;
+  outline-offset: 2px;
+  transition: outline-color 0.1s;
+}
+
+.avatar-shape-picker__sample--rounded {
+  border-radius: 25%;
+}
+
+.avatar-shape-picker__sample--circle {
+  border-radius: 50%;
+}
+
+.avatar-shape-picker__sample--square {
+  border-radius: 0;
+}
+
+.avatar-shape-picker__option input[type="radio"]:checked ~ .avatar-shape-picker__sample {
+  outline-color: var(--link);
+}
+
+.avatar-shape-picker__option input[type="radio"]:focus-visible ~ .avatar-shape-picker__sample {
+  outline-color: var(--link);
+}
+
+.avatar-editor-dialog__actions {
+  display: flex;
+  gap: 0.75rem;
+  margin-top: 1.25rem;
+}
+
+@media (forced-colors: active) {
+  .avatar-editor-dialog {
+    border: 2px solid ButtonText;
+  }
+
+  .avatar-shape-picker__sample {
+    background-color: ButtonFace;
+    border: 2px solid ButtonText;
+  }
+
+  .avatar-shape-picker__option input[type="radio"]:checked ~ .avatar-shape-picker__sample {
+    outline-color: Highlight;
+    background-color: Highlight;
+  }
+}
+
 /* Explorer layout (public group tree view) */
 .explorer {
   display: none;

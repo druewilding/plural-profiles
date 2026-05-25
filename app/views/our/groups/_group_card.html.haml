@@ -1,6 +1,6 @@
 .card.profile-card
   - if group.avatar.attached?
-    = image_tag group.avatar.variant(resize_to_fill: [64, 64]), class: "avatar", width: 64, height: 64, alt: group.avatar_alt_text.presence || "", loading: "lazy"
+    = image_tag group.avatar.variant(resize_to_fill: [64, 64]), class: "avatar #{avatar_shape_class(group)}".strip, width: 64, height: 64, alt: group.avatar_alt_text.presence || "", loading: "lazy"
   - else
     .avatar.avatar--placeholder
       = render "shared/plural_pride_logo"

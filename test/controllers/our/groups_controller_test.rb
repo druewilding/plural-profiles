@@ -93,6 +93,24 @@ class Our::GroupsControllerTest < ActionDispatch::IntegrationTest
     assert_equal "Best Friends", @group.reload.name
   end
 
+  test "update saves avatar_shape" do
+    sign_in_as @user
+    patch our_group_path(@group), params: {
+      group: { name: @group.name, avatar_shape: "circle" }
+    }
+    assert_redirected_to our_group_path(@group)
+    assert_equal "circle", @group.reload.avatar_shape
+  end
+
+  test "update rejects invalid avatar_shape" do
+    sign_in_as @user
+    patch our_group_path(@group), params: {
+      group: { name: @group.name, avatar_shape: "triangle" }
+    }
+    assert_response :unprocessable_entity
+    assert_not_equal "triangle", @group.reload.avatar_shape
+  end
+
   test "update with avatar upload" do
     sign_in_as @user
     patch our_group_path(@group), params: {

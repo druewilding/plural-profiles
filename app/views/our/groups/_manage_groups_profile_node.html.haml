@@ -9,7 +9,7 @@
 .tree-editor__leaf.tree-editor__leaf--profile{class: ("tree-editor__node--hidden" if effectively_hidden)}
   .tree-editor__item-info
     - if profile.avatar.attached?
-      = image_tag profile.avatar.variant(resize_to_fill: [24, 24]), class: "tree__avatar", width: 24, height: 24, alt: ""
+      = image_tag profile.avatar.variant(resize_to_fill: [24, 24]), class: "tree__avatar #{avatar_shape_class(profile, prefix: 'tree__avatar')}".strip, width: 24, height: 24, alt: ""
     - else
       %span.tree__avatar.tree__avatar--placeholder{"aria-hidden": "true"}
         = render "shared/plural_pride_logo"
