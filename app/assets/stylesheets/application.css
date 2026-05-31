@@ -2531,6 +2531,7 @@ input[type="submit"].btn--small,
   gap: 0.5rem;
 }
 
+/* No-JS: native colour input */
 .theme-designer__color-input input[type="color"] {
   width: 48px;
   height: 36px;
@@ -2550,11 +2551,44 @@ input[type="submit"].btn--small,
   border-radius: 2px;
 }
 
+/* JS-enhanced: Coloris wraps the hex input in .clr-field */
+.theme-designer__color-input .clr-field {
+  flex: 1;
+}
+
+/* Swatch button: left-aligned, wider, inset inside the field border */
+.theme-designer__color-input .clr-field button {
+  left: 2px;
+  right: auto;
+  width: 2.8rem;
+  height: calc(100% - 4px);
+  border-radius: 4px 0 0 4px;
+}
+
 .theme-designer__hex-input {
-  width: calc(9ch + 2.5rem) !important;
+  width: calc(9ch + 2.8rem);
   font-family: monospace;
   font-size: 0.85rem;
   text-transform: uppercase;
+}
+
+/* When inside Coloris wrapper, fill the flex space with padding for swatch */
+.clr-field .theme-designer__hex-input {
+  width: 100%;
+  padding-left: calc(2.8rem + 10px);
+  padding-right: 0.75rem;
+  box-sizing: border-box;
+}
+
+/* Coloris picker z-index — sit above form elements */
+.clr-picker {
+  z-index: 9999;
+}
+
+@media (forced-colors: active) {
+  .theme-designer__color-input .clr-field button {
+    forced-color-adjust: none;
+  }
 }
 
 .theme-designer__css-output {
