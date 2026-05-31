@@ -55,6 +55,7 @@ export default class extends Controller {
       el: "[data-coloris]",
       alpha: true,
       format: "hex",
+      theme: "large",
       themeMode: "auto",
       forceAlpha: false,
     })
