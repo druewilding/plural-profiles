@@ -52,11 +52,13 @@ export default class extends Controller {
   initColoris() {
     Coloris.init()
     Coloris({
+      el: "[data-coloris]",
       alpha: true,
       format: "hex",
       themeMode: "auto",
       forceAlpha: false,
     })
+    Coloris.wrap("[data-coloris]")
     this.colorInputTargets.forEach(input => {
       input.disabled = true
       input.hidden = true
