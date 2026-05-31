@@ -56,7 +56,7 @@ class Our::ThemesController < ApplicationController
   def create
     @theme = Current.user.themes.build(theme_params)
     if @theme.save
-      redirect_to our_themes_path, notice: "Theme created."
+      redirect_to edit_our_theme_path(@theme), notice: "Theme created."
     else
       render :new, status: :unprocessable_entity
     end
@@ -68,7 +68,7 @@ class Our::ThemesController < ApplicationController
   def update
     @theme.background_image.purge if params.dig(:theme, :remove_background_image) == "1"
     if @theme.update(theme_params)
-      redirect_to our_themes_path, notice: "Theme saved."
+      redirect_to edit_our_theme_path(@theme), notice: "Changes saved."
     else
       render :edit, status: :unprocessable_entity
     end

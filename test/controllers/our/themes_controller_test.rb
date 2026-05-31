@@ -43,7 +43,7 @@ class Our::ThemesControllerTest < ActionDispatch::IntegrationTest
         theme: { name: "Midnight", colors: { page_bg: "#000000", text: "#ffffff" } }
       }
     end
-    assert_redirected_to our_themes_path
+    assert_redirected_to edit_our_theme_path(Theme.find_by!(name: "Midnight"))
   end
 
   test "create accepts 8-digit hex colors with alpha" do
@@ -53,8 +53,8 @@ class Our::ThemesControllerTest < ActionDispatch::IntegrationTest
         theme: { name: "Translucent", colors: { page_bg: "#00000080", text: "#ffffffcc" } }
       }
     end
-    assert_redirected_to our_themes_path
-    theme = Theme.last
+    theme = Theme.find_by!(name: "Translucent")
+    assert_redirected_to edit_our_theme_path(theme)
     assert_equal "#00000080", theme.colors["page_bg"]
     assert_equal "#ffffffcc", theme.colors["text"]
   end
@@ -91,7 +91,7 @@ class Our::ThemesControllerTest < ActionDispatch::IntegrationTest
     patch our_theme_path(@theme), params: {
       theme: { name: "Dark Forest v2", colors: { page_bg: "#111111" } }
     }
-    assert_redirected_to our_themes_path
+    assert_redirected_to edit_our_theme_path(@theme)
     @theme.reload
     assert_equal "Dark Forest v2", @theme.name
     assert_equal "#111111", @theme.colors["page_bg"]
@@ -250,7 +250,7 @@ class Our::ThemesControllerTest < ActionDispatch::IntegrationTest
     post our_themes_path, params: {
       theme: { name: "Night Owl", colors: {}, tags: [ "dark", "cool-colours" ] }
     }
-    assert_redirected_to our_themes_path
+    assert_redirected_to edit_our_theme_path(Theme.find_by!(name: "Night Owl"))
     theme = Theme.find_by!(name: "Night Owl")
     assert_equal [ "dark", "cool-colours" ], theme.tags
   end
@@ -260,7 +260,7 @@ class Our::ThemesControllerTest < ActionDispatch::IntegrationTest
     post our_themes_path, params: {
       theme: { name: "Mystery", colors: {}, tags: [ "dark", "invented-tag" ] }
     }
-    assert_redirected_to our_themes_path
+    assert_redirected_to edit_our_theme_path(Theme.find_by!(name: "Mystery"))
     theme = Theme.find_by!(name: "Mystery")
     assert_equal [ "dark" ], theme.tags
   end
@@ -270,7 +270,7 @@ class Our::ThemesControllerTest < ActionDispatch::IntegrationTest
     patch our_theme_path(@theme), params: {
       theme: { name: @theme.name, colors: @theme.colors, tags: [ "light", "high-contrast" ] }
     }
-    assert_redirected_to our_themes_path
+    assert_redirected_to edit_our_theme_path(@theme)
     assert_equal [ "light", "high-contrast" ], @theme.reload.tags
   end
 
@@ -279,7 +279,7 @@ class Our::ThemesControllerTest < ActionDispatch::IntegrationTest
     patch our_theme_path(@theme), params: {
       theme: { name: @theme.name, colors: @theme.colors, tags: [ "" ] }
     }
-    assert_redirected_to our_themes_path
+    assert_redirected_to edit_our_theme_path(@theme)
     assert_equal [], @theme.reload.tags
   end
 
@@ -290,7 +290,7 @@ class Our::ThemesControllerTest < ActionDispatch::IntegrationTest
     post our_themes_path, params: {
       theme: { name: "Credited", colors: {}, credit: "Dru", notes: "Some notes here" }
     }
-    assert_redirected_to our_themes_path
+    assert_redirected_to edit_our_theme_path(Theme.find_by!(name: "Credited"))
     theme = Theme.find_by!(name: "Credited")
     assert_equal "Dru", theme.credit
     assert_equal "Some notes here", theme.notes
@@ -301,7 +301,7 @@ class Our::ThemesControllerTest < ActionDispatch::IntegrationTest
     post our_themes_path, params: {
       theme: { name: "Linked Credit", colors: {}, credit: "Dru", credit_url: "https://example.com" }
     }
-    assert_redirected_to our_themes_path
+    assert_redirected_to edit_our_theme_path(Theme.find_by!(name: "Linked Credit"))
     assert_equal "https://example.com", Theme.find_by!(name: "Linked Credit").credit_url
   end
 
@@ -320,7 +320,7 @@ class Our::ThemesControllerTest < ActionDispatch::IntegrationTest
     patch our_theme_path(@theme), params: {
       theme: { name: @theme.name, colors: @theme.colors, credit: "Dru", notes: "Updated notes" }
     }
-    assert_redirected_to our_themes_path
+    assert_redirected_to edit_our_theme_path(@theme)
     @theme.reload
     assert_equal "Dru", @theme.credit
     assert_equal "Updated notes", @theme.notes
@@ -350,7 +350,7 @@ class Our::ThemesControllerTest < ActionDispatch::IntegrationTest
         }
       }
     }
-    assert_redirected_to our_themes_path
+    assert_redirected_to edit_our_theme_path(Theme.find_by!(name: "Bordered"))
     theme = Theme.find_by!(name: "Bordered")
     assert_equal "#ff0000", theme.colors["primary_button_border"]
     assert_equal "#00ff00", theme.colors["secondary_button_border"]
@@ -369,7 +369,7 @@ class Our::ThemesControllerTest < ActionDispatch::IntegrationTest
         )
       }
     }
-    assert_redirected_to our_themes_path
+    assert_redirected_to edit_our_theme_path(@theme)
     @theme.reload
     assert_equal "#aaaaaa", @theme.colors["primary_button_border"]
     assert_equal "#bbbbbb", @theme.colors["secondary_button_border"]
@@ -413,7 +413,7 @@ class Our::ThemesControllerTest < ActionDispatch::IntegrationTest
     post our_themes_path, params: {
       theme: { name: "Sneaky shared", colors: {}, shared: true }
     }
-    assert_redirected_to our_themes_path
+    assert_redirected_to edit_our_theme_path(Theme.find_by!(name: "Sneaky shared"))
     theme = Theme.find_by!(name: "Sneaky shared")
     assert_not theme.shared?
   end
@@ -424,7 +424,7 @@ class Our::ThemesControllerTest < ActionDispatch::IntegrationTest
     post our_themes_path, params: {
       theme: { name: "Admin shared theme", colors: {}, shared: true }
     }
-    assert_redirected_to our_themes_path
+    assert_redirected_to edit_our_theme_path(Theme.find_by!(name: "Admin shared theme"))
     theme = Theme.find_by!(name: "Admin shared theme")
     assert theme.shared?
   end
@@ -502,7 +502,7 @@ class Our::ThemesControllerTest < ActionDispatch::IntegrationTest
     sign_in_as @user
     theme = themes(:another_admin_shared)
     patch our_theme_path(theme), params: { theme: { name: "Renamed by other admin" } }
-    assert_redirected_to our_themes_path
+    assert_redirected_to edit_our_theme_path(theme)
     assert_equal "Renamed by other admin", theme.reload.name
   end
 

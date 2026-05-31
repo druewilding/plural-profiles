@@ -54,7 +54,7 @@ class ThemeBackgroundImageTest < ApplicationSystemTestCase
     check "Remove background image"
     click_button "Save theme"
 
-    assert_text "Theme saved."
+    assert_text "Changes saved."
 
     visit edit_our_theme_path(@theme)
     assert_current_path edit_our_theme_path(@theme)
@@ -141,7 +141,7 @@ class ThemeBackgroundImageTest < ApplicationSystemTestCase
     select "Fixed (stays in place)", from: "Scroll behaviour"
 
     click_button "Save theme"
-    assert_text "Theme saved."
+    assert_text "Changes saved."
 
     @theme.reload
     assert_equal "no-repeat", @theme.background_repeat
