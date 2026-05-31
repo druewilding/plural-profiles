@@ -2556,17 +2556,27 @@ input[type="submit"].btn--small,
   flex: 1;
 }
 
+/* Swatch button: left-aligned, wider, inset inside the field border */
+.theme-designer__color-input .clr-field button {
+  left: 2px;
+  right: auto;
+  width: 2.8rem;
+  height: calc(100% - 4px);
+  border-radius: 4px 0 0 4px;
+}
+
 .theme-designer__hex-input {
-  width: calc(9ch + 2.5rem);
+  width: calc(9ch + 2.8rem);
   font-family: monospace;
   font-size: 0.85rem;
   text-transform: uppercase;
 }
 
-/* When inside Coloris wrapper, fill the flex space and leave room for swatch button */
+/* When inside Coloris wrapper, fill the flex space with padding for swatch */
 .clr-field .theme-designer__hex-input {
   width: 100%;
-  padding-right: 2.25rem;
+  padding-left: calc(2.8rem + 10px);
+  padding-right: 0.75rem;
   box-sizing: border-box;
 }
 
