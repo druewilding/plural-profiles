@@ -1,4 +1,5 @@
 import { Controller } from "@hotwired/stimulus"
+import Coloris from "@melloware/coloris"
 
 // Maps theme property names (underscore) to CSS custom property names (hyphen)
 function cssProp(property) {
@@ -38,12 +39,42 @@ export default class extends Controller {
 
   connect() {
     this.bgObjectUrl = null
+    this.initColoris()
     this.applyAllToPreview()
     this.applyBackgroundToPreview()
   }
 
   disconnect() {
     if (this.bgObjectUrl) URL.revokeObjectURL(this.bgObjectUrl)
+    this.destroyColoris()
+  }
+
+  initColoris() {
+    Coloris.init()
+    Coloris({
+      alpha: true,
+      format: "hex",
+      themeMode: "auto",
+      forceAlpha: false,
+    })
+    this.colorInputTargets.forEach(input => {
+      input.disabled = true
+      input.hidden = true
+    })
+  }
+
+  destroyColoris() {
+    this.colorInputTargets.forEach(input => {
+      input.disabled = false
+      input.hidden = false
+    })
+    this.hexInputTargets.forEach(input => {
+      const wrapper = input.closest(".clr-field")
+      if (wrapper && wrapper.parentNode) {
+        wrapper.parentNode.insertBefore(input, wrapper)
+        wrapper.remove()
+      }
+    })
   }
 
   // Called when a colour picker changes
@@ -63,7 +94,7 @@ export default class extends Controller {
     this.updateJsonOutput()
   }
 
-  // Called when the hex text input changes
+  // Called when the hex text input changes (also fired by Coloris on pick)
   updateFromHex(event) {
     const input = event.currentTarget
     const property = input.dataset.property
@@ -74,13 +105,6 @@ export default class extends Controller {
 
     // Only apply if it looks like a valid hex colour (6 or 8 digits for alpha)
     if (/^#[0-9a-fA-F]{6}([0-9a-fA-F]{2})?$/.test(value)) {
-      // For 6-digit hex (no alpha), sync the color picker
-      if (value.length === 7) {
-        const colorInput = this.colorInputTargets.find(el => el.dataset.property === property)
-        if (colorInput) colorInput.value = value
-      }
-      // For 8-digit hex (with alpha), native color input doesn't support it, so skip syncing
-
       this.applyToPreview(property, value)
       this.updateJsonOutput()
     }
