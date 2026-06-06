@@ -590,6 +590,22 @@ h2 { font-size: 1.4rem; }
   opacity: 0.8;
 }
 
+.tag-line {
+  margin: 0 0 0.75rem;
+  font-style: italic;
+  color: var(--text);
+  opacity: 0.85;
+}
+
+.profile-card .tag-line {
+  margin-top: auto;
+  padding-top: 0.5rem;
+  font-style: italic;
+  font-size: 0.9rem;
+  opacity: 0.8;
+  text-align: center;
+}
+
 h2 a { color: inherit; }
 h2 a:hover { text-decoration: none; opacity: 0.8; }
 
@@ -991,10 +1007,16 @@ button:hover,
   background-color: var(--header-bg);
   display: flex;
   align-items: center;
+  flex-wrap: wrap;
   gap: 1.25rem;
   margin: -2rem -2rem 1.5rem -2rem;
   padding: 2rem;
   border-radius: 7px 7px 0 0;
+}
+
+.card > .card__header > .tag-line {
+  flex-basis: 100%;
+  margin: -0.5rem 0 0;
 }
 
 .card__header {

@@ -9,6 +9,8 @@
       %h1= group.name
       - if group.subtitle.present?
         %p.subtitle= group.subtitle
+    - if group.tag_line.present?
+      %p.tag-line= group.tag_line
 
   - if group.description.present?
     .group-description{data: {controller: "spoiler", action: "click->spoiler#toggle keydown->spoiler#keydown"}}
