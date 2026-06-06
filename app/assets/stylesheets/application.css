@@ -403,7 +403,7 @@ details[open] > .form-section-summary::before {
 
 .sidebar-tree__leaf {
   display: flex;
-  align-items: center;
+  align-items: flex-start;
   flex-wrap: wrap;
   gap: 0.4rem;
   padding: 0.3rem 0.4rem;
@@ -1470,7 +1470,7 @@ html:not(.js) .avatar-editor-dialog__actions {
 
 .tree__row {
   display: flex;
-  align-items: center;
+  align-items: flex-start;
 }
 
 .tree__arrow-btn {
@@ -1479,7 +1479,7 @@ html:not(.js) .avatar-editor-dialog__actions {
   justify-content: center;
   width: var(--tree-arrow-width);
   flex-shrink: 0;
-  padding: 0.3rem 0;
+  padding: 0.6rem 0;
   border: none;
   background: none;
   color: var(--text);
@@ -1494,7 +1494,7 @@ html:not(.js) .avatar-editor-dialog__actions {
 
 .tree__item {
   display: flex;
-  align-items: center;
+  align-items: flex-start;
   gap: 0.4rem;
   flex: 1;
   min-width: 0;
