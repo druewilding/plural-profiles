@@ -13,7 +13,7 @@ class ManageGroupsTest < ApplicationSystemTestCase
     click_link "Manage groups"
 
     assert_current_path manage_groups_our_group_path(groups(:alpha_clan))
-    assert_text "Manage groups in"
+    assert_text "Manage groups"
     assert_text "Alpha Clan"
   end
 

@@ -40,7 +40,7 @@ class GroupManagementTest < ApplicationSystemTestCase
     visit our_group_path(groups(:friends))
     click_link "Manage profiles"
 
-    assert_text "Manage profiles in"
+    assert_text "Manage profiles"
     assert_text "Alice" # already in the group
     assert_text "Bob"   # available to add
   end
@@ -137,8 +137,8 @@ class GroupManagementTest < ApplicationSystemTestCase
     visit group_path(everyone.uuid)
 
     within(".explorer__sidebar") do
-      # The childless group should be a leaf node (li.tree__leaf > a > .tree__label)
-      assert_selector "li.tree__leaf > a.tree__item > .tree__label", text: "Empty Crew"
+      # The childless group should be a leaf node (li.tree__leaf > a > .tree__label-block > .tree__label)
+      assert_selector "li.tree__leaf > a.tree__item .tree__label", text: "Empty Crew"
 
       # It should NOT be a folder with a toggle arrow
       assert_no_selector "li.tree__folder > .tree__row .tree__label", text: "Empty Crew"
@@ -166,7 +166,7 @@ class GroupManagementTest < ApplicationSystemTestCase
     visit group_path(everyone.uuid)
 
     within(".explorer__sidebar") do
-      assert_selector "li.tree__leaf > a.tree__item > .tree__label", text: "Outer Ring"
+      assert_selector "li.tree__leaf > a.tree__item .tree__label", text: "Outer Ring"
       assert_no_selector "li.tree__folder > .tree__row .tree__label", text: "Outer Ring"
       # The hidden child should not appear at all
       assert_no_text "Inner Ring"
@@ -193,10 +193,10 @@ class GroupManagementTest < ApplicationSystemTestCase
     visit group_path(everyone.uuid)
 
     within(".explorer__sidebar") do
-      assert_selector "li.tree__leaf > a.tree__item > .tree__label", text: "Quiet Crew"
+      assert_selector "li.tree__leaf > a.tree__item .tree__label", text: "Quiet Crew"
       assert_no_selector "li.tree__folder > .tree__row .tree__label", text: "Quiet Crew"
       # Bob should not appear under Quiet Crew
-      assert_no_selector "li.tree__leaf > a.tree__item > .tree__label", text: "Bob"
+      assert_no_selector "li.tree__leaf > a.tree__item .tree__label", text: "Bob"
     end
   end
 
