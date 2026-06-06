@@ -194,12 +194,14 @@ class Our::GroupsControllerTest < ActionDispatch::IntegrationTest
 
   test "create saves subtitle and tag_line" do
     sign_in_as @user
-    post our_groups_path, params: {
-      group: { name: "New Group", subtitle: "the cosy one", tag_line: "welcoming all" }
-    }
-    saved = Group.last
-    assert_equal "the cosy one", saved.subtitle
-    assert_equal "welcoming all", saved.tag_line
+    assert_difference("Group.count", 1) do
+      post our_groups_path, params: {
+        group: { name: "New Group", subtitle: "the cosy one", tag_line: "welcoming all" }
+      }
+    end
+    assert_redirected_to our_group_path(Group.last)
+    assert_equal "the cosy one", Group.last.subtitle
+    assert_equal "welcoming all", Group.last.tag_line
   end
 
   test "update saves subtitle and tag_line" do

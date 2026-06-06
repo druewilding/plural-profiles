@@ -172,12 +172,14 @@ class Our::ProfilesControllerTest < ActionDispatch::IntegrationTest
 
   test "create saves subtitle and tag_line" do
     sign_in_as @user
-    post our_profiles_path, params: {
-      profile: { name: "New Alter", subtitle: "the quiet one", tag_line: "here to chill" }
-    }
-    saved = Profile.last
-    assert_equal "the quiet one", saved.subtitle
-    assert_equal "here to chill", saved.tag_line
+    assert_difference("Profile.count", 1) do
+      post our_profiles_path, params: {
+        profile: { name: "New Alter", subtitle: "the quiet one", tag_line: "here to chill" }
+      }
+    end
+    assert_redirected_to our_profile_path(Profile.last)
+    assert_equal "the quiet one", Profile.last.subtitle
+    assert_equal "here to chill", Profile.last.tag_line
   end
 
   test "update saves subtitle and tag_line" do
