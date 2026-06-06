@@ -45,12 +45,15 @@
                     - else
                       %span.tree__avatar.tree__avatar--placeholder{"aria-hidden": "true"}
                         = render "shared/plural_pride_logo"
-                    - if repeated
-                      %span.tree__label.tree__label--repeated{title: "#{profile.name} already listed elsewhere in this group"}
-                        = profile.name
-                        %span.visually-hidden= " (already listed elsewhere in this group)"
-                    - else
-                      %span.tree__label= profile.name
+                    .tree__label-block
+                      - if repeated
+                        %span.tree__label.tree__label--repeated{title: "#{profile.name} already listed elsewhere in this group"}
+                          = profile.name
+                          %span.visually-hidden= " (already listed elsewhere in this group)"
+                      - else
+                        %span.tree__label= profile.name
+                      - if profile.subtitle.present?
+                        %span.tree__subtitle= profile.subtitle
 
       .explorer__content{"data-tree-target": "content", "aria-live": "polite"}
         -# Default: show root group content
