@@ -5,15 +5,15 @@
 
 = form_with model: profile, url: profile.persisted? ? our_profile_path(profile) : our_profiles_path do |form|
   .form-group
+    = render "shared/avatar_editor_dialog", record: profile, form: form, param_prefix: "profile"
+
+  .form-group
     = form.label :name
     = form.text_field :name, required: true
 
   .form-group
     = form.label :pronouns
     = form.text_field :pronouns, placeholder: "e.g. they/them, she/her, he/him"
-
-  .form-group
-    = render "shared/avatar_editor_dialog", record: profile, form: form, param_prefix: "profile"
 
   .form-group
     = form.label :description
