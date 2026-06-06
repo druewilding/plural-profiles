@@ -27,6 +27,20 @@ class GroupManagementTest < ApplicationSystemTestCase
     assert_text "Best Friends"
   end
 
+  test "tag line appears on group show page" do
+    groups(:friends).update!(tag_line: "the best of us")
+    visit our_group_path(groups(:friends))
+    assert_text "the best of us"
+  end
+
+  test "editing tag line updates group show page" do
+    visit our_group_path(groups(:friends))
+    click_link "Edit"
+    fill_in "Tag line", with: "always together"
+    click_button "Update group"
+    assert_text "always together"
+  end
+
   test "delete a group" do
     visit our_group_path(groups(:friends))
     accept_confirm do

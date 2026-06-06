@@ -56,4 +56,18 @@ class ProfileManagementTest < ApplicationSystemTestCase
     click_button "Update profile"
     assert_text "morning person"
   end
+
+  test "tag line appears on profile show page" do
+    profiles(:alice).update!(tag_line: "living the dream")
+    visit our_profile_path(profiles(:alice))
+    assert_text "living the dream"
+  end
+
+  test "editing tag line updates profile show page" do
+    visit our_profile_path(profiles(:alice))
+    click_link "Edit"
+    fill_in "Tag line", with: "just passing through"
+    click_button "Update profile"
+    assert_text "just passing through"
+  end
 end
