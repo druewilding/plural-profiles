@@ -233,7 +233,7 @@ details[open] > .form-section-summary::before {
   padding: 0.4rem 0.5rem;
   list-style: none;
   display: flex;
-  align-items: center;
+  align-items: flex-start;
   gap: 0.4rem;
   user-select: none;
 }
@@ -250,6 +250,7 @@ details[open] > .form-section-summary::before {
   text-align: center;
   line-height: 1;
   transition: transform 0.15s ease;
+  margin-top: 0.3rem;
 }
 
 .sidebar details[open] > summary::before {
@@ -427,7 +428,7 @@ details[open] > .form-section-summary::before {
 
 .sidebar-tree__row {
   display: flex;
-  align-items: center;
+  align-items: flex-start;
   flex-wrap: wrap;
   gap: 0.4rem;
   border-radius: 4px;
