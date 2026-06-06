@@ -584,7 +584,7 @@ h2 { font-size: 1.4rem; }
 }
 
 .subtitle {
-  margin: 0.15rem 0 0;
+  margin: 0 0 0.5rem;
   font-size: 0.9rem;
   color: var(--text);
   opacity: 0.8;
