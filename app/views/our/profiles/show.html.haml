@@ -17,6 +17,9 @@
             - @profile.labels.each do |label|
               %span.label-badge= label
 
+      - if @profile.subtitle.present?
+        %p.subtitle= @profile.subtitle
+
       - if @profile.pronouns.present? || @profile.heart_emojis.any?
         .pronouns
           - if @profile.pronouns.present?
@@ -26,6 +29,9 @@
               - @profile.heart_emojis.each do |heart|
                 .heart-display__heart
                   = image_tag "/images/hearts/#{heart}.webp", width: 24, height: 24, alt: @profile.heart_emoji_display_name(heart), title: @profile.heart_emoji_display_name(heart), loading: "lazy"
+
+    - if @profile.tag_line.present?
+      %p.tag-line= @profile.tag_line
 
   - if @profile.description.present?
     .profile-description{data: {controller: "spoiler", action: "click->spoiler#toggle keydown->spoiler#keydown"}}
@@ -40,6 +46,8 @@
           - if group.labels.any?
             - group.labels.each do |label|
               %span.label-badge.label-badge--inline= label
+          - if group.subtitle.present?
+            %span.group-list-subtitle= group.subtitle
 
   .timestamps
     %p

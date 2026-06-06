@@ -170,6 +170,34 @@ class Our::ProfilesControllerTest < ActionDispatch::IntegrationTest
     assert_in_delta original_created_at.to_i, @profile.reload.created_at.to_i, 1
   end
 
+  test "create saves subtitle and tag_line" do
+    sign_in_as @user
+    post our_profiles_path, params: {
+      profile: { name: "New Alter", subtitle: "the quiet one", tag_line: "here to chill" }
+    }
+    saved = Profile.last
+    assert_equal "the quiet one", saved.subtitle
+    assert_equal "here to chill", saved.tag_line
+  end
+
+  test "update saves subtitle and tag_line" do
+    sign_in_as @user
+    patch our_profile_path(@profile), params: {
+      profile: { name: @profile.name, subtitle: "updated subtitle", tag_line: "updated tagline" }
+    }
+    assert_redirected_to our_profile_path(@profile)
+    assert_equal "updated subtitle", @profile.reload.subtitle
+    assert_equal "updated tagline", @profile.reload.tag_line
+  end
+
+  test "show renders subtitle when present" do
+    @profile.update!(subtitle: "the brave one")
+    sign_in_as @user
+    get our_profile_path(@profile)
+    assert_response :success
+    assert_match "the brave one", response.body
+  end
+
   # -- Edge case: logged out user gets redirected to public --
 
   test "show redirects logged-out user to public profile" do

@@ -12,8 +12,16 @@
     = form.text_field :name, required: true
 
   .form-group
+    = form.label :subtitle
+    = form.text_field :subtitle
+
+  .form-group
     = form.label :pronouns
     = form.text_field :pronouns, placeholder: "e.g. they/them, she/her, he/him"
+
+  .form-group
+    = form.label :tag_line
+    = form.text_field :tag_line
 
   .form-group
     = form.label :description
@@ -27,10 +35,13 @@
         - @groups.each do |group|
           %label.checkbox-label
             = check_box_tag "profile[group_ids][]", group.id, profile.group_ids.include?(group.id), id: "profile_group_ids_#{group.id}"
-            = group.name
-            - if group.labels.any?
-              - group.labels.each do |label|
-                %span.label-badge.label-badge--inline= label
+            %span.checkbox-label__text
+              %span= group.name
+              - if group.labels.any?
+                - group.labels.each do |label|
+                  %span.label-badge.label-badge--inline= label
+              - if group.subtitle.present?
+                %span.checkbox-label__subtitle= group.subtitle
 
   %fieldset.form-group
     %legend Heart emojis

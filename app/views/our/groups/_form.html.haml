@@ -12,6 +12,14 @@
     = form.text_field :name, required: true
 
   .form-group
+    = form.label :subtitle
+    = form.text_field :subtitle
+
+  .form-group
+    = form.label :tag_line
+    = form.text_field :tag_line
+
+  .form-group
     = form.label :description
     = form.text_area :description, placeholder: "Describe this group...", rows: 18
 

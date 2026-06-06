@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_05_25_132411) do
+ActiveRecord::Schema[8.1].define(version: 2026_06_06_132218) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -70,6 +70,8 @@ ActiveRecord::Schema[8.1].define(version: 2026_05_25_132411) do
     t.text "description"
     t.jsonb "labels", default: [], null: false
     t.string "name", null: false
+    t.string "subtitle"
+    t.string "tag_line"
     t.bigint "theme_id"
     t.datetime "updated_at", null: false
     t.bigint "user_id", null: false
@@ -114,6 +116,8 @@ ActiveRecord::Schema[8.1].define(version: 2026_05_25_132411) do
     t.jsonb "labels", default: [], null: false
     t.string "name", null: false
     t.string "pronouns"
+    t.string "subtitle"
+    t.string "tag_line"
     t.bigint "theme_id"
     t.datetime "updated_at", null: false
     t.bigint "user_id", null: false

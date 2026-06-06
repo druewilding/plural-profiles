@@ -26,7 +26,10 @@
               = link_to group_path(@group.uuid), class: "tree__item tree__item--active", "data-action": "click->tree#selectRoot", "data-panel-url": panel_group_path(@group.uuid, root: @group.uuid), "data-group-uuid": @group.uuid do
                 - if @group.avatar.attached?
                   = image_tag @group.avatar.variant(resize_to_fill: [24, 24]), class: "tree__avatar #{avatar_shape_class(@group, prefix: 'tree__avatar')}".strip, width: 24, height: 24, alt: ""
-                %span.tree__label= @group.name
+                .tree__label-block
+                  %span.tree__label= @group.name
+                  - if @group.subtitle.present?
+                    %span.tree__subtitle= @group.subtitle
             %ul.tree__children{role: "group"}
               -# Child groups (recursive)
               - @descendant_tree.each do |node|

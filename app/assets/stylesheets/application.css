@@ -479,8 +479,9 @@ details[open] > .form-section-summary::before {
   color: var(--link);
   text-decoration: none;
   overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
   flex: 1;
   min-width: 0;
 }
@@ -492,6 +493,17 @@ details[open] > .form-section-summary::before {
 .sidebar-tree__label {
   overflow: hidden;
   text-overflow: ellipsis;
+  white-space: nowrap;
+  width: 100%;
+}
+
+.sidebar-tree__subtitle {
+  font-size: 0.75rem;
+  opacity: 0.75;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  width: 100%;
 }
 
 .sidebar-tree__label--repeated {
@@ -571,6 +583,30 @@ h2 { font-size: 1.4rem; }
   transform: translateY(-0.15em);
 }
 
+.subtitle {
+  margin: 0 0 0.5rem;
+  font-size: 0.9rem;
+  color: var(--text);
+  opacity: 0.8;
+}
+
+.tag-line {
+  margin: 0 0 0.75rem;
+  font-size: 1.1rem;
+  font-style: italic;
+  color: var(--text);
+  opacity: 0.85;
+}
+
+.profile-card .tag-line {
+  margin-top: auto;
+  padding-top: 0.5rem;
+  font-style: italic;
+  font-size: 1rem;
+  opacity: 0.8;
+  text-align: center;
+}
+
 h2 a { color: inherit; }
 h2 a:hover { text-decoration: none; opacity: 0.8; }
 
@@ -638,7 +674,7 @@ fieldset.form-group legend {
 
 .checkbox-label {
   display: flex;
-  align-items: center;
+  align-items: flex-start;
   gap: 0.5rem;
   cursor: pointer;
   font-size: 0.95rem;
@@ -646,6 +682,21 @@ fieldset.form-group legend {
 
 .checkbox-label input[type="checkbox"] {
   width: auto;
+  margin-top: 0.4rem;
+}
+
+.checkbox-label__text {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 0.25rem 0.4rem;
+}
+
+.checkbox-label__subtitle {
+  display: block;
+  width: 100%;
+  font-size: 0.8rem;
+  opacity: 0.7;
 }
 
 label {
@@ -957,10 +1008,16 @@ button:hover,
   background-color: var(--header-bg);
   display: flex;
   align-items: center;
+  flex-wrap: wrap;
   gap: 1.25rem;
   margin: -2rem -2rem 1.5rem -2rem;
   padding: 2rem;
   border-radius: 7px 7px 0 0;
+}
+
+.card > .card__header > .tag-line {
+  flex-basis: 100%;
+  margin: -0.5rem 0 0;
 }
 
 .card__header {
@@ -1151,6 +1208,12 @@ details[open] .details-close {
 }
 
 /* Pronouns */
+.group-list-subtitle {
+  display: block;
+  font-size: 0.85rem;
+  opacity: 0.7;
+}
+
 .pronouns {
   display: flex;
   flex-wrap: wrap;
@@ -1443,7 +1506,6 @@ html:not(.js) .avatar-editor-dialog__actions {
   cursor: pointer;
   text-align: left;
   text-decoration: none;
-  white-space: nowrap;
   overflow: hidden;
 }
 
@@ -1486,14 +1548,31 @@ html:not(.js) .avatar-editor-dialog__actions {
   justify-content: center;
 }
 
+.tree__label-block {
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  flex: 1;
+  min-width: 0;
+}
+
 .tree__label {
   overflow: hidden;
   text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .tree__label--repeated {
   opacity: 0.55;
   font-style: italic;
+}
+
+.tree__subtitle {
+  font-size: 0.75rem;
+  opacity: 0.75;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 @media (forced-colors: active) {
@@ -1651,11 +1730,26 @@ details[open] > .tree-editor__summary::before {
   margin-left: 0.6rem;
 }
 
+.tree-editor__name-block {
+  display: inline-flex;
+  flex-direction: column;
+  overflow: hidden;
+  min-width: 0;
+}
+
 .tree-editor__name {
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
   color: var(--heading);
+}
+
+.tree-editor__subtitle {
+  font-size: 0.75rem;
+  opacity: 0.75;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .tree-editor__node--hidden .tree-editor__name {

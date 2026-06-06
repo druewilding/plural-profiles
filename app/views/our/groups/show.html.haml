@@ -6,12 +6,19 @@
       = link_to rails_blob_path(@group.avatar, disposition: "inline"), target: "_blank", rel: "noopener", title: "Click to see full size" do
         = image_tag @group.avatar.variant(resize_to_fill: [96, 96]), class: "avatar avatar--large #{avatar_shape_class(@group)}".strip, width: 96, height: 96, alt: @group.avatar_alt_text.presence || "", loading: "lazy"
 
-    .name-with-labels
-      %h1= @group.name
-      - if @group.labels.any?
-        .label-badges
-          - @group.labels.each do |label|
-            %span.label-badge= label
+    %div
+      .name-with-labels
+        %h1= @group.name
+        - if @group.labels.any?
+          .label-badges
+            - @group.labels.each do |label|
+              %span.label-badge= label
+
+      - if @group.subtitle.present?
+        %p.subtitle= @group.subtitle
+
+    - if @group.tag_line.present?
+      %p.tag-line= @group.tag_line
 
   %div
     - if @group.description.present?

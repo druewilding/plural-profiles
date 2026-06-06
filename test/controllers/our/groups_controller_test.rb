@@ -192,6 +192,34 @@ class Our::GroupsControllerTest < ActionDispatch::IntegrationTest
     assert_in_delta original_created_at.to_i, @group.reload.created_at.to_i, 1
   end
 
+  test "create saves subtitle and tag_line" do
+    sign_in_as @user
+    post our_groups_path, params: {
+      group: { name: "New Group", subtitle: "the cosy one", tag_line: "welcoming all" }
+    }
+    saved = Group.last
+    assert_equal "the cosy one", saved.subtitle
+    assert_equal "welcoming all", saved.tag_line
+  end
+
+  test "update saves subtitle and tag_line" do
+    sign_in_as @user
+    patch our_group_path(@group), params: {
+      group: { name: @group.name, subtitle: "updated subtitle", tag_line: "updated tagline" }
+    }
+    assert_redirected_to our_group_path(@group)
+    assert_equal "updated subtitle", @group.reload.subtitle
+    assert_equal "updated tagline", @group.reload.tag_line
+  end
+
+  test "show renders subtitle when present" do
+    @group.update!(subtitle: "the welcoming group")
+    sign_in_as @user
+    get our_group_path(@group)
+    assert_response :success
+    assert_match "the welcoming group", response.body
+  end
+
   # -- Manage profiles --
 
   test "manage_profiles shows available profiles" do
