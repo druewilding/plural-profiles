@@ -5,11 +5,11 @@
 
 = form_with model: group, url: group.persisted? ? our_group_path(group) : our_groups_path do |form|
   .form-group
-    = form.label :name
-    = form.text_field :name, required: true
+    = render "shared/avatar_editor_dialog", record: group, form: form, param_prefix: "group"
 
   .form-group
-    = render "shared/avatar_editor_dialog", record: group, form: form, param_prefix: "group"
+    = form.label :name
+    = form.text_field :name, required: true
 
   .form-group
     = form.label :description
