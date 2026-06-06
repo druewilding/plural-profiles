@@ -14,6 +14,9 @@
           - @group.labels.each do |label|
             %span.label-badge= label
 
+    - if @group.subtitle.present?
+      %p.subtitle= @group.subtitle
+
   %p Choose which groups are nested inside this one. Use the Hide checkboxes to control what's visible on the page that other people see.
 
   - if has_tree || has_root_profiles

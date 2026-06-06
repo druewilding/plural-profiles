@@ -19,7 +19,10 @@
         - else
           %span.tree__avatar.tree__avatar--placeholder{"aria-hidden": "true"}
             = render "shared/plural_pride_logo"
-        %span.tree-editor__name= group.name
+        .tree-editor__name-block
+          %span.tree-editor__name= group.name
+          - if group.subtitle.present?
+            %span.tree-editor__subtitle= group.subtitle
         - if group.labels.any?
           .label-badges
             - group.labels.each do |label|
@@ -53,7 +56,10 @@
       - else
         %span.tree__avatar.tree__avatar--placeholder{"aria-hidden": "true"}
           = render "shared/plural_pride_logo"
-      %span.tree-editor__name= group.name
+      .tree-editor__name-block
+        %span.tree-editor__name= group.name
+        - if group.subtitle.present?
+          %span.tree-editor__subtitle= group.subtitle
       - if group.labels.any?
         .label-badges
           - group.labels.each do |label|

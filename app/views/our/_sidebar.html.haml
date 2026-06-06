@@ -29,6 +29,8 @@
               = render "shared/plural_pride_logo"
           = link_to our_profile_path(profile), class: "sidebar-tree__link" do
             %span.sidebar-tree__label= profile.name
+            - if profile.subtitle.present?
+              %span.sidebar-tree__subtitle= profile.subtitle
           - profile.labels.each do |label|
             %span.label-badge.label-badge--sidebar= label
 

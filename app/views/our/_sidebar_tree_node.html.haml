@@ -17,6 +17,8 @@
             %span.sidebar-tree__label.sidebar-tree__label--repeated= group.name
           - else
             %span.sidebar-tree__label= group.name
+          - if group.subtitle.present?
+            %span.sidebar-tree__subtitle= group.subtitle
         - group.labels.each do |label|
           %span.label-badge.label-badge--sidebar= label
       %ul.sidebar-tree__children
@@ -35,6 +37,8 @@
                 %span.sidebar-tree__label.sidebar-tree__label--repeated= profile.name
               - else
                 %span.sidebar-tree__label= profile.name
+              - if profile.subtitle.present?
+                %span.sidebar-tree__subtitle= profile.subtitle
             - profile.labels.each do |label|
               %span.label-badge.label-badge--sidebar= label
 - else
@@ -47,5 +51,7 @@
         %span.sidebar-tree__label.sidebar-tree__label--repeated= group.name
       - else
         %span.sidebar-tree__label= group.name
+      - if group.subtitle.present?
+        %span.sidebar-tree__subtitle= group.subtitle
     - group.labels.each do |label|
       %span.label-badge.label-badge--sidebar= label

@@ -17,6 +17,9 @@
             - @profile.labels.each do |label|
               %span.label-badge= label
 
+      - if @profile.subtitle.present?
+        %p.subtitle= @profile.subtitle
+
       - if @profile.pronouns.present? || @profile.heart_emojis.any?
         .pronouns
           - if @profile.pronouns.present?

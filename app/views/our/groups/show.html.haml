@@ -13,6 +13,9 @@
           - @group.labels.each do |label|
             %span.label-badge= label
 
+    - if @group.subtitle.present?
+      %p.subtitle= @group.subtitle
+
   %div
     - if @group.description.present?
       .group-description{data: {controller: "spoiler", action: "click->spoiler#toggle keydown->spoiler#keydown"}}

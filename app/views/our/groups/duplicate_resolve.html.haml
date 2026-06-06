@@ -30,6 +30,8 @@
             = image_tag @original.avatar.variant(resize_to_fill: [64, 64]), class: "avatar avatar--small #{avatar_shape_class(@original)}".strip, width: 64, height: 64, alt: @original.avatar_alt_text.presence || "", loading: "lazy"
           .name-with-labels
             %strong= @original.name
+            - if @original.subtitle.present?
+              %p.subtitle= @original.subtitle
             - if @conflict_type == "Profile" && @original.pronouns.present?
               %span.pronouns= @original.pronouns
             - if @original.labels.any?
@@ -45,6 +47,8 @@
             = image_tag @existing_copy.avatar.variant(resize_to_fill: [64, 64]), class: "avatar avatar--small #{avatar_shape_class(@existing_copy)}".strip, width: 64, height: 64, alt: @existing_copy.avatar_alt_text.presence || "", loading: "lazy"
           .name-with-labels
             %strong= @existing_copy.name
+            - if @existing_copy.subtitle.present?
+              %p.subtitle= @existing_copy.subtitle
             - if @conflict_type == "Profile" && @existing_copy.pronouns.present?
               %span.pronouns= @existing_copy.pronouns
             - if @existing_copy.labels.any?

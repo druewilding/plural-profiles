@@ -21,6 +21,8 @@
         = render "shared/plural_pride_logo"
     %div
       %h1= @profile.name
+      - if @profile.subtitle.present?
+        %p.subtitle= @profile.subtitle
       - if @profile.pronouns.present? || @profile.heart_emojis.any?
         .pronouns
           - if @profile.pronouns.present?

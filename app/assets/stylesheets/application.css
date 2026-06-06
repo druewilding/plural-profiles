@@ -479,8 +479,9 @@ details[open] > .form-section-summary::before {
   color: var(--link);
   text-decoration: none;
   overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
   flex: 1;
   min-width: 0;
 }
@@ -492,6 +493,17 @@ details[open] > .form-section-summary::before {
 .sidebar-tree__label {
   overflow: hidden;
   text-overflow: ellipsis;
+  white-space: nowrap;
+  width: 100%;
+}
+
+.sidebar-tree__subtitle {
+  font-size: 0.75rem;
+  opacity: 0.75;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  width: 100%;
 }
 
 .sidebar-tree__label--repeated {
@@ -569,6 +581,13 @@ h2 { font-size: 1.4rem; }
 .name-with-labels .label-badges {
   margin-top: 0;
   transform: translateY(-0.15em);
+}
+
+.subtitle {
+  margin: 0.15rem 0 0;
+  font-size: 0.9rem;
+  color: var(--text);
+  opacity: 0.8;
 }
 
 h2 a { color: inherit; }
@@ -1443,7 +1462,6 @@ html:not(.js) .avatar-editor-dialog__actions {
   cursor: pointer;
   text-align: left;
   text-decoration: none;
-  white-space: nowrap;
   overflow: hidden;
 }
 
@@ -1486,14 +1504,31 @@ html:not(.js) .avatar-editor-dialog__actions {
   justify-content: center;
 }
 
+.tree__label-block {
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  flex: 1;
+  min-width: 0;
+}
+
 .tree__label {
   overflow: hidden;
   text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .tree__label--repeated {
   opacity: 0.55;
   font-style: italic;
+}
+
+.tree__subtitle {
+  font-size: 0.75rem;
+  opacity: 0.75;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 @media (forced-colors: active) {
@@ -1651,11 +1686,26 @@ details[open] > .tree-editor__summary::before {
   margin-left: 0.6rem;
 }
 
+.tree-editor__name-block {
+  display: inline-flex;
+  flex-direction: column;
+  overflow: hidden;
+  min-width: 0;
+}
+
 .tree-editor__name {
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
   color: var(--heading);
+}
+
+.tree-editor__subtitle {
+  font-size: 0.75rem;
+  opacity: 0.75;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .tree-editor__node--hidden .tree-editor__name {

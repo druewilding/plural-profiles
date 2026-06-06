@@ -5,6 +5,8 @@
     .avatar.avatar--placeholder
       = render "shared/plural_pride_logo"
   %h3= link_to profile.name, our_profile_path(profile)
+  - if profile.subtitle.present?
+    %p.subtitle= profile.subtitle
   - if profile.labels.any?
     .label-badges
       - profile.labels.each do |label|

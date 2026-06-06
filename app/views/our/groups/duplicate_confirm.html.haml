@@ -33,7 +33,10 @@
             - else
               %span.tree__avatar.tree__avatar--placeholder{"aria-hidden": "true"}
                 = render "shared/plural_pride_logo"
-            %span.tree-editor__name= @source.name
+            .tree-editor__name-block
+              %span.tree-editor__name= @source.name
+              - if @source.subtitle.present?
+                %span.tree-editor__subtitle= @source.subtitle
             .label-badges
               - @labels.each do |label|
                 %span.label-badge= label

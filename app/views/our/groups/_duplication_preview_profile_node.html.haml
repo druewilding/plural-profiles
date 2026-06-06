@@ -16,7 +16,10 @@
     - else
       %span.tree__avatar.tree__avatar--placeholder{"aria-hidden": "true"}
         = render "shared/plural_pride_logo"
-    %span.tree-editor__name= profile.name
+    .tree-editor__name-block
+      %span.tree-editor__name= profile.name
+      - if profile.subtitle.present?
+        %span.tree-editor__subtitle= profile.subtitle
     - if action == "new"
       .label-badges
         - new_labels.each do |label|

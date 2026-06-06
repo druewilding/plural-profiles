@@ -11,6 +11,9 @@
           - @group.labels.each do |label|
             %span.label-badge= label
 
+    - if @group.subtitle.present?
+      %p.subtitle= @group.subtitle
+
   %p Choose which profiles belong to this group. Profiles can belong to more than one group.
 
 - if @group.profiles.any?

@@ -15,7 +15,10 @@
       = link_to group_path(group.uuid), class: "tree__item", "data-action": "click->tree#selectGroup", "data-panel-url": panel_group_path(group.uuid, root: root_uuid, path: node[:path]), "data-group-uuid": group.uuid do
         - if group.avatar.attached?
           = image_tag group.avatar.variant(resize_to_fill: [24, 24]), class: "tree__avatar #{avatar_shape_class(group, prefix: 'tree__avatar')}".strip, width: 24, height: 24, alt: "", loading: "lazy"
-        %span.tree__label= group.name
+        .tree__label-block
+          %span.tree__label= group.name
+          - if group.subtitle.present?
+            %span.tree__subtitle= group.subtitle
     %ul.tree__children{role: "group"}
       - children.each do |child_node|
         = render "groups/tree_node", node: child_node, root_uuid: root_uuid
@@ -29,15 +32,21 @@
             - else
               %span.tree__avatar.tree__avatar--placeholder{"aria-hidden": "true"}
                 = render "shared/plural_pride_logo"
-            - if repeated
-              %span.tree__label.tree__label--repeated{title: "#{profile.name} already listed elsewhere in this group"}
-                = profile.name
-                %span.visually-hidden= " (already listed elsewhere in this group)"
-            - else
-              %span.tree__label= profile.name
+            .tree__label-block
+              - if repeated
+                %span.tree__label.tree__label--repeated{title: "#{profile.name} already listed elsewhere in this group"}
+                  = profile.name
+                  %span.visually-hidden= " (already listed elsewhere in this group)"
+              - else
+                %span.tree__label= profile.name
+              - if profile.subtitle.present?
+                %span.tree__subtitle= profile.subtitle
 - else
   %li.tree__leaf{role: "treeitem"}
     = link_to group_path(group.uuid), class: "tree__item", "data-action": "click->tree#selectGroup", "data-panel-url": panel_group_path(group.uuid, root: root_uuid, path: node[:path]), "data-group-uuid": group.uuid do
       - if group.avatar.attached?
         = image_tag group.avatar.variant(resize_to_fill: [24, 24]), class: "tree__avatar #{avatar_shape_class(group, prefix: 'tree__avatar')}".strip, width: 24, height: 24, alt: "", loading: "lazy"
-      %span.tree__label= group.name
+      .tree__label-block
+        %span.tree__label= group.name
+        - if group.subtitle.present?
+          %span.tree__subtitle= group.subtitle
