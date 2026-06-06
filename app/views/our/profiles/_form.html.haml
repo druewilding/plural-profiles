@@ -12,8 +12,16 @@
     = form.text_field :name, required: true
 
   .form-group
+    = form.label :subtitle
+    = form.text_field :subtitle
+
+  .form-group
     = form.label :pronouns
     = form.text_field :pronouns, placeholder: "e.g. they/them, she/her, he/him"
+
+  .form-group
+    = form.label :tag_line
+    = form.text_field :tag_line
 
   .form-group
     = form.label :description
