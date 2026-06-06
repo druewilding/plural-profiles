@@ -2,18 +2,24 @@
 
 .card
   .card__header
-    .name-with-labels
-      %h1
-        Duplicate
-        = @group.name
-      - if @group.labels.any?
-        .label-badges
-          - @group.labels.each do |label|
-            %span.label-badge= label
+    - if @group.avatar.attached?
+      = image_tag @group.avatar.variant(resize_to_fill: [96, 96]), class: "avatar avatar--large #{avatar_shape_class(@group)}".strip, width: 96, height: 96, alt: @group.avatar_alt_text.presence || "", loading: "lazy"
+    - else
+      .avatar.avatar--large.avatar--placeholder
+        = render "shared/plural_pride_logo"
 
-    - if @group.subtitle.present?
-      %p.subtitle= @group.subtitle
+    %div
+      .name-with-labels
+        %h1= @group.name
+        - if @group.labels.any?
+          .label-badges
+            - @group.labels.each do |label|
+              %span.label-badge= label
 
+      - if @group.subtitle.present?
+        %p.subtitle= @group.subtitle
+
+  %h2 Duplicate group
   %p
     Duplicate
     %strong= @group.name
