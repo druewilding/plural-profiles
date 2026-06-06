@@ -74,6 +74,26 @@ class SidebarTreeTest < ApplicationSystemTestCase
     within(profiles_section) { assert_text "Alice" }
   end
 
+  test "profile subtitle appears in the sidebar" do
+    @user = users(:one)
+    profiles(:alice).update!(subtitle: "sidebar subtitle test")
+    sign_in_via_browser
+
+    within("nav.sidebar") do
+      assert_text "sidebar subtitle test"
+    end
+  end
+
+  test "group subtitle appears in the sidebar" do
+    @user = users(:one)
+    groups(:friends).update!(subtitle: "group sidebar subtitle")
+    sign_in_via_browser
+
+    within("nav.sidebar") do
+      assert_text "group sidebar subtitle"
+    end
+  end
+
   # ── Active highlighting ───────────────────────────────────────────────────
 
   test "the current group page has its sidebar entry highlighted" do

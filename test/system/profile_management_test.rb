@@ -42,4 +42,18 @@ class ProfileManagementTest < ApplicationSystemTestCase
     visit our_profile_path(profiles(:alice))
     assert_text "Share this profile"
   end
+
+  test "subtitle appears on profile show page" do
+    profiles(:alice).update!(subtitle: "the creative one")
+    visit our_profile_path(profiles(:alice))
+    assert_text "the creative one"
+  end
+
+  test "editing subtitle updates profile show page" do
+    visit our_profile_path(profiles(:alice))
+    click_link "Edit"
+    fill_in "Subtitle", with: "morning person"
+    click_button "Update profile"
+    assert_text "morning person"
+  end
 end
