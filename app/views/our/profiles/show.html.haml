@@ -43,6 +43,8 @@
           - if group.labels.any?
             - group.labels.each do |label|
               %span.label-badge.label-badge--inline= label
+          - if group.subtitle.present?
+            %span.group-list-subtitle= group.subtitle
 
   .timestamps
     %p
