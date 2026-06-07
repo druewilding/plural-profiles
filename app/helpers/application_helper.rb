@@ -12,7 +12,9 @@ module ApplicationHelper
 
   # Newlines adjacent to these block-level tags get stripped before simple_format
   # runs, to prevent them being turned into <br> or <p> inside structured HTML.
-  BLOCK_TAG_NAMES = "table|thead|tbody|tfoot|tr|th|td|div|ul|ol|li|blockquote|details|summary"
+  # Limited to table structural tags — other block elements (div, details, etc.)
+  # can appear in flow text where blank lines ARE meaningful paragraph breaks.
+  BLOCK_TAG_NAMES = "table|thead|tbody|tfoot|tr|th|td"
   BLOCK_TAG_TRAILING_NEWLINE_RE = Regexp.new(
     "(</?(?:#{BLOCK_TAG_NAMES})(?:\\s[^>]*)?>)\\s*\\n+\\s*",
     Regexp::IGNORECASE
