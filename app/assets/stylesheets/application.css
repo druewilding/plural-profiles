@@ -1120,6 +1120,13 @@ details[open] .details-close {
   flex-wrap: wrap;
 }
 
+/* simple_format turns newlines inside the div into <br> tags; suppress them
+   so they don't become phantom flex children that introduce a leading gap. */
+.profile-description .img-row > br,
+.group-description .img-row > br {
+  display: none;
+}
+
 /* Float an image left with text wrapping around it.
    Wrap image + text in a block element (e.g. <div>) to clear the float. */
 .profile-description img.float-left,
