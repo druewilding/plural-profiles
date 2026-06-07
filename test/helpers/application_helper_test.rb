@@ -292,12 +292,14 @@ class ApplicationHelperTest < ActionView::TestCase
   end
 
   test "allows thead, tbody, tfoot, th tags" do
-    text = "<table><thead><tr><th>Header</th></tr></thead><tbody><tr><td>Body</td></tr></tbody></table>"
+    text = "<table><thead><tr><th>Header</th></tr></thead><tbody><tr><td>Body</td></tr></tbody><tfoot><tr><td>Footer</td></tr></tfoot></table>"
     result = formatted_description(text)
     assert_includes result, "<thead>"
     assert_includes result, "<th>Header</th>"
     assert_includes result, "<tbody>"
     assert_includes result, "<td>Body</td>"
+    assert_includes result, "<tfoot>"
+    assert_includes result, "<td>Footer</td>"
   end
 
   test "allows colspan and rowspan attributes on td" do
