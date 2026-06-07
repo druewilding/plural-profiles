@@ -1,6 +1,6 @@
 module ApplicationHelper
-  DESCRIPTION_EXTRA_TAGS = %w[details summary span b i u s].to_set.freeze
-  DESCRIPTION_EXTRA_ATTRIBUTES = %w[open class role tabindex aria-label aria-expanded].to_set.freeze
+  DESCRIPTION_EXTRA_TAGS = %w[details summary span b i u s table thead tbody tfoot tr th td].to_set.freeze
+  DESCRIPTION_EXTRA_ATTRIBUTES = %w[open class role tabindex aria-label aria-expanded colspan rowspan].to_set.freeze
 
   SPOILER_PATTERN = /\|\|(.+?)\|\|/m
   CODE_BLOCK_PATTERN = /<code(?:\s[^>]*)?>.*?<\/code>/m
@@ -10,11 +10,26 @@ module ApplicationHelper
 
   HEART_EMOJI_PATTERN = /:([a-z0-9_]+_heart):/i
 
+  # Newlines adjacent to these block-level tags get stripped before simple_format
+  # runs, to prevent them being turned into <br> or <p> inside structured HTML.
+  # Limited to table structural tags — other block elements (div, details, etc.)
+  # can appear in flow text where blank lines ARE meaningful paragraph breaks.
+  BLOCK_TAG_NAMES = "table|thead|tbody|tfoot|tr|th|td"
+  BLOCK_TAG_TRAILING_NEWLINE_RE = Regexp.new(
+    "(</?(?:#{BLOCK_TAG_NAMES})(?:\\s[^>]*)?>)\\s*\\n+\\s*",
+    Regexp::IGNORECASE
+  ).freeze
+  BLOCK_TAG_LEADING_NEWLINE_RE = Regexp.new(
+    "\\s*\\n+\\s*(?=</?(?:#{BLOCK_TAG_NAMES})\\b)",
+    Regexp::IGNORECASE
+  ).freeze
+
   def formatted_description(text)
     safe_list_class = self.class.safe_list_sanitizer.class
     tags = safe_list_class.allowed_tags + DESCRIPTION_EXTRA_TAGS
     attrs = safe_list_class.allowed_attributes + DESCRIPTION_EXTRA_ATTRIBUTES
     text = convert_spoilers_outside_code(text)
+    text = strip_block_tag_newlines(text)
     html = simple_format(text, {}, sanitize_options: { tags: tags, attributes: attrs })
     html = html.gsub("</details>", '<button type="button" class="details-close" aria-label="Close details">(click to close)</button></details>')
     html = replace_heart_emojis(html)
@@ -39,6 +54,11 @@ module ApplicationHelper
   end
 
   private
+
+  def strip_block_tag_newlines(text)
+    text.gsub(BLOCK_TAG_TRAILING_NEWLINE_RE, '\1')
+        .gsub(BLOCK_TAG_LEADING_NEWLINE_RE, "")
+  end
 
   def replace_heart_emojis(html)
     # Only replace hearts in text nodes — skip <code>...</code> blocks and HTML tags
