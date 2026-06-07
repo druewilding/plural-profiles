@@ -1089,6 +1089,57 @@ details[open] .details-close {
   text-decoration: line-through;
 }
 
+/* Tables in descriptions */
+.profile-description table,
+.group-description table {
+  border-collapse: collapse;
+}
+
+.profile-description td,
+.profile-description th,
+.group-description td,
+.group-description th {
+  padding: 0 1em 0.5em 0;
+}
+
+.profile-description td:last-child,
+.profile-description th:last-child,
+.group-description td:last-child,
+.group-description th:last-child {
+  padding-right: 0;
+}
+
+/* Image/text layout utility classes usable in descriptions */
+
+/* Side-by-side layout: <div class="img-row"><img ...><p>text</p></div> */
+.profile-description .img-row,
+.group-description .img-row {
+  display: flex;
+  gap: 1em;
+  align-items: flex-start;
+  flex-wrap: wrap;
+}
+
+/* Float an image left with text wrapping around it.
+   Wrap image + text in a block element (e.g. <div>) to clear the float. */
+.profile-description img.float-left,
+.group-description img.float-left {
+  float: left;
+  margin: 0 1em 0.5em 0;
+}
+
+.profile-description img.float-right,
+.group-description img.float-right {
+  float: right;
+  margin: 0 0 0.5em 1em;
+}
+
+/* Use on a wrapper div to clear floated images inside it */
+.profile-description .clearfix,
+.group-description .clearfix {
+  display: flow-root;
+}
+
 /* Spoiler text (Discord-style ||hidden||) */
 .spoiler {
   background-color: var(--spoiler);
