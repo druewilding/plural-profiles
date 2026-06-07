@@ -279,4 +279,50 @@ class ApplicationHelperTest < ActionView::TestCase
     assert_includes result, '<img src="/images/hearts/36_red_heart.webp"'
     assert_not_includes result, '<img src="/images/hearts/11_aqua_heart.webp"'
   end
+
+  # -- Table support --
+
+  test "allows table, tr, td tags" do
+    text = "<table><tr><td>cell one</td><td>cell two</td></tr></table>"
+    result = formatted_description(text)
+    assert_includes result, "<table>"
+    assert_includes result, "<tr>"
+    assert_includes result, "<td>cell one</td>"
+    assert_includes result, "<td>cell two</td>"
+  end
+
+  test "allows thead, tbody, tfoot, th tags" do
+    text = "<table><thead><tr><th>Header</th></tr></thead><tbody><tr><td>Body</td></tr></tbody><tfoot><tr><td>Footer</td></tr></tfoot></table>"
+    result = formatted_description(text)
+    assert_includes result, "<thead>"
+    assert_includes result, "<th>Header</th>"
+    assert_includes result, "<tbody>"
+    assert_includes result, "<td>Body</td>"
+    assert_includes result, "<tfoot>"
+    assert_includes result, "<td>Footer</td>"
+  end
+
+  test "allows colspan and rowspan attributes on td" do
+    text = '<table><tr><td colspan="2">wide</td></tr><tr><td rowspan="2">tall</td><td>other</td></tr></table>'
+    result = formatted_description(text)
+    assert_includes result, 'colspan="2"'
+    assert_includes result, 'rowspan="2"'
+  end
+
+  test "strips newlines between table structural tags before formatting" do
+    text = "<table>\n<tr>\n<td>content</td>\n</tr>\n</table>"
+    result = formatted_description(text)
+    assert_includes result, "<table>"
+    assert_includes result, "<tr>"
+    assert_includes result, "<td>content</td>"
+    # Newlines between structural tags must not become <br> inside the table
+    refute_match(/<t(?:able|r|d|head|body|foot)[^>]*>.*?<br/m, result)
+  end
+
+  test "newline stripping does not affect paragraph breaks around non-table elements" do
+    text = "Before\n\n<div class=\"img-row\">content</div>\n\nAfter"
+    result = formatted_description(text)
+    assert_includes result, "<p>Before</p>"
+    assert_includes result, "<p>After</p>"
+  end
 end
