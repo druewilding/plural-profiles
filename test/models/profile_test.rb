@@ -184,6 +184,23 @@ class ProfileTest < ActiveSupport::TestCase
     assert_equal [ "family", "private" ], profile.reload.labels
   end
 
+  test "name_and_label_sort_key uses downcased name so mixed-case sorts correctly" do
+    profile = profiles(:alice)
+    profile.name = "Zebra"
+    assert_equal "zebra", profile.name_and_label_sort_key.first
+  end
+
+  test "name_and_label_sort_key sorts unlabelled before labelled" do
+    profile = profiles(:alice)
+    profile.labels = []
+    unlabelled_key = profile.name_and_label_sort_key
+
+    profile.labels = [ "work" ]
+    labelled_key = profile.name_and_label_sort_key
+
+    assert (unlabelled_key <=> labelled_key) < 0
+  end
+
   # -- Profile theme association --
 
   test "profile without a theme is valid" do
