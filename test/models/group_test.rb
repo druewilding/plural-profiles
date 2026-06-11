@@ -179,6 +179,52 @@ class GroupTest < ActiveSupport::TestCase
     assert_not_includes friends.visible_root_profiles, alice
   end
 
+  # -- visible_direct_child_groups ---
+
+  test "visible_direct_child_groups returns direct child groups" do
+    alpha = groups(:alpha_clan)
+    children = alpha.visible_direct_child_groups
+    assert_includes children, groups(:echo_shard)
+    assert_includes children, groups(:spectrum)
+  end
+
+  test "visible_direct_child_groups does not return non-child groups" do
+    alpha = groups(:alpha_clan)
+    children = alpha.visible_direct_child_groups
+    assert_not_includes children, groups(:prism_circle)
+  end
+
+  test "visible_direct_child_groups excludes groups hidden at root path" do
+    alpha = groups(:alpha_clan)
+    echo = groups(:echo_shard)
+
+    InclusionOverride.create!(
+      group: alpha, path: [], target_type: "Group", target_id: echo.id
+    )
+
+    assert_not_includes alpha.visible_direct_child_groups, echo
+  end
+
+  test "visible_direct_child_groups excludes groups hidden at a nested path" do
+    castle = groups(:castle_clan)
+    flux = groups(:flux)
+    static_burst = groups(:static_burst)
+
+    # static_burst is hidden within flux when reached via castle_clan (path=[flux.id])
+    result = flux.visible_direct_child_groups(path: [ flux.id ], root_group_id: castle.id)
+    assert_not_includes result, static_burst
+  end
+
+  test "visible_direct_child_groups includes groups not matched by path-scoped override" do
+    castle = groups(:castle_clan)
+    flux = groups(:flux)
+    echo = groups(:echo_shard)
+
+    # echo_shard is a child of flux and NOT hidden — should still appear
+    result = flux.visible_direct_child_groups(path: [ flux.id ], root_group_id: castle.id)
+    assert_includes result, echo
+  end
+
   # -- descendant_tree ---
 
   test "descendant_tree returns empty array for leaf group" do
