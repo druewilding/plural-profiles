@@ -349,7 +349,7 @@ class Group < ApplicationRecord
       .where(group_id: root_group_id, target_type: "Group")
       .where("path = ?::jsonb", path.to_json)
       .pluck(:target_id)
-    child_groups.where.not(id: hidden_ids).includes(avatar_attachment: :blob).order(:name)
+    child_groups.where.not(id: hidden_ids).includes(avatar_attachment: :blob).order_by_name_and_labels
   end
 
   # Collect all profiles from this group and all descendant groups,
