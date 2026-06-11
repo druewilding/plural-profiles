@@ -4,9 +4,9 @@ module HasLabels
   included do
     before_validation :normalize_labels
 
-    # Order by name, then unlabelled items first, then labels alphabetically.
+    # Order by name (case-insensitive), then unlabelled items first, then labels alphabetically.
     scope :order_by_name_and_labels, -> {
-      order(Arel.sql("name, CASE WHEN labels = '[]'::jsonb THEN 0 ELSE 1 END, labels::text"))
+      order(Arel.sql("LOWER(name), CASE WHEN labels = '[]'::jsonb THEN 0 ELSE 1 END, LOWER(labels::text)"))
     }
   end
 
@@ -20,10 +20,10 @@ module HasLabels
     self.labels = value.to_s.split(",").map(&:strip).reject(&:blank?).uniq
   end
 
-  # Sort key for in-memory ordering: name first, unlabelled before labelled,
+  # Sort key for in-memory ordering: name first (case-insensitive), unlabelled before labelled,
   # then labels alphabetically.
   def name_and_label_sort_key
-    [ name, labels.empty? ? 0 : 1, labels.join(", ") ]
+    [ name.downcase, labels.empty? ? 0 : 1, labels.join(", ").downcase ]
   end
 
   private

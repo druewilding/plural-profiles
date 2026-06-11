@@ -564,6 +564,44 @@ class GroupTest < ActiveSupport::TestCase
     assert_equal [ "family", "private" ], group.reload.labels
   end
 
+  test "order_by_name_and_labels sorts mixed-case names case-insensitively" do
+    user = users(:one)
+    # Create groups whose names differ only in case to assert ASCII order is NOT used.
+    # ASCII order would give: "Banana" < "Zebra" < "apple" — case-insensitive gives the opposite.
+    apple  = user.groups.create!(name: "apple")
+    banana = user.groups.create!(name: "Banana")
+    zebra  = user.groups.create!(name: "Zebra")
+
+    ordered = user.groups.where(id: [ apple, banana, zebra ].map(&:id)).order_by_name_and_labels
+    assert_equal [ apple, banana, zebra ], ordered.to_a
+  end
+
+  test "order_by_name_and_labels places unlabelled items before labelled items with same name" do
+    user = users(:one)
+    plain   = user.groups.create!(name: "Alpha")
+    labelled = user.groups.create!(name: "Alpha", labels: [ "work" ])
+
+    ordered = user.groups.where(id: [ labelled, plain ].map(&:id)).order_by_name_and_labels
+    assert_equal [ plain, labelled ], ordered.to_a
+  end
+
+  test "name_and_label_sort_key uses downcased name so mixed-case sorts correctly" do
+    group = groups(:friends)
+    group.name = "Zebra"
+    assert_equal "zebra", group.name_and_label_sort_key.first
+  end
+
+  test "name_and_label_sort_key sorts unlabelled before labelled" do
+    group = groups(:friends)
+    group.labels = []
+    unlabelled_key = group.name_and_label_sort_key
+
+    group.labels = [ "work" ]
+    labelled_key = group.name_and_label_sort_key
+
+    assert (unlabelled_key <=> labelled_key) < 0
+  end
+
   # -- Phase 1: group theme association --
 
   test "group without a theme is valid" do
