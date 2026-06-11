@@ -340,6 +340,18 @@ class Group < ApplicationRecord
     profiles.where.not(id: hidden_profile_ids).order_by_name_and_labels
   end
 
+  # Direct child groups visible when this group is reached via a specific traversal path
+  # from root_group_id. Filters out groups hidden by inclusion overrides at the given path.
+  # path is an array of integer group IDs representing the traversal path to this group.
+  # For the root group itself, use path=[] and root_group_id=id (the defaults).
+  def visible_direct_child_groups(path: [], root_group_id: id)
+    hidden_ids = InclusionOverride
+      .where(group_id: root_group_id, target_type: "Group")
+      .where("path = ?::jsonb", path.to_json)
+      .pluck(:target_id)
+    child_groups.where.not(id: hidden_ids).includes(avatar_attachment: :blob).order(:name)
+  end
+
   # Collect all profiles from this group and all descendant groups,
   # respecting path-scoped inclusion overrides.
   # Walks the tree depth-first, checking overrides at each path.

@@ -1,5 +1,8 @@
 -# Group content panel for the explorer view.
--# Locals: group, profiles
+-# Locals: group, profiles, sub_groups (optional), root_uuid (optional), current_path (optional)
+- sub_groups = local_assigns.fetch(:sub_groups, [])
+- root_uuid = local_assigns.fetch(:root_uuid, group.uuid)
+- current_path = local_assigns.fetch(:current_path, [])
 .card.profile-public
   .card__header
     - if group.avatar.attached?
@@ -15,6 +18,11 @@
   - if group.description.present?
     .group-description{data: {controller: "spoiler", action: "click->spoiler#toggle keydown->spoiler#keydown"}}
       = formatted_description(group.description)
+
+- if sub_groups.any?
+  .profile-grid
+    - sub_groups.each do |sub_group|
+      = render "groups/group_card", group: sub_group, root_uuid: root_uuid, child_path: current_path + [sub_group.id]
 
 - if profiles.any?
   .profile-grid

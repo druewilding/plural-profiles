@@ -34,10 +34,7 @@ export default class extends Controller {
   selectGroup(event) {
     event.preventDefault()
     const link = event.currentTarget
-    this.#clearActive()
-    link.classList.add("tree__item--active")
-    this.#setHash("group", link.dataset.groupUuid)
-    this.#loadPanelAndScroll(link.dataset.panelUrl)
+    this.#selectGroupItem(link)
   }
 
   toggleFolder(event) {
@@ -72,6 +69,35 @@ export default class extends Controller {
   }
 
   // --- private ---
+
+  #selectGroupItem(link) {
+    const { panelUrl, groupUuid } = link.dataset
+
+    this.#clearActive()
+
+    // If the clicked element is already a tree item, highlight it directly.
+    // Otherwise (e.g. a group card in the content panel), find the matching tree item.
+    const treeItem = link.classList.contains("tree__item")
+      ? link
+      : this.element.querySelector(`.tree .tree__item[data-group-uuid="${groupUuid}"]`)
+
+    if (treeItem) {
+      treeItem.classList.add("tree__item--active")
+      // Ensure parent folders are expanded so the item is visible
+      let parent = treeItem.closest(".tree__children")
+      while (parent) {
+        parent.style.display = ""
+        const folder = parent.closest(".tree__folder")
+        if (folder) folder.setAttribute("aria-expanded", "true")
+        const arrowBtn = parent.previousElementSibling?.querySelector(".tree__arrow")
+        if (arrowBtn) arrowBtn.classList.add("tree__arrow--open")
+        parent = parent.parentElement?.closest(".tree__children")
+      }
+    }
+
+    this.#setHash("group", groupUuid)
+    this.#loadPanelAndScroll(panelUrl)
+  }
 
   #selectProfileButton(link) {
     const { panelUrl, groupUuid, profileUuid } = link.dataset
@@ -112,9 +138,7 @@ export default class extends Controller {
          .tree .tree__item[data-action*="selectRoot"][data-group-uuid="${parts[1]}"]`
       )
       if (link) {
-        this.#clearActive()
-        link.classList.add("tree__item--active")
-        this.#loadPanelAndScroll(link.dataset.panelUrl)
+        this.#selectGroupItem(link)
       }
     } else if (parts[0] === "profile" && parts[1] && parts[2]) {
       const link = this.element.querySelector(

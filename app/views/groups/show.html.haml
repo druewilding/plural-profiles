@@ -57,7 +57,7 @@
 
       .explorer__content{"data-tree-target": "content", "aria-live": "polite"}
         -# Default: show root group content
-        = render "groups/group_content", group: @group, profiles: @direct_profiles
+        = render "groups/group_content", group: @group, profiles: @direct_profiles, sub_groups: @direct_child_groups, root_uuid: @group.uuid, current_path: []
 
     -# No-JS fallback: all content rendered flat with linked profile cards
     .explorer__fallback{"data-tree-target": "fallback"}
