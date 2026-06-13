@@ -29,7 +29,11 @@ export default class extends Controller {
     }
     const hasHint = span.classList.contains("spoiler--with-hint")
     const hintShowing = span.classList.contains("spoiler--hint-showing")
-    const isTouchDevice = window.matchMedia("(hover: none)").matches
+    // Use both (hover: none) and (pointer: coarse) to identify touch-primary
+    // devices. Checking only (hover: none) causes false positives in headless
+    // Chrome (used by the CI test runner), which reports no hover capability
+    // but does not have a coarse pointer.
+    const isTouchDevice = window.matchMedia("(hover: none) and (pointer: coarse)").matches
 
     if (hasHint && isTouchDevice && !hintShowing && !span.classList.contains("spoiler--revealed")) {
       // First tap on a touch device: show the hint, do not reveal yet.
