@@ -1208,7 +1208,10 @@ details[open] .details-close {
   border-radius: 4px;
   padding: 2px 8px;
   font-size: 0.8em;
-  white-space: nowrap;
+  width: max-content;
+  max-width: min(16rem, 90vw);
+  white-space: normal;
+  word-wrap: break-word;
   pointer-events: none;
   z-index: 10;
   visibility: hidden;

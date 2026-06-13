@@ -96,7 +96,10 @@ The tooltip uses `::after`. Desktop behaviour is CSS-only (show on `:hover`/`:fo
   border-radius: 4px;
   padding: 2px 8px;
   font-size: 0.8em;
-  white-space: nowrap;
+  width: max-content;
+  max-width: min(16rem, 90vw);
+  white-space: normal;
+  word-wrap: break-word;
   pointer-events: none;
   z-index: 10;
   /* hidden by default; shown via :hover (desktop) or .spoiler--hint-showing (touch) */
@@ -352,9 +355,6 @@ If a name contains a spoiler and the name is used as `link_to` text, the `.spoil
 
 ### Hearts in `plain_field`
 The current decision strips heart codes in `plain_field`. An alternative is to replace them with their display name (e.g. `:cadbury_heart:` → "cadbury heart"). That might be friendlier in og:description. Decide during implementation.
-
-### CSS tooltip overflow
-The `::after` tooltip uses `position: absolute` and `white-space: nowrap`. If the spoiler is near the left or right edge of the viewport, the tooltip may clip. A future improvement could add `@media` or JS-based repositioning, but this is out of scope for now.
 
 ### `<title>` tag and `plain_field` for spoiler names
 `plain_field` strips the `||` delimiters and keeps the inner text. So a profile named `||Lia||` will appear in the browser tab as "Lia — Plural Profiles". This is intentional — the tab title is not a spoiler-safe context.
