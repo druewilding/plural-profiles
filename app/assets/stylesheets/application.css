@@ -1172,6 +1172,14 @@ details[open] .details-close {
   user-select: auto;
 }
 
+.spoiler img {
+  visibility: hidden;
+}
+
+.spoiler--revealed img {
+  visibility: visible;
+}
+
 @media (forced-colors: active) {
   .spoiler {
     forced-color-adjust: none;
