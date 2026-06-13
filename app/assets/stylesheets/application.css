@@ -1207,6 +1207,7 @@ details[open] .details-close {
   color: var(--text);
   border-radius: 4px;
   padding: 2px 8px;
+  box-shadow: 0 2px 6px color-mix(in srgb, var(--pane-border) 50%, transparent);
   font-size: 0.8em;
   width: max-content;
   max-width: min(16rem, 90vw);
@@ -1216,7 +1217,7 @@ details[open] .details-close {
   z-index: 10;
   visibility: hidden;
   opacity: 0;
-  transition: opacity 0.15s ease;
+  transition: opacity 0.25s ease;
 }
 
 /* Desktop: show on hover or focus */
