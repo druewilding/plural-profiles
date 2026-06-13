@@ -22,8 +22,11 @@ export default class extends Controller {
     if (!span) return
 
     // Prevent link navigation when a spoiler is inside an <a> tag.
-    event.stopPropagation()
-
+    const link = span.closest("a")
+    if (link) {
+      event.preventDefault()
+      event.stopPropagation()
+    }
     const hasHint = span.classList.contains("spoiler--with-hint")
     const hintShowing = span.classList.contains("spoiler--hint-showing")
     const isTouchDevice = window.matchMedia("(hover: none)").matches
