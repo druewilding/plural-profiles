@@ -212,4 +212,79 @@ class SpoilerTest < ApplicationSystemTestCase
       assert_no_selector "details[open]"
     end
   end
+
+  # -- Spoiler hint syntax --
+
+  test "hint after spoiler renders spoiler--with-hint span with data attribute" do
+    within(".site-header") { click_link "New profile" }
+    fill_in "Name", with: "Hint After Tester"
+    fill_in "Description", with: "||the secret||[it is a password]"
+    click_button "Create profile"
+    assert_text "Profile created."
+
+    spoiler = find(".spoiler.spoiler--with-hint")
+    assert_equal "it is a password", spoiler[:"data-spoiler-hint"]
+    assert_equal "Hidden content: it is a password, click to reveal", spoiler[:"aria-label"]
+  end
+
+  test "hint before spoiler renders spoiler--with-hint span with data attribute" do
+    within(".site-header") { click_link "New profile" }
+    fill_in "Name", with: "Hint Before Tester"
+    fill_in "Description", with: "[it is a password]||the secret||"
+    click_button "Create profile"
+    assert_text "Profile created."
+
+    spoiler = find(".spoiler.spoiler--with-hint")
+    assert_equal "it is a password", spoiler[:"data-spoiler-hint"]
+    assert_equal "Hidden content: it is a password, click to reveal", spoiler[:"aria-label"]
+  end
+
+  test "hinted spoiler reveals on click and clears aria-label" do
+    within(".site-header") { click_link "New profile" }
+    fill_in "Name", with: "Hint Reveal Tester"
+    fill_in "Description", with: "||hidden text||[a clue about it]"
+    click_button "Create profile"
+    assert_text "Profile created."
+
+    spoiler = find(".spoiler.spoiler--with-hint")
+    assert_equal "false", spoiler[:"aria-expanded"]
+
+    spoiler.click
+    assert_selector ".spoiler.spoiler--revealed"
+    assert_text "hidden text"
+    assert_equal "true", spoiler[:"aria-expanded"]
+    assert_nil spoiler[:"aria-label"]
+  end
+
+  test "hinted spoiler restores hint-aware aria-label when hidden again" do
+    within(".site-header") { click_link "New profile" }
+    fill_in "Name", with: "Hint Restore Tester"
+    fill_in "Description", with: "||content||[descriptive hint]"
+    click_button "Create profile"
+    assert_text "Profile created."
+
+    spoiler = find(".spoiler.spoiler--with-hint")
+    spoiler.click
+    assert_selector ".spoiler.spoiler--revealed"
+
+    spoiler.click
+    assert_no_selector ".spoiler.spoiler--revealed"
+    assert_equal "false", spoiler[:"aria-expanded"]
+    assert_equal "Hidden content: descriptive hint, click to reveal", spoiler[:"aria-label"]
+  end
+
+  test "plain spoiler alongside hinted spoiler both work independently" do
+    within(".site-header") { click_link "New profile" }
+    fill_in "Name", with: "Mixed Spoilers Tester"
+    fill_in "Description", with: "||plain|| and ||hinted||[a clue]"
+    click_button "Create profile"
+    assert_text "Profile created."
+
+    assert_selector ".spoiler", count: 2
+    assert_selector ".spoiler.spoiler--with-hint", count: 1
+    assert_no_selector ".spoiler:not(.spoiler--with-hint).spoiler--with-hint"
+
+    hinted = find(".spoiler.spoiler--with-hint")
+    assert_equal "a clue", hinted[:"data-spoiler-hint"]
+  end
 end

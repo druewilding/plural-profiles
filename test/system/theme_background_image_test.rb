@@ -60,9 +60,11 @@ class ThemeBackgroundImageTest < ApplicationSystemTestCase
     assert_current_path edit_our_theme_path(@theme)
     find("summary", text: "Background image").click
 
-    # Wait for the section to fully render (not a Turbo snapshot) before
-    # asserting absence — the upload label is always present when there's no image.
-    assert_text "JPG, PNG, or WebP"
+    # Synchronise on the fresh page by asserting the "Remove" checkbox is
+    # completely absent from the DOM (not just hidden). It is only rendered
+    # when an image is attached, so its DOM absence confirms we are on the
+    # post-removal page and not a stale Turbo snapshot.
+    assert_no_selector "input[name='theme[remove_background_image]']", visible: :all
 
     assert_no_css "img.theme-bg-preview"
     assert_no_text "Remove background image"

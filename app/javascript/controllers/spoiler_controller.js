@@ -2,6 +2,11 @@ import { Controller } from "@hotwired/stimulus"
 
 // Toggles spoiler text visibility on click or keyboard activation.
 // Connects automatically to any element with data-controller="spoiler".
+//
+// Spoilers with a hint ([hint]||secret|| or ||secret||[hint]) have three states
+// on touch devices: hidden → hint showing → revealed → hidden.
+// On hover-capable devices a single click reveals directly (the hint is shown
+// via CSS :hover instead).
 export default class extends Controller {
   toggle(event) {
     if (event.target.closest(".details-close")) {
@@ -16,13 +21,38 @@ export default class extends Controller {
     const span = event.target.closest(".spoiler")
     if (!span) return
 
+    // Prevent link navigation when a spoiler is inside an <a> tag.
+    const link = span.closest("a")
+    if (link) {
+      event.preventDefault()
+      event.stopPropagation()
+    }
+    const hasHint = span.classList.contains("spoiler--with-hint")
+    const hintShowing = span.classList.contains("spoiler--hint-showing")
+    // Use both (hover: none) and (pointer: coarse) to identify touch-primary
+    // devices. Checking only (hover: none) causes false positives in headless
+    // Chrome (used by the CI test runner), which reports no hover capability
+    // but does not have a coarse pointer.
+    const isTouchDevice = window.matchMedia("(hover: none) and (pointer: coarse)").matches
+
+    if (hasHint && isTouchDevice && !hintShowing && !span.classList.contains("spoiler--revealed")) {
+      // First tap on a touch device: show the hint, do not reveal yet.
+      span.classList.add("spoiler--hint-showing")
+      return
+    }
+
+    // Second tap (touch) or single click (desktop): reveal or hide.
+    span.classList.remove("spoiler--hint-showing")
     const revealed = span.classList.toggle("spoiler--revealed")
     span.setAttribute("aria-expanded", String(revealed))
 
     if (revealed) {
       span.removeAttribute("aria-label")
     } else {
-      span.setAttribute("aria-label", "Hidden content, click to reveal")
+      const hint = span.dataset.spoilerHint
+      span.setAttribute("aria-label",
+        hint ? `Hidden content: ${hint}, click to reveal` : "Hidden content, click to reveal"
+      )
     }
   }
 

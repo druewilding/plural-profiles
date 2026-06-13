@@ -1191,6 +1191,64 @@ details[open] .details-close {
   }
 }
 
+/* Spoiler hint tooltip (||secret||[hint] or [hint]||secret||) */
+.spoiler--with-hint {
+  position: relative;
+}
+
+.spoiler--with-hint[aria-expanded="false"]::after {
+  content: attr(data-spoiler-hint);
+  position: absolute;
+  bottom: calc(100% + 5px);
+  left: 50%;
+  transform: translateX(-50%);
+  /* Fallback for older browsers: layer pane-bg over page-bg */
+  background-color: var(--page-bg);
+  background-image: linear-gradient(var(--pane-bg), var(--pane-bg));
+  /* Modern browsers (Chrome 119+, FF 128+, Safari 16.4+): force alpha to 1
+     via CSS Relative Color Syntax so an 8-digit hex --pane-bg with alpha
+     renders fully opaque. The background shorthand intentionally overrides
+     the fallback lines above when supported. */
+  background: oklch(from var(--pane-bg) l c h / 1);
+  border: 1px solid var(--pane-border);
+  color: var(--text);
+  border-radius: 4px;
+  padding: 2px 8px;
+  box-shadow: 0 2px 6px color-mix(in srgb, var(--pane-border) 50%, transparent);
+  font-size: 0.8em;
+  width: max-content;
+  max-width: min(16rem, 90vw);
+  white-space: normal;
+  word-wrap: break-word;
+  pointer-events: none;
+  z-index: 10;
+  visibility: hidden;
+  opacity: 0;
+  transition: opacity 0.25s ease;
+}
+
+/* Desktop: show on hover or focus */
+.spoiler--with-hint[aria-expanded="false"]:hover::after,
+.spoiler--with-hint[aria-expanded="false"]:focus-visible::after {
+  visibility: visible;
+  opacity: 1;
+}
+
+/* Touch state 2: hint explicitly shown by JS after first tap */
+.spoiler--with-hint.spoiler--hint-showing::after {
+  visibility: visible;
+  opacity: 1;
+}
+
+@media (forced-colors: active) {
+  .spoiler--with-hint[aria-expanded="false"]::after {
+    forced-color-adjust: none;
+    background: Canvas;
+    color: CanvasText;
+    border-color: CanvasText;
+  }
+}
+
 .profile-actions {
   display: flex;
   gap: 0.75rem;
