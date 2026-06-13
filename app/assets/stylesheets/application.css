@@ -1191,6 +1191,53 @@ details[open] .details-close {
   }
 }
 
+/* Spoiler hint tooltip (||secret||[hint] or [hint]||secret||) */
+.spoiler--with-hint {
+  position: relative;
+}
+
+.spoiler--with-hint[aria-expanded="false"]::after {
+  content: attr(data-spoiler-hint);
+  position: absolute;
+  bottom: calc(100% + 5px);
+  left: 50%;
+  transform: translateX(-50%);
+  background: var(--pane-bg);
+  border: 1px solid var(--pane-border);
+  color: var(--text);
+  border-radius: 4px;
+  padding: 2px 8px;
+  font-size: 0.8em;
+  white-space: nowrap;
+  pointer-events: none;
+  z-index: 10;
+  visibility: hidden;
+  opacity: 0;
+  transition: opacity 0.15s ease;
+}
+
+/* Desktop: show on hover or focus */
+.spoiler--with-hint[aria-expanded="false"]:hover::after,
+.spoiler--with-hint[aria-expanded="false"]:focus-visible::after {
+  visibility: visible;
+  opacity: 1;
+}
+
+/* Touch state 2: hint explicitly shown by JS after first tap */
+.spoiler--with-hint.spoiler--hint-showing::after {
+  visibility: visible;
+  opacity: 1;
+}
+
+@media (forced-colors: active) {
+  .spoiler--with-hint[aria-expanded="false"]::after {
+    forced-color-adjust: none;
+    background: Canvas;
+    color: CanvasText;
+    border-color: CanvasText;
+  }
+}
+
 .profile-actions {
   display: flex;
   gap: 0.75rem;

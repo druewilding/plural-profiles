@@ -169,6 +169,103 @@ class ApplicationHelperTest < ActionView::TestCase
     assert_includes result, 'aria-label="Hidden content, click to reveal"'
   end
 
+  # -- Spoiler hint syntax ([hint]||text|| or ||text||[hint]) --
+
+  SPOILER_HINT_OPEN = '<span class="spoiler spoiler--with-hint" role="button" tabindex="0" ' \
+    'aria-expanded="false" aria-label="Hidden content: the hint, click to reveal" ' \
+    'data-spoiler-hint="the hint">'
+
+  test "hint after spoiler produces spoiler--with-hint span" do
+    text = "||secret||[the hint]"
+    result = formatted_description(text)
+    assert_includes result, "#{SPOILER_HINT_OPEN}secret</span>"
+    assert_not_includes result, "[the hint]"
+  end
+
+  test "hint before spoiler produces the same output" do
+    text = "[the hint]||secret||"
+    result = formatted_description(text)
+    assert_includes result, "#{SPOILER_HINT_OPEN}secret</span>"
+    assert_not_includes result, "[the hint]"
+  end
+
+  test "both orderings produce identical HTML" do
+    result_after  = formatted_description("||secret||[the hint]")
+    result_before = formatted_description("[the hint]||secret||")
+    assert_equal result_after, result_before
+  end
+
+  test "spoiler without hint is unchanged by hint syntax" do
+    text = "||secret||"
+    result = formatted_description(text)
+    assert_includes result, "#{SPOILER_OPEN}secret</span>"
+    assert_not_includes result, "spoiler--with-hint"
+  end
+
+  test "hint aria-label incorporates hint text" do
+    text = "||hidden||[it is a password]"
+    result = formatted_description(text)
+    assert_includes result, 'aria-label="Hidden content: it is a password, click to reveal"'
+  end
+
+  test "hint text is stored in data-spoiler-hint attribute" do
+    text = "||hidden||[it is a password]"
+    result = formatted_description(text)
+    assert_includes result, 'data-spoiler-hint="it is a password"'
+  end
+
+  test "hint text is HTML-escaped in attributes" do
+    # The sanitiser (Nokogiri) decode/re-serialises attribute values:
+    # & → &amp; and " → &quot; are preserved; < and > become literal characters
+    # (still safe — CSS content: attr() treats them as plain text, not markup).
+    text = '||secret||[<b> & "quotes"]'
+    result = formatted_description(text)
+    assert_includes result, 'data-spoiler-hint="<b> &amp; &quot;quotes&quot;"'
+  end
+
+  test "hint with special chars appears correctly in aria-label" do
+    text = '||secret||[<b> & "quotes"]'
+    result = formatted_description(text)
+    assert_includes result, 'aria-label="Hidden content: <b> &amp; &quot;quotes&quot;, click to reveal"'
+  end
+
+  test "hint does not leak into visible spoiler content" do
+    text = "||the secret||[this is the hint]"
+    result = formatted_description(text)
+    assert_includes result, ">the secret</span>"
+    assert_not_includes result, ">this is the hint"
+  end
+
+  test "multiple spoilers can each have their own hint" do
+    text = "||first||[hint one] and ||second||[hint two]"
+    result = formatted_description(text)
+    assert_includes result, 'data-spoiler-hint="hint one"'
+    assert_includes result, 'data-spoiler-hint="hint two"'
+    assert_includes result, ">first</span>"
+    assert_includes result, ">second</span>"
+  end
+
+  test "mix of hinted and plain spoilers in same text" do
+    text = "||plain|| and ||hinted||[a clue]"
+    result = formatted_description(text)
+    assert_includes result, "#{SPOILER_OPEN}plain</span>"
+    assert_includes result, 'data-spoiler-hint="a clue"'
+    assert_includes result, ">hinted</span>"
+  end
+
+  test "does not convert hint syntax inside code tags" do
+    text = "Use <code>||text||[hint]</code> for spoilers"
+    result = formatted_description(text)
+    assert_includes result, "<code>||text||[hint]</code>"
+    assert_not_includes result, "spoiler--with-hint"
+  end
+
+  test "hint spoiler with whitespace between hint and pipes" do
+    text = "[hint text] ||secret||"
+    result = formatted_description(text)
+    assert_includes result, 'data-spoiler-hint="hint text"'
+  end
+
   # -- Heart emoji inline replacement --
 
   test "replaces a valid heart emoji code regardless of case" do
