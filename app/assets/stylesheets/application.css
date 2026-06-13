@@ -1202,7 +1202,14 @@ details[open] .details-close {
   bottom: calc(100% + 5px);
   left: 50%;
   transform: translateX(-50%);
-  background: var(--pane-bg);
+  /* Fallback for older browsers: layer pane-bg over page-bg */
+  background-color: var(--page-bg);
+  background-image: linear-gradient(var(--pane-bg), var(--pane-bg));
+  /* Modern browsers (Chrome 119+, FF 128+, Safari 16.4+): force alpha to 1
+     via CSS Relative Color Syntax so an 8-digit hex --pane-bg with alpha
+     renders fully opaque. The background shorthand intentionally overrides
+     the fallback lines above when supported. */
+  background: oklch(from var(--pane-bg) l c h / 1);
   border: 1px solid var(--pane-border);
   color: var(--text);
   border-radius: 4px;
