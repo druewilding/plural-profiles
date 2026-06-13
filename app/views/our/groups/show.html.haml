@@ -22,7 +22,7 @@
 
   %div
     - if @group.description.present?
-      .group-description{data: {controller: "spoiler", action: "click->spoiler#toggle keydown->spoiler#keydown"}}
+      .group-description
         = formatted_description(@group.description)
 
   .timestamps

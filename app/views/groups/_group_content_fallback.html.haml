@@ -13,7 +13,7 @@
       %p.tag-line= group.tag_line
 
   - if group.description.present?
-    .group-description{data: {controller: "spoiler", action: "click->spoiler#toggle keydown->spoiler#keydown"}}
+    .group-description
       = formatted_description(group.description)
 
 - if profiles.any?

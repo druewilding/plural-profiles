@@ -34,7 +34,7 @@
       %p.tag-line= @profile.tag_line
 
   - if @profile.description.present?
-    .profile-description{data: {controller: "spoiler", action: "click->spoiler#toggle keydown->spoiler#keydown"}}
+    .profile-description
       = formatted_description(@profile.description)
 
   - if @profile.groups.any?

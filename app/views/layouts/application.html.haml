@@ -44,7 +44,7 @@
           = link_to "Sign in", new_session_path
           = link_to "Sign up", new_registration_path
 
-    %main{class: "container #{content_for(:container_class)}"}
+    %main{class: "container #{content_for(:container_class)}", data: {controller: "spoiler", action: "click->spoiler#toggle keydown->spoiler#keydown"}}
       - if @sidebar_trees
         .layout
           = render "our/sidebar"
