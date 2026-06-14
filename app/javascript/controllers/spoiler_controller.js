@@ -23,9 +23,11 @@ export default class extends Controller {
 
     const link = span.closest("a")
 
-    // If this spoiler is already revealed and inside a link, don't intercept —
+    // If this spoiler is already revealed and inside a non-active link, don't intercept —
     // let the click fall through to the link so navigation works naturally.
-    if (link && span.classList.contains("spoiler--revealed")) {
+    // Exception: active tree items (tree__item--active) re-hide the spoiler on click.
+    if (link && span.classList.contains("spoiler--revealed") &&
+        !link.classList.contains("tree__item--active")) {
       return
     }
 
