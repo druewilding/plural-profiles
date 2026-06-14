@@ -445,6 +445,7 @@ details[open] > .form-section-summary::before {
 
 .sidebar-tree__row:hover {
   background-color: color-mix(in srgb, var(--text) 10%, transparent);
+  text-decoration: none;
 }
 
 .sidebar-tree__row--active {
@@ -489,6 +490,7 @@ details[open] > .form-section-summary::before {
 
 .sidebar-tree__link:hover {
   color: var(--heading);
+  text-decoration: none;
 }
 
 .sidebar-tree__label {
@@ -989,6 +991,10 @@ button:hover,
   font-size: 1rem;
 }
 
+.profile-card h3 a:hover {
+  text-decoration: none;
+}
+
 .profile-card .label-badges,
 .profile-card .pronouns {
   justify-content: center;
@@ -1158,6 +1164,11 @@ details[open] .details-close {
   user-select: none;
   box-decoration-break: clone;
   -webkit-box-decoration-break: clone;
+  text-decoration-line: none !important;
+}
+
+a:hover .spoiler {
+  text-decoration-line: none !important;
 }
 
 .spoiler:focus-visible {
@@ -1169,6 +1180,12 @@ details[open] .details-close {
   background-color: color-mix(in srgb, var(--spoiler) 10%, transparent);
   color: inherit;
   user-select: auto;
+}
+
+a .spoiler {
+  /* Don't show "click to reveal" cursor on spoilers inside links, since the
+     whole link is already clickable. */
+  cursor: inherit;
 }
 
 /* Inside a link, a revealed spoiler signals "click to navigate" */
@@ -1640,6 +1657,7 @@ html:not(.js) .avatar-editor-dialog__actions {
 
 .tree__item:hover {
   background-color: color-mix(in srgb, var(--text) 10%, transparent);
+  text-decoration: none;
 }
 
 .tree__item--active {
