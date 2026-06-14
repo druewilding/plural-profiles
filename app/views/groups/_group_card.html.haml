@@ -1,12 +1,14 @@
 -# Public group card for the explorer content panel.
 -# Locals: group (the sub-group), root_uuid, child_path
-= link_to group_path(group.uuid), class: "profile-card card", "data-action": "click->tree#selectGroup", "data-panel-url": panel_group_path(group.uuid, root: root_uuid, path: child_path), "data-group-uuid": group.uuid do
+.profile-card.card{"data-action": "click->tree#selectGroup", "data-panel-url": panel_group_path(group.uuid, root: root_uuid, path: child_path), "data-group-uuid": group.uuid}
   - if group.avatar.attached?
     = image_tag group.avatar.variant(resize_to_fill: [64, 64]), class: "avatar #{avatar_shape_class(group)}".strip, width: 64, height: 64, alt: group.avatar_alt_text.presence || "", loading: "lazy"
   - else
     .avatar.avatar--placeholder
       = render "shared/plural_pride_logo"
-  %h3= formatted_inline(group.name)
+  %h3
+    = link_to group_path(group.uuid) do
+      = formatted_inline(group.name)
   - if group.subtitle.present?
     %p.subtitle= formatted_inline(group.subtitle)
   - if group.tag_line.present?

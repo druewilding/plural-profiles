@@ -970,12 +970,11 @@ button:hover,
   align-items: center;
   text-align: center;
   padding: 1.5rem 1rem;
-  text-decoration: none;
+  cursor: pointer;
   color: var(--text);
 }
 
 .profile-card:hover {
-  text-decoration: none;
   color: var(--text);
 }
 
