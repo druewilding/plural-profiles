@@ -20,16 +20,16 @@
           %span.tree__avatar.tree__avatar--placeholder{"aria-hidden": "true"}
             = render "shared/plural_pride_logo"
         .tree-editor__name-block
-          %span.tree-editor__name= group.name
+          %span.tree-editor__name= formatted_inline(group.name)
           - if group.subtitle.present?
-            %span.tree-editor__subtitle= group.subtitle
+            %span.tree-editor__subtitle= formatted_inline(group.subtitle)
         - if group.labels.any?
           .label-badges
             - group.labels.each do |label|
               %span.label-badge= label
         %span.tree-editor__tag.tree-editor__tag--hidden hidden
         - if is_direct
-          = link_to "Remove from group", remove_group_our_group_path(root_group, group_id: group.id), data: { turbo_method: :delete, turbo_confirm: "Remove #{group.name} from #{root_group.name}?" }, class: "btn btn--small btn--danger"
+          = link_to "Remove from group", remove_group_our_group_path(root_group, group_id: group.id), data: { turbo_method: :delete, turbo_confirm: "Remove #{plain_field(group.name)} from #{plain_field(root_group.name)}?" }, class: "btn btn--small btn--danger"
       .tree-editor__actions
         .tree-editor__save-indicator{data: { visibility_toggle_target: "indicator" }}
         = form_with url: toggle_visibility_our_group_path(root_group), method: :patch, class: "tree-editor__toggle-form", data: { visibility_toggle_target: "form" } do
@@ -42,7 +42,7 @@
             = check_box_tag :hidden_toggle, "1", hidden, disabled: cascade_hidden, data: { action: "change->visibility-toggle#toggle", path: path.to_json, target_type: "Group", target_id: group.id, visibility_toggle_target: "checkbox" }
           - unless cascade_hidden
             %noscript
-              = submit_tag hidden ? "Show #{group.name}" : "Hide #{group.name}", class: "btn btn--small"
+              = submit_tag hidden ? "Show #{plain_field(group.name)}" : "Hide #{plain_field(group.name)}", class: "btn btn--small"
     .tree-editor__children
       - children.each do |child_node|
         = render "our/groups/manage_groups_node", node: child_node, root_group: root_group
@@ -57,16 +57,16 @@
         %span.tree__avatar.tree__avatar--placeholder{"aria-hidden": "true"}
           = render "shared/plural_pride_logo"
       .tree-editor__name-block
-        %span.tree-editor__name= group.name
+        %span.tree-editor__name= formatted_inline(group.name)
         - if group.subtitle.present?
-          %span.tree-editor__subtitle= group.subtitle
+          %span.tree-editor__subtitle= formatted_inline(group.subtitle)
       - if group.labels.any?
         .label-badges
           - group.labels.each do |label|
             %span.label-badge= label
       %span.tree-editor__tag.tree-editor__tag--hidden hidden
       - if is_direct
-        = link_to "Remove from group", remove_group_our_group_path(root_group, group_id: group.id), data: { turbo_method: :delete, turbo_confirm: "Remove #{group.name} from #{root_group.name}?" }, class: "btn btn--small btn--danger"
+        = link_to "Remove from group", remove_group_our_group_path(root_group, group_id: group.id), data: { turbo_method: :delete, turbo_confirm: "Remove #{plain_field(group.name)} from #{plain_field(root_group.name)}?" }, class: "btn btn--small btn--danger"
     .tree-editor__actions
       .tree-editor__save-indicator{data: { visibility_toggle_target: "indicator" }}
       = form_with url: toggle_visibility_our_group_path(root_group), method: :patch, class: "tree-editor__toggle-form", data: { visibility_toggle_target: "form" } do
@@ -79,4 +79,4 @@
           = check_box_tag :hidden_toggle, "1", hidden, disabled: cascade_hidden, data: { action: "change->visibility-toggle#toggle", path: path.to_json, target_type: "Group", target_id: group.id, visibility_toggle_target: "checkbox" }
         - unless cascade_hidden
           %noscript
-            = submit_tag hidden ? "Show #{group.name}" : "Hide #{group.name}", class: "btn btn--small"
+            = submit_tag hidden ? "Show #{plain_field(group.name)}" : "Hide #{plain_field(group.name)}", class: "btn btn--small"

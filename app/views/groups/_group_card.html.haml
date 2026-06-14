@@ -6,8 +6,8 @@
   - else
     .avatar.avatar--placeholder
       = render "shared/plural_pride_logo"
-  %h3= group.name
+  %h3= formatted_inline(group.name)
   - if group.subtitle.present?
-    %p.subtitle= group.subtitle
+    %p.subtitle= formatted_inline(group.subtitle)
   - if group.tag_line.present?
-    %p.tag-line= group.tag_line
+    %p.tag-line= formatted_inline(group.tag_line)

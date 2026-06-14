@@ -4,15 +4,17 @@
   - else
     .avatar.avatar--placeholder
       = render "shared/plural_pride_logo"
-  %h3= link_to group.name, our_group_path(group)
+  %h3
+    = link_to our_group_path(group) do
+      = formatted_inline(group.name)
   - if group.subtitle.present?
-    %p.subtitle= group.subtitle
+    %p.subtitle= formatted_inline(group.subtitle)
   - if group.labels.any?
     .label-badges
       - group.labels.each do |label|
         %span.label-badge= label
   - if group.tag_line.present?
-    %p.tag-line= group.tag_line
+    %p.tag-line= formatted_inline(group.tag_line)
   - if local_assigns[:action_label]
     .profile-card__action-spacer
     = link_to action_label, action_path, data: ({ turbo_method: action_method } if local_assigns[:action_method]), class: local_assigns.fetch(:action_class, "btn btn--small")

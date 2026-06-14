@@ -14,9 +14,9 @@
       %span.tree__avatar.tree__avatar--placeholder{"aria-hidden": "true"}
         = render "shared/plural_pride_logo"
     .tree-editor__name-block
-      %span.tree-editor__name= profile.name
+      %span.tree-editor__name= formatted_inline(profile.name)
       - if profile.subtitle.present?
-        %span.tree-editor__subtitle= profile.subtitle
+        %span.tree-editor__subtitle= formatted_inline(profile.subtitle)
     - if profile.labels.any?
       .label-badges
         - profile.labels.each do |label|
@@ -34,4 +34,4 @@
         = check_box_tag :hidden_toggle, "1", hidden, disabled: cascade_hidden, data: { action: "change->visibility-toggle#toggle", path: container_path.to_json, target_type: "Profile", target_id: profile.id, visibility_toggle_target: "checkbox" }
       - unless cascade_hidden
         %noscript
-          = submit_tag hidden ? "Show #{profile.name}" : "Hide #{profile.name}", class: "btn btn--small"
+          = submit_tag hidden ? "Show #{plain_field(profile.name)}" : "Hide #{plain_field(profile.name)}", class: "btn btn--small"
