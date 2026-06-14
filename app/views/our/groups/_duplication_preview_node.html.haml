@@ -21,9 +21,9 @@
           %span.tree__avatar.tree__avatar--placeholder{"aria-hidden": "true"}
             = render "shared/plural_pride_logo"
         .tree-editor__name-block
-          %span.tree-editor__name= group.name
+          %span.tree-editor__name= formatted_inline(group.name)
           - if group.subtitle.present?
-            %span.tree-editor__subtitle= group.subtitle
+            %span.tree-editor__subtitle= formatted_inline(group.subtitle)
         - if action == "new"
           .label-badges
             - new_labels.each do |label|
@@ -49,9 +49,9 @@
         %span.tree__avatar.tree__avatar--placeholder{"aria-hidden": "true"}
           = render "shared/plural_pride_logo"
       .tree-editor__name-block
-        %span.tree-editor__name= group.name
+        %span.tree-editor__name= formatted_inline(group.name)
         - if group.subtitle.present?
-          %span.tree-editor__subtitle= group.subtitle
+          %span.tree-editor__subtitle= formatted_inline(group.subtitle)
       - if action == "new"
         .label-badges
           - new_labels.each do |label|

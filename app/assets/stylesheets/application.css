@@ -2698,12 +2698,16 @@ input[type="submit"].btn--small,
   }
 }
 
-/* ── Inline heart emojis in descriptions ────────────────── */
+/* ── Inline heart emojis ────────────────── */
 
 .heart-inline {
   display: inline;
   vertical-align: -0.35em;
   width: auto;
+}
+
+h1 .heart-inline {
+  vertical-align: -0.1em;
 }
 
 /* ── Utilities ─────────────────────────────────────────── */

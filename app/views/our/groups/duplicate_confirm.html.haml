@@ -11,7 +11,7 @@
 
   %p
     This will duplicate
-    %strong= @source.name
+    %strong= formatted_inline(@source.name)
     with #{@labels.length > 1 ? "labels" : "label"}
     - @labels.each do |label|
       %span.label-badge= label
@@ -34,9 +34,9 @@
               %span.tree__avatar.tree__avatar--placeholder{"aria-hidden": "true"}
                 = render "shared/plural_pride_logo"
             .tree-editor__name-block
-              %span.tree-editor__name= @source.name
+              %span.tree-editor__name= formatted_inline(@source.name)
               - if @source.subtitle.present?
-                %span.tree-editor__subtitle= @source.subtitle
+                %span.tree-editor__subtitle= formatted_inline(@source.subtitle)
             .label-badges
               - @labels.each do |label|
                 %span.label-badge= label

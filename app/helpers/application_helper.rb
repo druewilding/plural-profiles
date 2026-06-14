@@ -54,8 +54,8 @@ module ApplicationHelper
 
   def plain_field(text)
     return "" if text.blank?
-    text = text.gsub(SPOILER_PLAIN_PATTERN, '\1')
-    text = text.gsub(HEART_EMOJI_PATTERN, "")
+    text = text.gsub(SPOILER_PLAIN_PATTERN, "▓▓▓▓")
+    text = text.gsub(HEART_EMOJI_PATTERN, "♥")
     strip_tags(text)
   end
 
