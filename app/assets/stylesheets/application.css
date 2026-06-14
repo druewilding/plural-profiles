@@ -151,6 +151,7 @@ body {
   background-color: var(--pane-bg);
   border-radius: 8px;
   padding: 0.75rem;
+  padding-top: 2rem;
   border: 1px solid var(--pane-border);
 }
 
@@ -503,10 +504,10 @@ details[open] > .form-section-summary::before {
 .sidebar-tree__subtitle {
   font-size: 0.75rem;
   opacity: 0.75;
-  overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
   width: 100%;
+  min-width: 0;
 }
 
 .sidebar-tree__label--repeated {
@@ -1546,6 +1547,7 @@ html:not(.js) .avatar-editor-dialog__actions {
   border: 1px solid var(--pane-border);
   border-radius: 8px;
   padding: 0.5rem;
+  padding-top: 1.5rem;
   overflow-y: auto;
   max-height: 80vh;
   position: sticky;
@@ -1717,9 +1719,9 @@ html:not(.js) .avatar-editor-dialog__actions {
 .tree__subtitle {
   font-size: 0.75rem;
   opacity: 0.75;
-  overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
+  min-width: 0;
 }
 
 @media (forced-colors: active) {
