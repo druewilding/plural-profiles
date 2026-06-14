@@ -24,8 +24,10 @@ export default class extends Controller {
     // If this spoiler is inside a link, don't intercept — let the click navigate.
     // Revealing in-place risks an accidental reveal when the user expects link navigation.
     if (span.closest("a")) return
+
+    if (span.closest("label")) event.preventDefault()
+
     const hasHint = span.classList.contains("spoiler--with-hint")
-    const hintShowing = span.classList.contains("spoiler--hint-showing")
     // Use both (hover: none) and (pointer: coarse) to identify touch-primary
     // devices. Checking only (hover: none) causes false positives in headless
     // Chrome (used by the CI test runner), which reports no hover capability
