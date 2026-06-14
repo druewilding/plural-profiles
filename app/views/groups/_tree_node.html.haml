@@ -49,4 +49,4 @@
       .tree__label-block
         %span.tree__label= formatted_inline(group.name)
         - if group.subtitle.present?
-          %span.tree__subtitle= group.subtitle
+          %span.tree__subtitle= formatted_inline(group.subtitle)
