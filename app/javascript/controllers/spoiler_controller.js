@@ -60,8 +60,14 @@ export default class extends Controller {
     const span = event.target.closest(".spoiler")
     if (!span) return
 
-    // If inside a link, let the browser handle Enter/Space naturally.
-    if (span.closest("a")) return
+    // If the spoiler is inside a link, activate the link so keyboard users
+    // get the same navigation behaviour as a mouse click.
+    const link = span.closest("a")
+    if (link) {
+      event.preventDefault()
+      link.click()
+      return
+    }
 
     event.preventDefault()
     this.toggle(event)
