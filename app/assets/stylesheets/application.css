@@ -994,6 +994,25 @@ button:hover,
   text-decoration: none;
 }
 
+/* Private cards in the authenticated .layout view: stretch the h3 link to
+   cover the whole card so clicking anywhere navigates (not just the name).
+   Spoilers still intercept clicks because .spoiler has z-index: 1 (above
+   the z-index: auto ::after overlay). Action buttons use z-index: 1 too. */
+.layout .profile-card {
+  position: relative;
+}
+
+.layout .profile-card h3 a::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+}
+
+.layout .profile-card .btn {
+  position: relative;
+  z-index: 1;
+}
+
 .profile-card .label-badges,
 .profile-card .pronouns {
   justify-content: center;
@@ -1164,6 +1183,9 @@ details[open] .details-close {
   box-decoration-break: clone;
   -webkit-box-decoration-break: clone;
   text-decoration-line: none !important;
+  /* Ensure spoilers sit above stretched-link ::after overlays on cards */
+  position: relative;
+  z-index: 1;
 }
 
 a:hover .spoiler {
