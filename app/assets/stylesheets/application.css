@@ -503,7 +503,7 @@ details[open] > .form-section-summary::before {
 
 .sidebar-tree__subtitle {
   font-size: 0.75rem;
-  opacity: 0.75;
+  color: color-mix(in srgb, var(--text) 75%, transparent);
   text-overflow: ellipsis;
   white-space: nowrap;
   width: 100%;
@@ -590,16 +590,14 @@ h2 { font-size: 1.4rem; }
 .subtitle {
   margin: 0 0 0.5rem;
   font-size: 0.9rem;
-  color: var(--text);
-  opacity: 0.8;
+  color: color-mix(in srgb, var(--text) 80%, transparent);
 }
 
 .tag-line {
   margin: 0 0 0.75rem;
   font-size: 1.1rem;
   font-style: italic;
-  color: var(--text);
-  opacity: 0.85;
+  color: color-mix(in srgb, var(--text) 80%, transparent);
 }
 
 .profile-card .tag-line {
@@ -607,7 +605,7 @@ h2 { font-size: 1.4rem; }
   padding-top: 0.5rem;
   font-style: italic;
   font-size: 1rem;
-  opacity: 0.8;
+  color: color-mix(in srgb, var(--text) 80%, transparent);
   text-align: center;
 }
 
@@ -700,7 +698,7 @@ fieldset.form-group legend {
   display: block;
   width: 100%;
   font-size: 0.8rem;
-  opacity: 0.7;
+  color: color-mix(in srgb, var(--text) 80%, transparent);
 }
 
 label {
@@ -1358,7 +1356,7 @@ a .spoiler--revealed {
 .group-list-subtitle {
   display: block;
   font-size: 0.85rem;
-  opacity: 0.7;
+  color: color-mix(in srgb, var(--text) 80%, transparent);
 }
 
 .pronouns {
@@ -1367,8 +1365,7 @@ a .spoiler--revealed {
   align-items: center;
   gap: 0.25rem 0.5rem;
   font-style: italic;
-  color: var(--text);
-  opacity: 0.8;
+  color: color-mix(in srgb, var(--text) 80%, transparent);
   font-size: 0.9rem;
 }
 
@@ -1718,7 +1715,7 @@ html:not(.js) .avatar-editor-dialog__actions {
 
 .tree__subtitle {
   font-size: 0.75rem;
-  opacity: 0.75;
+  color: color-mix(in srgb, var(--text) 75%, transparent);
   text-overflow: ellipsis;
   white-space: nowrap;
   min-width: 0;
@@ -3274,7 +3271,7 @@ h1 .heart-inline {
 }
 
 .action-dropdown__trigger:hover {
-  background-color: color-mix(in srgb, var(--secondary-button-bg) 70%, transparent);
+  background-color: color-mix(in srgb, var(--secondary-button-bg) 80%, transparent);
 }
 
 .action-dropdown__trigger::after {
