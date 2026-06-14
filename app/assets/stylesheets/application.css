@@ -1263,7 +1263,7 @@ a .spoiler--revealed {
   border-radius: 4px;
   padding: 2px 8px;
   box-shadow: 0 2px 6px color-mix(in srgb, var(--pane-border) 50%, transparent);
-  font-size: 12px;
+  font-size: 0.75rem;
   font-weight: 500;
   font-style: normal;
   width: max-content;
