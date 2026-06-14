@@ -21,8 +21,15 @@ export default class extends Controller {
     const span = event.target.closest(".spoiler")
     if (!span) return
 
-    // Prevent link navigation when a spoiler is inside an <a> tag.
     const link = span.closest("a")
+
+    // If this spoiler is already revealed and inside a link, don't intercept —
+    // let the click fall through to the link so navigation works naturally.
+    if (link && span.classList.contains("spoiler--revealed")) {
+      return
+    }
+
+    // Prevent link navigation when a spoiler is inside an <a> tag.
     if (link) {
       event.preventDefault()
       event.stopPropagation()

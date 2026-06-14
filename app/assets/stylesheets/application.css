@@ -1172,6 +1172,11 @@ details[open] .details-close {
   user-select: auto;
 }
 
+/* Inside a link, a revealed spoiler signals "click to navigate" */
+a .spoiler--revealed {
+  cursor: pointer;
+}
+
 .spoiler img {
   visibility: hidden;
 }
