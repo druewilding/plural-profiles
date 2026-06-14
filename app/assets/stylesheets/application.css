@@ -1385,7 +1385,6 @@ a .spoiler--revealed {
   display: flex;
   flex-wrap: wrap;
   align-items: center;
-  gap: 0.25rem 0.5rem;
   font-style: italic;
   color: color-mix(in srgb, var(--text) 80%, transparent);
   font-size: 0.9rem;
@@ -2619,6 +2618,7 @@ input[type="submit"].btn--small,
   display: flex;
   flex-wrap: wrap;
   gap: 0.25rem;
+  margin-left: 0.5rem;
 }
 
 .heart-picker__heart {
