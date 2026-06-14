@@ -32,6 +32,8 @@ export default class extends Controller {
   }
 
   selectGroup(event) {
+    const spoiler = event.target.closest(".spoiler")
+    if (spoiler && !spoiler.classList.contains("spoiler--revealed")) return
     event.preventDefault()
     const link = event.currentTarget
     this.#selectGroupItem(link)
@@ -63,6 +65,8 @@ export default class extends Controller {
   }
 
   selectProfileCard(event) {
+    const spoiler = event.target.closest(".spoiler")
+    if (spoiler && !spoiler.classList.contains("spoiler--revealed")) return
     event.preventDefault()
     const link = event.currentTarget
     this.#selectProfileButton(link)
