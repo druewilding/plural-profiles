@@ -76,3 +76,9 @@ solo_group:
   uuid: def40000-0000-0000-0000-000000000001
   name: Solo Group
   description: A group belonging to a user with no profiles.
+
+secret_guild:
+  user: three
+  uuid: def10000-0000-0000-0000-000000000010
+  name: "||Secret Guild||"
+  description: A group whose name is a spoiler.

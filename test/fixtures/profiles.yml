@@ -73,3 +73,15 @@ spark:
   uuid: abc10000-0000-0000-0000-000000000008
   name: Spark
   description: In static_burst — cascade-hidden from castle_clan (static_burst is hidden).
+
+phantom:
+  user: three
+  uuid: abc10000-0000-0000-0000-000000000009
+  name: "||Phantom||"
+  description: A profile whose name is a spoiler, direct member of alpha_clan.
+
+whisper:
+  user: one
+  uuid: abc11111-1111-1111-1111-111111111112
+  name: "||Whisper||"
+  description: A profile whose name is a spoiler, belonging to user one.

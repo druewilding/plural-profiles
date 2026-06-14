@@ -38,3 +38,8 @@ echo_in_alpha:
 prism_in_echo:
   parent_group: echo_shard
   child_group: prism_circle
+
+# Spoiler-name fixtures used by spoiler_navigation_test.rb
+secret_guild_in_alpha:
+  parent_group: alpha_clan
+  child_group: secret_guild
