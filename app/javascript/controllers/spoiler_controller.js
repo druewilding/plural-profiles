@@ -21,26 +21,13 @@ export default class extends Controller {
     const span = event.target.closest(".spoiler")
     if (!span) return
 
-    const link = span.closest("a")
+    // If this spoiler is inside a link, don't intercept — let the click navigate.
+    // Revealing in-place risks an accidental reveal when the user expects link navigation.
+    if (span.closest("a")) return
 
-    // If this spoiler is already revealed and inside a non-active link, don't intercept —
-    // let the click fall through to the link so navigation works naturally.
-    // Exception: active tree items (tree__item--active) re-hide the spoiler on click.
-    if (link && span.classList.contains("spoiler--revealed") &&
-      !link.classList.contains("tree__item--active")) {
-      if (event.type === "keydown" && event.key === "Enter") {
-        link.click()
-      }
-      return
-    }
+    if (span.closest("label")) event.preventDefault()
 
-    // Prevent link navigation when a spoiler is inside an <a> tag.
-    if (link) {
-      event.preventDefault()
-      event.stopPropagation()
-    }
     const hasHint = span.classList.contains("spoiler--with-hint")
-    const hintShowing = span.classList.contains("spoiler--hint-showing")
     // Use both (hover: none) and (pointer: coarse) to identify touch-primary
     // devices. Checking only (hover: none) causes false positives in headless
     // Chrome (used by the CI test runner), which reports no hover capability
@@ -70,7 +57,17 @@ export default class extends Controller {
 
   keydown(event) {
     if (event.key !== "Enter" && event.key !== " ") return
-    if (!event.target.closest(".spoiler")) return
+    const span = event.target.closest(".spoiler")
+    if (!span) return
+
+    // If the spoiler is inside a link, activate the link so keyboard users
+    // get the same navigation behaviour as a mouse click.
+    const link = span.closest("a")
+    if (link) {
+      event.preventDefault()
+      link.click()
+      return
+    }
 
     event.preventDefault()
     this.toggle(event)
