@@ -27,7 +27,10 @@ export default class extends Controller {
     // let the click fall through to the link so navigation works naturally.
     // Exception: active tree items (tree__item--active) re-hide the spoiler on click.
     if (link && span.classList.contains("spoiler--revealed") &&
-        !link.classList.contains("tree__item--active")) {
+      !link.classList.contains("tree__item--active")) {
+      if (event.type === "keydown" && event.key === "Enter") {
+        link.click()
+      }
       return
     }
 
