@@ -21,8 +21,20 @@ export default class extends Controller {
     const span = event.target.closest(".spoiler")
     if (!span) return
 
-    // Prevent link navigation when a spoiler is inside an <a> tag.
     const link = span.closest("a")
+
+    // If this spoiler is already revealed and inside a non-active link, don't intercept —
+    // let the click fall through to the link so navigation works naturally.
+    // Exception: active tree items (tree__item--active) re-hide the spoiler on click.
+    if (link && span.classList.contains("spoiler--revealed") &&
+      !link.classList.contains("tree__item--active")) {
+      if (event.type === "keydown" && event.key === "Enter") {
+        link.click()
+      }
+      return
+    }
+
+    // Prevent link navigation when a spoiler is inside an <a> tag.
     if (link) {
       event.preventDefault()
       event.stopPropagation()

@@ -44,3 +44,8 @@ mirage_in_echo_shard:
 spark_in_static_burst:
   group: static_burst
   profile: spark
+
+# Spoiler-name fixtures used by spoiler_navigation_test.rb
+phantom_in_alpha:
+  group: alpha_clan
+  profile: phantom

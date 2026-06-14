@@ -151,6 +151,7 @@ body {
   background-color: var(--pane-bg);
   border-radius: 8px;
   padding: 0.75rem;
+  padding-top: 2rem;
   border: 1px solid var(--pane-border);
 }
 
@@ -445,6 +446,7 @@ details[open] > .form-section-summary::before {
 
 .sidebar-tree__row:hover {
   background-color: color-mix(in srgb, var(--text) 10%, transparent);
+  text-decoration: none;
 }
 
 .sidebar-tree__row--active {
@@ -479,7 +481,7 @@ details[open] > .form-section-summary::before {
 .sidebar-tree__link {
   color: var(--link);
   text-decoration: none;
-  overflow: hidden;
+  overflow: visible;
   display: flex;
   flex-direction: column;
   align-items: flex-start;
@@ -489,22 +491,21 @@ details[open] > .form-section-summary::before {
 
 .sidebar-tree__link:hover {
   color: var(--heading);
+  text-decoration: none;
 }
 
 .sidebar-tree__label {
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
   width: 100%;
+  min-width: 0;
+  overflow-wrap: break-word;
 }
 
 .sidebar-tree__subtitle {
   font-size: 0.75rem;
-  opacity: 0.75;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
+  color: color-mix(in srgb, var(--text) 75%, transparent);
   width: 100%;
+  min-width: 0;
+  overflow-wrap: break-word;
 }
 
 .sidebar-tree__label--repeated {
@@ -587,16 +588,14 @@ h2 { font-size: 1.4rem; }
 .subtitle {
   margin: 0 0 0.5rem;
   font-size: 0.9rem;
-  color: var(--text);
-  opacity: 0.8;
+  color: color-mix(in srgb, var(--text) 80%, transparent);
 }
 
 .tag-line {
   margin: 0 0 0.75rem;
   font-size: 1.1rem;
   font-style: italic;
-  color: var(--text);
-  opacity: 0.85;
+  color: color-mix(in srgb, var(--text) 80%, transparent);
 }
 
 .profile-card .tag-line {
@@ -604,7 +603,7 @@ h2 { font-size: 1.4rem; }
   padding-top: 0.5rem;
   font-style: italic;
   font-size: 1rem;
-  opacity: 0.8;
+  color: color-mix(in srgb, var(--text) 80%, transparent);
   text-align: center;
 }
 
@@ -697,7 +696,7 @@ fieldset.form-group legend {
   display: block;
   width: 100%;
   font-size: 0.8rem;
-  opacity: 0.7;
+  color: color-mix(in srgb, var(--text) 80%, transparent);
 }
 
 label {
@@ -970,12 +969,11 @@ button:hover,
   align-items: center;
   text-align: center;
   padding: 1.5rem 1rem;
-  text-decoration: none;
+  cursor: pointer;
   color: var(--text);
 }
 
 .profile-card:hover {
-  text-decoration: none;
   color: var(--text);
 }
 
@@ -988,6 +986,29 @@ button:hover,
 .profile-card h3 {
   margin: 0.75rem 0 0.25rem;
   font-size: 1rem;
+}
+
+.profile-card h3 a:hover {
+  text-decoration: none;
+}
+
+/* Private cards in the authenticated .layout view: stretch the h3 link to
+   cover the whole card so clicking anywhere navigates (not just the name).
+   Spoilers still intercept clicks because .spoiler has z-index: 1 (above
+   the z-index: auto ::after overlay). Action buttons use z-index: 1 too. */
+.layout .profile-card {
+  position: relative;
+}
+
+.layout .profile-card h3 a::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+}
+
+.layout .profile-card .btn {
+  position: relative;
+  z-index: 1;
 }
 
 .profile-card .label-badges,
@@ -1159,6 +1180,14 @@ details[open] .details-close {
   user-select: none;
   box-decoration-break: clone;
   -webkit-box-decoration-break: clone;
+  text-decoration-line: none !important;
+  /* Ensure spoilers sit above stretched-link ::after overlays on cards */
+  position: relative;
+  z-index: 1;
+}
+
+a:hover .spoiler {
+  text-decoration-line: none !important;
 }
 
 .spoiler:focus-visible {
@@ -1170,6 +1199,17 @@ details[open] .details-close {
   background-color: color-mix(in srgb, var(--spoiler) 10%, transparent);
   color: inherit;
   user-select: auto;
+}
+
+a .spoiler {
+  /* Don't show "click to reveal" cursor on spoilers inside links, since the
+     whole link is already clickable. */
+  cursor: inherit;
+}
+
+/* Inside a link, a revealed spoiler signals "click to navigate" */
+a .spoiler--revealed {
+  cursor: pointer;
 }
 
 .spoiler img {
@@ -1336,7 +1376,7 @@ details[open] .details-close {
 .group-list-subtitle {
   display: block;
   font-size: 0.85rem;
-  opacity: 0.7;
+  color: color-mix(in srgb, var(--text) 80%, transparent);
 }
 
 .pronouns {
@@ -1345,8 +1385,7 @@ details[open] .details-close {
   align-items: center;
   gap: 0.25rem 0.5rem;
   font-style: italic;
-  color: var(--text);
-  opacity: 0.8;
+  color: color-mix(in srgb, var(--text) 80%, transparent);
   font-size: 0.9rem;
 }
 
@@ -1525,6 +1564,7 @@ html:not(.js) .avatar-editor-dialog__actions {
   border: 1px solid var(--pane-border);
   border-radius: 8px;
   padding: 0.5rem;
+  padding-top: 1.5rem;
   overflow-y: auto;
   max-height: 80vh;
   position: sticky;
@@ -1631,11 +1671,12 @@ html:not(.js) .avatar-editor-dialog__actions {
   cursor: pointer;
   text-align: left;
   text-decoration: none;
-  overflow: hidden;
+  overflow: visible;
 }
 
 .tree__item:hover {
   background-color: color-mix(in srgb, var(--text) 10%, transparent);
+  text-decoration: none;
 }
 
 .tree__item--active {
@@ -1676,15 +1717,14 @@ html:not(.js) .avatar-editor-dialog__actions {
 .tree__label-block {
   display: flex;
   flex-direction: column;
-  overflow: hidden;
+  overflow: visible;
   flex: 1;
   min-width: 0;
 }
 
 .tree__label {
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
+  min-width: 0;
+  overflow-wrap: break-word;
 }
 
 .tree__label--repeated {
@@ -1694,10 +1734,9 @@ html:not(.js) .avatar-editor-dialog__actions {
 
 .tree__subtitle {
   font-size: 0.75rem;
-  opacity: 0.75;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
+  color: color-mix(in srgb, var(--text) 75%, transparent);
+  min-width: 0;
+  overflow-wrap: break-word;
 }
 
 @media (forced-colors: active) {
@@ -2694,12 +2733,16 @@ input[type="submit"].btn--small,
   }
 }
 
-/* ── Inline heart emojis in descriptions ────────────────── */
+/* ── Inline heart emojis ────────────────── */
 
 .heart-inline {
   display: inline;
   vertical-align: -0.35em;
   width: auto;
+}
+
+h1 .heart-inline {
+  vertical-align: -0.1em;
 }
 
 /* ── Utilities ─────────────────────────────────────────── */
@@ -3246,7 +3289,7 @@ input[type="submit"].btn--small,
 }
 
 .action-dropdown__trigger:hover {
-  background-color: color-mix(in srgb, var(--secondary-button-bg) 70%, transparent);
+  background-color: color-mix(in srgb, var(--secondary-button-bg) 80%, transparent);
 }
 
 .action-dropdown__trigger::after {

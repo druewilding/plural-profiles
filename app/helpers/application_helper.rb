@@ -2,6 +2,12 @@ module ApplicationHelper
   DESCRIPTION_EXTRA_TAGS = %w[details summary span b i u s table thead tbody tfoot tr th td].to_set.freeze
   DESCRIPTION_EXTRA_ATTRIBUTES = %w[open class role tabindex aria-label aria-expanded colspan rowspan data-spoiler-hint].to_set.freeze
 
+  INLINE_EXTRA_TAGS = %w[b strong i em u s del span sup sub].to_set.freeze
+  INLINE_EXTRA_ATTRS = %w[class role tabindex aria-expanded aria-label
+                          data-spoiler-hint src alt width height loading title].to_set.freeze
+
+  SPOILER_PLAIN_PATTERN = /(?:\[[^\]]+\]\s*)?\|\|(.+?)\|\|(?:\s*\[[^\]]+\])?/m
+
   # Matches ||spoiler|| with an optional [hint] on either side:
   #   ||secret||[hint text]   or   [hint text]||secret||
   SPOILER_HINT_PATTERN = /(?:\[(?<pre_hint>[^\]]+)\]\s*)?\|\|(?<content>.+?)\|\|(?:\s*\[(?<post_hint>[^\]]+)\])?/m
@@ -33,6 +39,24 @@ module ApplicationHelper
     html = html.gsub("</details>", '<button type="button" class="details-close" aria-label="Close details">(click to close)</button></details>')
     html = replace_heart_emojis(html)
     html.html_safe
+  end
+
+  def formatted_inline(text)
+    return "".html_safe if text.blank?
+    safe_list_class = self.class.safe_list_sanitizer.class
+    tags = safe_list_class.allowed_tags + INLINE_EXTRA_TAGS
+    attrs = safe_list_class.allowed_attributes + INLINE_EXTRA_ATTRS
+    html = convert_spoilers_outside_code(text)
+    html = sanitize(html, tags: tags, attributes: attrs)
+    html = replace_heart_emojis(html)
+    html.html_safe
+  end
+
+  def plain_field(text)
+    return "" if text.blank?
+    text = text.gsub(SPOILER_PLAIN_PATTERN, "▓▓▓▓")
+    text = text.gsub(HEART_EMOJI_PATTERN, "♥")
+    strip_tags(text)
   end
 
   def relative_time(time)

@@ -23,6 +23,9 @@ export default class extends Controller {
   }
 
   selectRoot(event) {
+    const spoiler = event.target.closest(".spoiler")
+    if (spoiler && !spoiler.classList.contains("spoiler--revealed")) return
+    if (spoiler && event.currentTarget.classList.contains("tree__item--active")) return
     event.preventDefault()
     const link = event.currentTarget
     this.#clearActive()
@@ -32,6 +35,9 @@ export default class extends Controller {
   }
 
   selectGroup(event) {
+    const spoiler = event.target.closest(".spoiler")
+    if (spoiler && !spoiler.classList.contains("spoiler--revealed")) return
+    if (spoiler && event.currentTarget.classList.contains("tree__item--active")) return
     event.preventDefault()
     const link = event.currentTarget
     this.#selectGroupItem(link)
@@ -57,12 +63,18 @@ export default class extends Controller {
   }
 
   selectProfile(event) {
+    const spoiler = event.target.closest(".spoiler")
+    if (spoiler && !spoiler.classList.contains("spoiler--revealed")) return
+    if (spoiler && event.currentTarget.classList.contains("tree__item--active")) return
     event.preventDefault()
     const link = event.currentTarget
     this.#selectProfileButton(link)
   }
 
   selectProfileCard(event) {
+    const spoiler = event.target.closest(".spoiler")
+    if (spoiler && !spoiler.classList.contains("spoiler--revealed")) return
+    if (spoiler && event.currentTarget.classList.contains("tree__item--active")) return
     event.preventDefault()
     const link = event.currentTarget
     this.#selectProfileButton(link)

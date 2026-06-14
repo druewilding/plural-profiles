@@ -10,15 +10,15 @@
 - if has_children
   %li.tree__folder{role: "treeitem", "aria-expanded": "true"}
     .tree__row
-      %span.tree__arrow-btn{role: "button", tabindex: "0", "data-action": "click->tree#toggleFolder keydown->tree#toggleFolder", "aria-label": "Toggle #{group.name}"}
+      %span.tree__arrow-btn{role: "button", tabindex: "0", "data-action": "click->tree#toggleFolder keydown->tree#toggleFolder", "aria-label": "Toggle #{plain_field(group.name)}"}
         %span.tree__arrow.tree__arrow--open{"aria-hidden": "true"} ▶
       = link_to group_path(group.uuid), class: "tree__item", "data-action": "click->tree#selectGroup", "data-panel-url": panel_group_path(group.uuid, root: root_uuid, path: node[:path]), "data-group-uuid": group.uuid do
         - if group.avatar.attached?
           = image_tag group.avatar.variant(resize_to_fill: [24, 24]), class: "tree__avatar #{avatar_shape_class(group, prefix: 'tree__avatar')}".strip, width: 24, height: 24, alt: "", loading: "lazy"
         .tree__label-block
-          %span.tree__label= group.name
+          %span.tree__label= formatted_inline(group.name)
           - if group.subtitle.present?
-            %span.tree__subtitle= group.subtitle
+            %span.tree__subtitle= formatted_inline(group.subtitle)
     %ul.tree__children{role: "group"}
       - children.each do |child_node|
         = render "groups/tree_node", node: child_node, root_uuid: root_uuid
@@ -34,19 +34,19 @@
                 = render "shared/plural_pride_logo"
             .tree__label-block
               - if repeated
-                %span.tree__label.tree__label--repeated{title: "#{profile.name} already listed elsewhere in this group"}
-                  = profile.name
+                %span.tree__label.tree__label--repeated{title: "#{plain_field(profile.name)} already listed elsewhere in this group"}
+                  = formatted_inline(profile.name)
                   %span.visually-hidden= " (already listed elsewhere in this group)"
               - else
-                %span.tree__label= profile.name
+                %span.tree__label= formatted_inline(profile.name)
               - if profile.subtitle.present?
-                %span.tree__subtitle= profile.subtitle
+                %span.tree__subtitle= formatted_inline(profile.subtitle)
 - else
   %li.tree__leaf{role: "treeitem"}
     = link_to group_path(group.uuid), class: "tree__item", "data-action": "click->tree#selectGroup", "data-panel-url": panel_group_path(group.uuid, root: root_uuid, path: node[:path]), "data-group-uuid": group.uuid do
       - if group.avatar.attached?
         = image_tag group.avatar.variant(resize_to_fill: [24, 24]), class: "tree__avatar #{avatar_shape_class(group, prefix: 'tree__avatar')}".strip, width: 24, height: 24, alt: "", loading: "lazy"
       .tree__label-block
-        %span.tree__label= group.name
+        %span.tree__label= formatted_inline(group.name)
         - if group.subtitle.present?
-          %span.tree__subtitle= group.subtitle
+          %span.tree__subtitle= formatted_inline(group.subtitle)

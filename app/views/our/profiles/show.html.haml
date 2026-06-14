@@ -1,4 +1,4 @@
-- content_for(:title) { @profile.name + " — Plural Profiles" }
+- content_for(:title) { plain_field(@profile.name) + " — Plural Profiles" }
 
 .card
   .card__header
@@ -11,19 +11,19 @@
 
     %div
       .name-with-labels
-        %h1= @profile.name
+        %h1= formatted_inline(@profile.name)
         - if @profile.labels.any?
           .label-badges
             - @profile.labels.each do |label|
               %span.label-badge= label
 
       - if @profile.subtitle.present?
-        %p.subtitle= @profile.subtitle
+        %p.subtitle= formatted_inline(@profile.subtitle)
 
       - if @profile.pronouns.present? || @profile.heart_emojis.any?
         .pronouns
           - if @profile.pronouns.present?
-            %span= @profile.pronouns
+            %span= formatted_inline(@profile.pronouns)
           - if @profile.heart_emojis.any?
             .heart-display__grid
               - @profile.heart_emojis.each do |heart|
@@ -31,10 +31,10 @@
                   = image_tag "/images/hearts/#{heart}.webp", width: 24, height: 24, alt: @profile.heart_emoji_display_name(heart), title: @profile.heart_emoji_display_name(heart), loading: "lazy"
 
     - if @profile.tag_line.present?
-      %p.tag-line= @profile.tag_line
+      %p.tag-line= formatted_inline(@profile.tag_line)
 
   - if @profile.description.present?
-    .profile-description{data: {controller: "spoiler", action: "click->spoiler#toggle keydown->spoiler#keydown"}}
+    .profile-description
       = formatted_description(@profile.description)
 
   - if @profile.groups.any?
@@ -42,12 +42,13 @@
     %ul
       - @profile.groups.where(user: Current.user).each do |group|
         %li
-          = link_to group.name, our_group_path(group)
+          = link_to our_group_path(group) do
+            = formatted_inline(group.name)
           - if group.labels.any?
             - group.labels.each do |label|
               %span.label-badge.label-badge--inline= label
           - if group.subtitle.present?
-            %span.group-list-subtitle= group.subtitle
+            %span.group-list-subtitle= formatted_inline(group.subtitle)
 
   .timestamps
     %p

@@ -124,10 +124,10 @@ class GroupsControllerTest < ActionDispatch::IntegrationTest
     get group_path(uuid: alpha.uuid)
     assert_response :success
     # Echo Shard and Spectrum are direct children — should appear as group cards
-    assert_select "a[data-action='click->tree#selectGroup'][data-group-uuid='#{groups(:echo_shard).uuid}']" do
+    assert_select "[data-action='click->tree#selectGroup'][data-group-uuid='#{groups(:echo_shard).uuid}']" do
       assert_select "h3", text: "Echo Shard"
     end
-    assert_select "a[data-action='click->tree#selectGroup'][data-group-uuid='#{groups(:spectrum).uuid}']" do
+    assert_select "[data-action='click->tree#selectGroup'][data-group-uuid='#{groups(:spectrum).uuid}']" do
       assert_select "h3", text: "Spectrum"
     end
   end
@@ -137,15 +137,15 @@ class GroupsControllerTest < ActionDispatch::IntegrationTest
     get group_path(uuid: alpha.uuid)
     assert_response :success
     # Prism Circle is a grandchild, not a direct child — must not appear as a card in root content
-    assert_select ".explorer__content a[data-action='click->tree#selectGroup'][data-group-uuid='#{groups(:prism_circle).uuid}']", count: 0
+    assert_select ".explorer__content [data-action='click->tree#selectGroup'][data-group-uuid='#{groups(:prism_circle).uuid}']", count: 0
   end
 
   test "panel returns direct child group cards" do
     alpha = groups(:alpha_clan)
     get panel_group_path(uuid: alpha.uuid)
     assert_response :success
-    assert_select "a[data-action='click->tree#selectGroup'][data-group-uuid='#{groups(:echo_shard).uuid}']"
-    assert_select "a[data-action='click->tree#selectGroup'][data-group-uuid='#{groups(:spectrum).uuid}']"
+    assert_select "[data-action='click->tree#selectGroup'][data-group-uuid='#{groups(:echo_shard).uuid}']"
+    assert_select "[data-action='click->tree#selectGroup'][data-group-uuid='#{groups(:spectrum).uuid}']"
   end
 
   test "panel returns child group cards when reached via path" do
@@ -154,7 +154,7 @@ class GroupsControllerTest < ActionDispatch::IntegrationTest
     get panel_group_path(uuid: flux.uuid, root: castle.uuid, path: [ flux.id ])
     assert_response :success
     # Echo Shard is a child of Flux and not hidden
-    assert_select "a[data-action='click->tree#selectGroup'][data-group-uuid='#{groups(:echo_shard).uuid}']"
+    assert_select "[data-action='click->tree#selectGroup'][data-group-uuid='#{groups(:echo_shard).uuid}']"
   end
 
   test "panel hides child groups with a path-scoped override" do
@@ -163,7 +163,7 @@ class GroupsControllerTest < ActionDispatch::IntegrationTest
     get panel_group_path(uuid: flux.uuid, root: castle.uuid, path: [ flux.id ])
     assert_response :success
     # Static Burst is hidden in Flux when reached via Castle Clan
-    assert_select "a[data-action='click->tree#selectGroup'][data-group-uuid='#{groups(:static_burst).uuid}']", count: 0
+    assert_select "[data-action='click->tree#selectGroup'][data-group-uuid='#{groups(:static_burst).uuid}']", count: 0
   end
 
   test "show applies group theme CSS when group has a theme" do

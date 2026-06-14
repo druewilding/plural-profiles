@@ -1,13 +1,15 @@
-= link_to group_profile_path(group.uuid, profile.uuid), class: "profile-card card", "data-action": "click->tree#selectProfileCard", "data-panel-url": panel_group_profile_path(group.uuid, profile.uuid), "data-group-uuid": group.uuid, "data-profile-uuid": profile.uuid do
+.profile-card.card{"data-action": "click->tree#selectProfileCard", "data-panel-url": panel_group_profile_path(group.uuid, profile.uuid), "data-group-uuid": group.uuid, "data-profile-uuid": profile.uuid}
   - if profile.avatar.attached?
     = image_tag profile.avatar.variant(resize_to_fill: [64, 64]), class: "avatar #{avatar_shape_class(profile)}".strip, width: 64, height: 64, alt: profile.avatar_alt_text.presence || "", loading: "lazy"
   - else
     .avatar.avatar--placeholder
       = render "shared/plural_pride_logo"
-  %h3= profile.name
+  %h3
+    = link_to group_profile_path(group.uuid, profile.uuid) do
+      = formatted_inline(profile.name)
   - if profile.subtitle.present?
-    %p.subtitle= profile.subtitle
+    %p.subtitle= formatted_inline(profile.subtitle)
   - if profile.pronouns.present?
-    %span.pronouns= profile.pronouns
+    %span.pronouns= formatted_inline(profile.pronouns)
   - if profile.tag_line.present?
-    %p.tag-line= profile.tag_line
+    %p.tag-line= formatted_inline(profile.tag_line)

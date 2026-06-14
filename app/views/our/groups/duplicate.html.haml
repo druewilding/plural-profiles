@@ -1,4 +1,4 @@
-- content_for(:title) { "Duplicate #{@group.name} — Plural Profiles" }
+- content_for(:title) { "Duplicate #{plain_field(@group.name)} — Plural Profiles" }
 
 .card
   .card__header
@@ -10,19 +10,19 @@
 
     %div
       .name-with-labels
-        %h1= @group.name
+        %h1= formatted_inline(@group.name)
         - if @group.labels.any?
           .label-badges
             - @group.labels.each do |label|
               %span.label-badge= label
 
       - if @group.subtitle.present?
-        %p.subtitle= @group.subtitle
+        %p.subtitle= formatted_inline(@group.subtitle)
 
   %h2 Duplicate group
   %p
     Duplicate
-    %strong= @group.name
+    %strong= formatted_inline(@group.name)
     and its entire tree of sub-groups and profiles. Every new copy will be
     given the labels you specify below.
 

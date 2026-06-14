@@ -1,4 +1,4 @@
-- content_for(:title) { @group.name + " — Plural Profiles" }
+- content_for(:title) { plain_field(@group.name) + " — Plural Profiles" }
 
 .card
   .card__header
@@ -8,21 +8,21 @@
 
     %div
       .name-with-labels
-        %h1= @group.name
+        %h1= formatted_inline(@group.name)
         - if @group.labels.any?
           .label-badges
             - @group.labels.each do |label|
               %span.label-badge= label
 
       - if @group.subtitle.present?
-        %p.subtitle= @group.subtitle
+        %p.subtitle= formatted_inline(@group.subtitle)
 
     - if @group.tag_line.present?
-      %p.tag-line= @group.tag_line
+      %p.tag-line= formatted_inline(@group.tag_line)
 
   %div
     - if @group.description.present?
-      .group-description{data: {controller: "spoiler", action: "click->spoiler#toggle keydown->spoiler#keydown"}}
+      .group-description
         = formatted_description(@group.description)
 
   .timestamps
