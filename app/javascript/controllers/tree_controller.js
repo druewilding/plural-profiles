@@ -23,6 +23,8 @@ export default class extends Controller {
   }
 
   selectRoot(event) {
+    const spoiler = event.target.closest(".spoiler")
+    if (spoiler && !spoiler.classList.contains("spoiler--revealed")) return
     event.preventDefault()
     const link = event.currentTarget
     this.#clearActive()
@@ -59,6 +61,8 @@ export default class extends Controller {
   }
 
   selectProfile(event) {
+    const spoiler = event.target.closest(".spoiler")
+    if (spoiler && !spoiler.classList.contains("spoiler--revealed")) return
     event.preventDefault()
     const link = event.currentTarget
     this.#selectProfileButton(link)
