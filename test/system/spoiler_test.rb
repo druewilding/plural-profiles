@@ -13,7 +13,7 @@ class SpoilerTest < ApplicationSystemTestCase
     click_button "Create profile"
     assert_text "Profile created."
 
-    spoiler = find(".spoiler")
+    spoiler = find(".profile-description .spoiler")
     assert_no_selector ".spoiler.spoiler--revealed"
     assert_equal "false", spoiler[:"aria-expanded"]
     assert_equal "Hidden content, click to reveal", spoiler[:"aria-label"]
@@ -32,7 +32,7 @@ class SpoilerTest < ApplicationSystemTestCase
     click_button "Create profile"
     assert_text "Profile created."
 
-    spoiler = find(".spoiler")
+    spoiler = find(".profile-description .spoiler")
     spoiler.click
     assert_selector ".spoiler.spoiler--revealed"
     assert_equal "true", spoiler[:"aria-expanded"]
@@ -51,7 +51,7 @@ class SpoilerTest < ApplicationSystemTestCase
     click_button "Create profile"
     assert_text "Profile created."
 
-    spoiler = find(".spoiler")
+    spoiler = find(".profile-description .spoiler")
     assert_no_selector ".spoiler.spoiler--revealed"
 
     spoiler.send_keys(:enter)
@@ -70,7 +70,7 @@ class SpoilerTest < ApplicationSystemTestCase
     click_button "Create profile"
     assert_text "Profile created."
 
-    spoiler = find(".spoiler")
+    spoiler = find(".profile-description .spoiler")
     assert_no_selector ".spoiler.spoiler--revealed"
 
     spoiler.send_keys(:space)
@@ -89,7 +89,7 @@ class SpoilerTest < ApplicationSystemTestCase
     click_button "Create profile"
     assert_text "Profile created."
 
-    spoiler = find(".spoiler")
+    spoiler = find(".profile-description .spoiler")
     assert_equal "button", spoiler[:"role"]
     assert_equal "0", spoiler[:"tabindex"]
     assert_equal "false", spoiler[:"aria-expanded"]
@@ -103,7 +103,7 @@ class SpoilerTest < ApplicationSystemTestCase
     click_button "Create profile"
     assert_text "Profile created."
 
-    spoiler = find(".spoiler")
+    spoiler = find(".profile-description .spoiler")
     assert_no_selector ".spoiler.spoiler--revealed"
 
     spoiler.click
@@ -280,9 +280,11 @@ class SpoilerTest < ApplicationSystemTestCase
     click_button "Create profile"
     assert_text "Profile created."
 
-    assert_selector ".spoiler", count: 2
-    assert_selector ".spoiler.spoiler--with-hint", count: 1
-    assert_no_selector ".spoiler:not(.spoiler--with-hint).spoiler--with-hint"
+    within(".profile-description") do
+      assert_selector ".spoiler", count: 2
+      assert_selector ".spoiler.spoiler--with-hint", count: 1
+      assert_no_selector ".spoiler:not(.spoiler--with-hint).spoiler--with-hint"
+    end
 
     hinted = find(".spoiler.spoiler--with-hint")
     assert_equal "a clue", hinted[:"data-spoiler-hint"]
