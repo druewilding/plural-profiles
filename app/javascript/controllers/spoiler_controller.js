@@ -25,9 +25,24 @@ export default class extends Controller {
     // Revealing in-place risks an accidental reveal when the user expects link navigation.
     if (span.closest("a")) return
 
+    // If inside a tree-navigable card container (e.g. public explorer group/profile cards,
+    // where the whole card div has data-action="click->tree#select..."), also don't intercept.
+    // The tree controller handles navigation; a spoiler in e.g. the subtitle is still part
+    // of a clickable card and should navigate, not reveal.
+    if (span.closest("[data-action*='->tree#select']")) return
+
+    // If inside a private layout card (CSS stretched-link pattern), spoilers outside the h3 a
+    // (e.g. subtitle) should navigate via the card link rather than reveal.
+    const privateCard = span.closest(".layout .profile-card")
+    if (privateCard) {
+      privateCard.querySelector("h3 a")?.click()
+      return
+    }
+
     if (span.closest("label")) event.preventDefault()
 
     const hasHint = span.classList.contains("spoiler--with-hint")
+    const hintShowing = span.classList.contains("spoiler--hint-showing")
     // Use both (hover: none) and (pointer: coarse) to identify touch-primary
     // devices. Checking only (hover: none) causes false positives in headless
     // Chrome (used by the CI test runner), which reports no hover capability
@@ -66,6 +81,24 @@ export default class extends Controller {
     if (link) {
       event.preventDefault()
       link.click()
+      return
+    }
+
+    // If inside a tree-navigable card container, activate the card so keyboard
+    // navigation also works for spoilers outside the name link (e.g. subtitle).
+    const treeTarget = span.closest("[data-action*='->tree#select']")
+    if (treeTarget) {
+      event.preventDefault()
+      treeTarget.click()
+      return
+    }
+
+    // If inside a private layout card (CSS stretched-link pattern), activate the
+    // h3 a link so keyboard navigation works for spoilers outside it (e.g. subtitle).
+    const privateCard = span.closest(".layout .profile-card")
+    if (privateCard) {
+      event.preventDefault()
+      privateCard.querySelector("h3 a")?.click()
       return
     }
 
