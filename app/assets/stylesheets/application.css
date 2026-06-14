@@ -480,7 +480,7 @@ details[open] > .form-section-summary::before {
 .sidebar-tree__link {
   color: var(--link);
   text-decoration: none;
-  overflow: hidden;
+  overflow: visible;
   display: flex;
   flex-direction: column;
   align-items: flex-start;
@@ -494,10 +494,10 @@ details[open] > .form-section-summary::before {
 }
 
 .sidebar-tree__label {
-  overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
   width: 100%;
+  min-width: 0;
 }
 
 .sidebar-tree__subtitle {
@@ -1652,7 +1652,7 @@ html:not(.js) .avatar-editor-dialog__actions {
   cursor: pointer;
   text-align: left;
   text-decoration: none;
-  overflow: hidden;
+  overflow: visible;
 }
 
 .tree__item:hover {
@@ -1698,15 +1698,15 @@ html:not(.js) .avatar-editor-dialog__actions {
 .tree__label-block {
   display: flex;
   flex-direction: column;
-  overflow: hidden;
+  overflow: visible;
   flex: 1;
   min-width: 0;
 }
 
 .tree__label {
-  overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
+  min-width: 0;
 }
 
 .tree__label--repeated {
