@@ -1224,7 +1224,7 @@ a .spoiler--revealed {
   .spoiler {
     forced-color-adjust: none;
     background-color: var(--spoiler);
-    color: var(--spoiler);
+    color: transparent;
     border: 1px solid CanvasText;
   }
 
