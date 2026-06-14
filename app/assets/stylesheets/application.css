@@ -495,19 +495,17 @@ details[open] > .form-section-summary::before {
 }
 
 .sidebar-tree__label {
-  text-overflow: ellipsis;
-  white-space: nowrap;
   width: 100%;
   min-width: 0;
+  overflow-wrap: break-word;
 }
 
 .sidebar-tree__subtitle {
   font-size: 0.75rem;
   color: color-mix(in srgb, var(--text) 75%, transparent);
-  text-overflow: ellipsis;
-  white-space: nowrap;
   width: 100%;
   min-width: 0;
+  overflow-wrap: break-word;
 }
 
 .sidebar-tree__label--repeated {
@@ -1725,9 +1723,8 @@ html:not(.js) .avatar-editor-dialog__actions {
 }
 
 .tree__label {
-  text-overflow: ellipsis;
-  white-space: nowrap;
   min-width: 0;
+  overflow-wrap: break-word;
 }
 
 .tree__label--repeated {
@@ -1738,9 +1735,8 @@ html:not(.js) .avatar-editor-dialog__actions {
 .tree__subtitle {
   font-size: 0.75rem;
   color: color-mix(in srgb, var(--text) 75%, transparent);
-  text-overflow: ellipsis;
-  white-space: nowrap;
   min-width: 0;
+  overflow-wrap: break-word;
 }
 
 @media (forced-colors: active) {
