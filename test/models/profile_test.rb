@@ -73,10 +73,10 @@ class ProfileTest < ActiveSupport::TestCase
     assert_empty profile.errors[:created_at]
   end
 
-  test "created_at in the future is invalid" do
+  test "created_at in the future is valid" do
     profile = Profile.new(user: users(:one), name: "Test", created_at: 2.minutes.from_now)
-    assert_not profile.valid?
-    assert_includes profile.errors[:created_at], "can't be in the future"
+    profile.valid?
+    assert_empty profile.errors[:created_at]
   end
 
   # Heart emojis

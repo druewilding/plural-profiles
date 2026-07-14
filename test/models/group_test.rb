@@ -501,11 +501,11 @@ class GroupTest < ActiveSupport::TestCase
 
   # -- created_at validation ---
 
-  test "created_at cannot be in the future" do
+  test "created_at can be in the future" do
     user = users(:one)
     group = user.groups.build(name: "Future Group", created_at: 1.hour.from_now)
-    assert_not group.valid?
-    assert_includes group.errors[:created_at], "can't be in the future"
+    group.valid?
+    assert_empty group.errors[:created_at]
   end
 
   test "created_at can be in the past" do

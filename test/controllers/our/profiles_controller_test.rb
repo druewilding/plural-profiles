@@ -148,14 +148,14 @@ class Our::ProfilesControllerTest < ActionDispatch::IntegrationTest
     assert_in_delta past.to_i, @profile.reload.created_at.to_i, 60
   end
 
-  test "update rejects a created_at value in the future" do
+  test "update accepts a created_at value in the future" do
     sign_in_as @user
     future = 1.day.from_now.utc
     patch our_profile_path(@profile), params: {
       profile: { created_at: future.strftime("%Y-%m-%dT%H:%M") }
     }
-    assert_response :unprocessable_entity
-    assert_match "can&#39;t be in the future", response.body
+    assert_response :redirect
+    assert_in_delta future.to_i, @profile.reload.created_at.to_i, 60
   end
 
   test "update with malformed created_at does not raise" do
