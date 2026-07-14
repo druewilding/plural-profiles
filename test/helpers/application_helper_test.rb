@@ -422,4 +422,129 @@ class ApplicationHelperTest < ActionView::TestCase
     assert_includes result, "<p>Before</p>"
     assert_includes result, "<p>After</p>"
   end
+
+  # -- Inline style sanitization --
+
+  test "allows float in style attribute" do
+    text = '<img src="x.jpg" alt="x" style="float: left;">'
+    result = formatted_description(text)
+    assert_includes result, 'style="float: left"'
+  end
+
+  test "allows width and height in style attribute" do
+    text = '<img src="x.jpg" alt="x" style="width: 100px; height: 100px;">'
+    result = formatted_description(text)
+    assert_includes result, "width: 100px"
+    assert_includes result, "height: 100px"
+  end
+
+  test "allows padding in style attribute" do
+    text = '<img src="x.jpg" alt="x" style="padding: 10px;">'
+    result = formatted_description(text)
+    assert_includes result, "padding: 10px"
+  end
+
+  test "allows margin in style attribute" do
+    text = '<p style="margin: 0 1em;">text</p>'
+    result = formatted_description(text)
+    assert_includes result, "margin: 0 1em"
+  end
+
+  test "allows text-align in style attribute" do
+    text = '<p style="text-align: center;">text</p>'
+    result = formatted_description(text)
+    assert_includes result, "text-align: center"
+  end
+
+  test "allows border-radius in style attribute" do
+    text = '<img src="x.jpg" alt="x" style="border-radius: 50%;">'
+    result = formatted_description(text)
+    assert_includes result, "border-radius: 50%"
+  end
+
+  test "allows max-width in style attribute" do
+    text = '<img src="x.jpg" alt="x" style="max-width: 200px;">'
+    result = formatted_description(text)
+    assert_includes result, "max-width: 200px"
+  end
+
+  test "strips disallowed color property from style" do
+    text = '<p style="color: red;">text</p>'
+    result = formatted_description(text)
+    assert_not_includes result, "color"
+    assert_includes result, "text"
+  end
+
+  test "strips disallowed background-color from style" do
+    text = '<p style="background-color: white; color: white;">hidden</p>'
+    result = formatted_description(text)
+    assert_not_includes result, "background-color"
+    assert_not_includes result, "color"
+    assert_includes result, "hidden"
+  end
+
+  test "strips disallowed position from style" do
+    text = '<div style="position: fixed; top: 0;">overlay</div>'
+    result = formatted_description(text)
+    assert_not_includes result, "position"
+    assert_not_includes result, "top"
+    assert_includes result, "overlay"
+  end
+
+  test "keeps allowed properties and strips disallowed ones in the same style" do
+    text = '<img src="x.jpg" alt="x" style="float: left; color: red; width: 100px; position: absolute;">'
+    result = formatted_description(text)
+    assert_includes result, "float: left"
+    assert_includes result, "width: 100px"
+    assert_not_includes result, "color"
+    assert_not_includes result, "position"
+  end
+
+  test "removes style attribute entirely when all properties are stripped" do
+    text = '<p style="color: red; position: fixed;">text</p>'
+    result = formatted_description(text)
+    assert_not_includes result, "style="
+    assert_includes result, "text"
+  end
+
+  test "strips expression() from style values" do
+    text = '<p style="width: expression(alert(1));">text</p>'
+    result = formatted_description(text)
+    assert_not_includes result, "expression"
+    assert_includes result, "text"
+  end
+
+  test "strips url() from style values" do
+    text = '<p style="padding: url(https://evil.com);">text</p>'
+    result = formatted_description(text)
+    assert_not_includes result, "url("
+    assert_includes result, "text"
+  end
+
+  test "allows alt, width and height as HTML attributes on img" do
+    text = '<img src="x.jpg" alt="a photo" width="100" height="100">'
+    result = formatted_description(text)
+    assert_includes result, 'alt="a photo"'
+    assert_includes result, 'width="100"'
+    assert_includes result, 'height="100"'
+  end
+
+  test "float-left class still works alongside style attribute" do
+    text = '<img src="x.jpg" alt="x" class="float-left" width="100" height="100">'
+    result = formatted_description(text)
+    assert_includes result, 'class="float-left"'
+    assert_includes result, 'width="100"'
+  end
+
+  test "full floating image with text works as intended" do
+    text = '<p><img src="x.jpg" alt="photo" style="float:left; width:100px;height:100px; padding:10px;">Some text alongside</p>'
+    result = formatted_description(text)
+    # Nokogiri normalises declarations to "property: value" (space after colon)
+    assert_includes result, 'alt="photo"'
+    assert_includes result, "float: left"
+    assert_includes result, "width: 100px"
+    assert_includes result, "height: 100px"
+    assert_includes result, "padding: 10px"
+    assert_includes result, "Some text alongside"
+  end
 end
