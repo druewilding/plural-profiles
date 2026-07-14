@@ -377,6 +377,43 @@ class ApplicationHelperTest < ActionView::TestCase
     assert_not_includes result, '<img src="/images/hearts/11_aqua_heart.webp"'
   end
 
+  # -- Multiple blank lines --
+
+  test "two newlines produce a single paragraph break" do
+    result = formatted_description("a\n\nb")
+    assert_includes result, "<p>a</p>"
+    assert_includes result, "<p>b</p>"
+    assert_not_includes result, "<p><br></p>"
+  end
+
+  test "three newlines produce two paragraph breaks" do
+    result = formatted_description("a\n\n\nb")
+    assert_includes result, "<p>a</p>"
+    assert_includes result, "<p>b</p>"
+    assert_includes result, "<p><br></p>"
+  end
+
+  test "four newlines produce three paragraph breaks" do
+    result = formatted_description("a\n\n\n\nb")
+    blank_paragraphs = result.scan("<p><br></p>").length
+    assert_equal 2, blank_paragraphs
+  end
+
+  test "three CRLF newlines produce two paragraph breaks" do
+    result = formatted_description("a\r\n\r\n\r\nb")
+    assert_includes result, "<p>a</p>"
+    assert_includes result, "<p>b</p>"
+    assert_includes result, "<p><br></p>"
+  end
+
+  test "extra blank lines between three blocks are preserved" do
+    result = formatted_description("first\n\n\nsecond\n\n\n\nthird")
+    assert_includes result, "<p>first</p>"
+    assert_includes result, "<p>second</p>"
+    assert_includes result, "<p>third</p>"
+    assert_equal 3, result.scan("<p><br></p>").length
+  end
+
   # -- Table support --
 
   test "allows table, tr, td tags" do

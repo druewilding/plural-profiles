@@ -39,10 +39,12 @@ module ApplicationHelper
   ).freeze
 
   def formatted_description(text)
+    text = text.gsub(/\r\n?/, "\n")
     safe_list_class = self.class.safe_list_sanitizer.class
     tags = safe_list_class.allowed_tags + DESCRIPTION_EXTRA_TAGS
     attrs = safe_list_class.allowed_attributes + DESCRIPTION_EXTRA_ATTRIBUTES
     text = convert_spoilers_outside_code(text)
+    text = expand_blank_lines(text)
     text = strip_block_tag_newlines(text)
     html = simple_format(text, {}, sanitize_options: { tags: tags, attributes: attrs })
     html = sanitize_inline_styles(html)
@@ -87,6 +89,10 @@ module ApplicationHelper
   end
 
   private
+
+  def expand_blank_lines(text)
+    text.gsub(/\n{3,}/) { |match| "\n\n" + ("<br>\n\n" * (match.length - 2)) }
+  end
 
   def sanitize_inline_styles(html)
     return html unless html.include?(" style=")
