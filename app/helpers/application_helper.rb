@@ -89,6 +89,7 @@ module ApplicationHelper
   private
 
   def sanitize_inline_styles(html)
+    return html unless html.include?(" style=")
     doc = Nokogiri::HTML::DocumentFragment.parse(html)
     doc.css("[style]").each do |node|
       cleaned = clean_css_style(node["style"])
