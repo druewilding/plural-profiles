@@ -251,6 +251,25 @@ Auto-fix issues:
 bin/rubocop -a
 ```
 
+### Security audit
+
+CI runs two security checks as part of the `scan_ruby` job: [Brakeman](https://brakemanscanner.org/) for static analysis and [bundler-audit](https://github.com/rubysec/bundler-audit) for known gem vulnerabilities.
+
+bundler-audit ships with a bundled snapshot of the [ruby-advisory-db](https://github.com/rubysec/ruby-advisory-db). That snapshot can become stale, so when the audit passes locally but fails on CI (or vice versa), the databases are out of sync. Fetch the latest advisories before checking:
+
+```sh
+bundle exec bundler-audit update
+bundle exec bundler-audit check
+```
+
+If vulnerabilities are found, update the affected gems:
+
+```sh
+bundle update <gem-name> [<gem-name> ...]
+```
+
+Then re-run the check to confirm everything is clean before committing the updated `Gemfile.lock`.
+
 ## Routes overview
 
 | Path                           | Description                                      |
