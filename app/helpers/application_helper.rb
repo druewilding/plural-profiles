@@ -1,6 +1,15 @@
 module ApplicationHelper
   DESCRIPTION_EXTRA_TAGS = %w[details summary span b i u s table thead tbody tfoot tr th td].to_set.freeze
-  DESCRIPTION_EXTRA_ATTRIBUTES = %w[open class role tabindex aria-label aria-expanded colspan rowspan data-spoiler-hint].to_set.freeze
+  DESCRIPTION_EXTRA_ATTRIBUTES = %w[open class role tabindex aria-label aria-expanded colspan rowspan data-spoiler-hint style width height].to_set.freeze
+
+  ALLOWED_CSS_PROPERTIES = %w[
+    float clear
+    width height max-width max-height min-width min-height
+    padding padding-top padding-right padding-bottom padding-left
+    margin margin-top margin-right margin-bottom margin-left
+    text-align vertical-align
+    border-radius
+  ].to_set.freeze
 
   INLINE_EXTRA_TAGS = %w[b strong i em u s del span sup sub].to_set.freeze
   INLINE_EXTRA_ATTRS = %w[class role tabindex aria-expanded aria-label
@@ -36,6 +45,7 @@ module ApplicationHelper
     text = convert_spoilers_outside_code(text)
     text = strip_block_tag_newlines(text)
     html = simple_format(text, {}, sanitize_options: { tags: tags, attributes: attrs })
+    html = sanitize_inline_styles(html)
     html = html.gsub("</details>", '<button type="button" class="details-close" aria-label="Close details">(click to close)</button></details>')
     html = replace_heart_emojis(html)
     html.html_safe
@@ -77,6 +87,33 @@ module ApplicationHelper
   end
 
   private
+
+  def sanitize_inline_styles(html)
+    return html unless html.include?(" style=")
+    doc = Nokogiri::HTML::DocumentFragment.parse(html)
+    doc.css("[style]").each do |node|
+      cleaned = clean_css_style(node["style"])
+      if cleaned.present?
+        node["style"] = cleaned
+      else
+        node.remove_attribute("style")
+      end
+    end
+    doc.to_html
+  end
+
+  def clean_css_style(style_value)
+    style_value.split(";").filter_map do |declaration|
+      next if declaration.strip.empty?
+      property, value = declaration.split(":", 2).map(&:strip)
+      next unless property && value
+      next if property.include?("\\") || value.include?("\\")
+      prop = property.downcase
+      next unless ALLOWED_CSS_PROPERTIES.include?(prop)
+      next if value.match?(/\bexpression\b|\bjavascript\b|url\s*\(/i)
+      "#{prop}: #{value}"
+    end.join("; ")
+  end
 
   def strip_block_tag_newlines(text)
     text.gsub(BLOCK_TAG_TRAILING_NEWLINE_RE, '\1')
