@@ -443,6 +443,15 @@ class ApplicationHelperTest < ActionView::TestCase
     assert_includes result, 'rowspan="2"'
   end
 
+  test "multiple newlines between table structural tags do not produce br inside table" do
+    text = "<table>\n\n\n<tr>\n\n\n<td>content</td>\n\n\n</tr>\n\n\n</table>"
+    result = formatted_description(text)
+    assert_includes result, "<table>"
+    assert_includes result, "<tr>"
+    assert_includes result, "<td>content</td>"
+    refute_match(/<t(?:able|r|d|head|body|foot)[^>]*>.*?<br/m, result)
+  end
+
   test "strips newlines between table structural tags before formatting" do
     text = "<table>\n<tr>\n<td>content</td>\n</tr>\n</table>"
     result = formatted_description(text)

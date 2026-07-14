@@ -44,8 +44,8 @@ module ApplicationHelper
     tags = safe_list_class.allowed_tags + DESCRIPTION_EXTRA_TAGS
     attrs = safe_list_class.allowed_attributes + DESCRIPTION_EXTRA_ATTRIBUTES
     text = convert_spoilers_outside_code(text)
-    text = expand_blank_lines(text)
     text = strip_block_tag_newlines(text)
+    text = expand_blank_lines(text)
     html = simple_format(text, {}, sanitize_options: { tags: tags, attributes: attrs })
     html = sanitize_inline_styles(html)
     html = html.gsub("</details>", '<button type="button" class="details-close" aria-label="Close details">(click to close)</button></details>')
