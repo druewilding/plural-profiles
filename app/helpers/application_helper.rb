@@ -107,9 +107,11 @@ module ApplicationHelper
       next if declaration.strip.empty?
       property, value = declaration.split(":", 2).map(&:strip)
       next unless property && value
-      next unless ALLOWED_CSS_PROPERTIES.include?(property.downcase)
+      next if property.include?("\\") || value.include?("\\")
+      prop = property.downcase
+      next unless ALLOWED_CSS_PROPERTIES.include?(prop)
       next if value.match?(/\bexpression\b|\bjavascript\b|url\s*\(/i)
-      "#{property}: #{value}"
+      "#{prop}: #{value}"
     end.join("; ")
   end
 

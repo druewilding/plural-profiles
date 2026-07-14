@@ -521,6 +521,31 @@ class ApplicationHelperTest < ActionView::TestCase
     assert_includes result, "text"
   end
 
+  test "strips CSS escape sequences from style values" do
+    text = '<p style="padding: u\\72l(https://evil.com);">text</p>'
+    result = formatted_description(text)
+    assert_not_includes result, "url"
+    assert_not_includes result, "evil"
+    assert_includes result, "text"
+  end
+
+  test "strips CSS escape sequences from property names" do
+    text = '<p style="\\63olor: red;">text</p>'
+    result = formatted_description(text)
+    assert_not_includes result, "color"
+    assert_not_includes result, "red"
+    assert_includes result, "text"
+  end
+
+  test "normalises property names to lowercase" do
+    text = '<img src="x.jpg" alt="x" style="Float: left; WIDTH: 100px;">'
+    result = formatted_description(text)
+    assert_includes result, "float: left"
+    assert_includes result, "width: 100px"
+    assert_not_includes result, "Float"
+    assert_not_includes result, "WIDTH"
+  end
+
   test "allows alt, width and height as HTML attributes on img" do
     text = '<img src="x.jpg" alt="a photo" width="100" height="100">'
     result = formatted_description(text)
