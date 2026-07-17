@@ -53,11 +53,10 @@ class ApplicationHelperTest < ActionView::TestCase
   test "details and summary work alongside plain text" do
     text = "Intro paragraph\n\n<details><summary>More info</summary>Hidden content</details>\n\nClosing paragraph"
     result = formatted_description(text)
-    assert_includes result, "Intro paragraph"
-    assert_includes result, "<details>"
+    assert_includes result, "Intro paragraph<br><br><details>"
     assert_includes result, "<summary>More info</summary>"
     assert_includes result, "Hidden content"
-    assert_includes result, "Closing paragraph"
+    assert_includes result, "</details><br><br>Closing paragraph"
   end
 
   test "details content with blank lines stays inside the details element" do
@@ -466,13 +465,11 @@ class ApplicationHelperTest < ActionView::TestCase
     refute_match(/<t(?:able|r|d|head|body|foot)[^>]*>.*?<br/m, result)
   end
 
-  test "newline stripping does not affect line breaks around non-table elements" do
+  test "newlines around non-table block elements become br tags" do
     text = "Before\n\n<div class=\"img-row\">content</div>\n\nAfter"
     result = formatted_description(text)
-    assert_includes result, "Before"
-    assert_includes result, "After"
-    assert_includes result, "<div"
-    assert_includes result, "content"
+    assert_includes result, "Before<br><br><div"
+    assert_includes result, "</div><br><br>After"
   end
 
   # -- Inline style sanitization --
