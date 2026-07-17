@@ -24,10 +24,10 @@ module ApplicationHelper
 
   HEART_EMOJI_PATTERN = /:([a-z0-9_]+_heart):/i
 
-  # Newlines adjacent to these block-level tags get stripped before simple_format
-  # runs, to prevent them being turned into <br> or <p> inside structured HTML.
+  # Newlines adjacent to these block-level tags get stripped before newline→<br>
+  # conversion, to prevent spurious <br> inside structured HTML like tables.
   # Limited to table structural tags — other block elements (div, details, etc.)
-  # can appear in flow text where blank lines ARE meaningful paragraph breaks.
+  # can appear in flow text where blank lines ARE meaningful line breaks.
   BLOCK_TAG_NAMES = "table|thead|tbody|tfoot|tr|th|td"
   BLOCK_TAG_TRAILING_NEWLINE_RE = Regexp.new(
     "(</?(?:#{BLOCK_TAG_NAMES})(?:\\s[^>]*)?>)\\s*\\n+\\s*",
@@ -45,8 +45,8 @@ module ApplicationHelper
     attrs = safe_list_class.allowed_attributes + DESCRIPTION_EXTRA_ATTRIBUTES
     text = convert_spoilers_outside_code(text)
     text = strip_block_tag_newlines(text)
-    text = expand_blank_lines(text)
-    html = simple_format(text, {}, sanitize_options: { tags: tags, attributes: attrs })
+    html = sanitize(text, tags: tags, attributes: attrs)
+    html = newlines_to_br(html)
     html = sanitize_inline_styles(html)
     html = html.gsub("</details>", '<button type="button" class="details-close" aria-label="Close details">(click to close)</button></details>')
     html = replace_heart_emojis(html)
@@ -90,8 +90,8 @@ module ApplicationHelper
 
   private
 
-  def expand_blank_lines(text)
-    text.gsub(/\n{3,}/) { |match| "\n\n" + ("<br>\n\n" * (match.length - 2)) }
+  def newlines_to_br(html)
+    html.gsub("\n", "<br>")
   end
 
   def sanitize_inline_styles(html)

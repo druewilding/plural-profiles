@@ -1049,7 +1049,8 @@ button:hover,
   margin-bottom: 1.5rem;
 }
 
-.profile-description {
+.profile-description,
+.group-description {
   margin-bottom: 1.5rem;
 }
 

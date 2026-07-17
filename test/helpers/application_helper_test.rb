@@ -21,11 +21,10 @@ class ApplicationHelperTest < ActionView::TestCase
     assert_match(/open/, result)
   end
 
-  test "preserves simple_format paragraph wrapping" do
+  test "newlines become br tags" do
     text = "Line one\n\nLine two"
     result = formatted_description(text)
-    assert_includes result, "<p>Line one</p>"
-    assert_includes result, "<p>Line two</p>"
+    assert_includes result, "Line one<br><br>Line two"
   end
 
   test "strips script tags" do
@@ -54,11 +53,24 @@ class ApplicationHelperTest < ActionView::TestCase
   test "details and summary work alongside plain text" do
     text = "Intro paragraph\n\n<details><summary>More info</summary>Hidden content</details>\n\nClosing paragraph"
     result = formatted_description(text)
-    assert_includes result, "<p>Intro paragraph</p>"
-    assert_includes result, "<details>"
+    assert_includes result, "Intro paragraph<br><br><details>"
     assert_includes result, "<summary>More info</summary>"
     assert_includes result, "Hidden content"
-    assert_includes result, "<p>Closing paragraph</p>"
+    assert_includes result, "</details><br><br>Closing paragraph"
+  end
+
+  test "details content with blank lines stays inside the details element" do
+    text = "<details><summary>Title</summary>\n\ncontent line 1\n\ncontent line 2\n\n</details>"
+    result = formatted_description(text)
+    assert_includes result, "<details>"
+    assert_includes result, "<summary>Title</summary>"
+    assert_match(/<details>.*content line 1.*content line 2.*<\/details>/m, result)
+  end
+
+  test "inline tags like i span across blank lines" do
+    text = "<i>verse one\n\nverse two</i>"
+    result = formatted_description(text)
+    assert_match(/<i>.*verse one.*verse two.*<\/i>/m, result)
   end
 
   # -- Spoiler syntax (||text||) --
@@ -379,39 +391,30 @@ class ApplicationHelperTest < ActionView::TestCase
 
   # -- Multiple blank lines --
 
-  test "two newlines produce a single paragraph break" do
+  test "two newlines produce a blank line" do
     result = formatted_description("a\n\nb")
-    assert_includes result, "<p>a</p>"
-    assert_includes result, "<p>b</p>"
-    assert_not_includes result, "<p><br></p>"
+    assert_includes result, "a<br><br>b"
   end
 
-  test "three newlines produce two paragraph breaks" do
+  test "three newlines produce extra spacing" do
     result = formatted_description("a\n\n\nb")
-    assert_includes result, "<p>a</p>"
-    assert_includes result, "<p>b</p>"
-    assert_includes result, "<p><br></p>"
+    assert_includes result, "a<br><br><br>b"
   end
 
-  test "four newlines produce three paragraph breaks" do
+  test "four newlines produce even more spacing" do
     result = formatted_description("a\n\n\n\nb")
-    blank_paragraphs = result.scan("<p><br></p>").length
-    assert_equal 2, blank_paragraphs
+    assert_includes result, "a<br><br><br><br>b"
   end
 
-  test "three CRLF newlines produce two paragraph breaks" do
+  test "three CRLF newlines produce extra spacing" do
     result = formatted_description("a\r\n\r\n\r\nb")
-    assert_includes result, "<p>a</p>"
-    assert_includes result, "<p>b</p>"
-    assert_includes result, "<p><br></p>"
+    assert_includes result, "a<br><br><br>b"
   end
 
   test "extra blank lines between three blocks are preserved" do
     result = formatted_description("first\n\n\nsecond\n\n\n\nthird")
-    assert_includes result, "<p>first</p>"
-    assert_includes result, "<p>second</p>"
-    assert_includes result, "<p>third</p>"
-    assert_equal 3, result.scan("<p><br></p>").length
+    assert_includes result, "first<br><br><br>second"
+    assert_includes result, "second<br><br><br><br>third"
   end
 
   # -- Table support --
@@ -462,11 +465,11 @@ class ApplicationHelperTest < ActionView::TestCase
     refute_match(/<t(?:able|r|d|head|body|foot)[^>]*>.*?<br/m, result)
   end
 
-  test "newline stripping does not affect paragraph breaks around non-table elements" do
+  test "newlines around non-table block elements become br tags" do
     text = "Before\n\n<div class=\"img-row\">content</div>\n\nAfter"
     result = formatted_description(text)
-    assert_includes result, "<p>Before</p>"
-    assert_includes result, "<p>After</p>"
+    assert_includes result, "Before<br><br><div"
+    assert_includes result, "</div><br><br>After"
   end
 
   # -- Inline style sanitization --
