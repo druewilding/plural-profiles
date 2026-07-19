@@ -6,9 +6,9 @@
 -# Month/Day/Hour/Minute are real <select> dropdowns (bounded ranges, and this
 -# gives them the exact same native arrow as every other select in the app —
 -# no custom indicator to keep in sync across browsers). Year is unbounded, so
--# it stays a plain text field. Works with no JS: plain form fields, and the
--# server (see profile_params/group_params) tolerantly parses the month as a
--# name or a number.
+-# it stays a numeric input with no range limit. Works with no JS: plain form
+-# fields, and the server (see profile_params/group_params) tolerantly parses
+-# the month as a name or a number.
 
 .datetime-picker
   .datetime-picker__field.datetime-picker__field--month
@@ -23,7 +23,7 @@
 
   .datetime-picker__field.datetime-picker__field--year
     %label.visually-hidden{for: "#{field}_year"} Year
-    %input{type: "text", inputmode: "numeric", id: "#{field}_year", name: "#{form.object_name}[#{field}_parts][year]", value: value.year, autocomplete: "off"}
+    %input{type: "number", id: "#{field}_year", name: "#{form.object_name}[#{field}_parts][year]", value: value.year, autocomplete: "off"}
 
   .datetime-picker__field.datetime-picker__field--hour
     %label.visually-hidden{for: "#{field}_hour"} Hour

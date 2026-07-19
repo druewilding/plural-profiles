@@ -205,7 +205,7 @@ class Our::ProfilesControllerTest < ActionDispatch::IntegrationTest
     assert_match %(<option selected="selected" value="January">January</option>), response.body
     assert_match %(<select id="created_at_day" name="profile[created_at_parts][day]">), response.body
     assert_match %(<option selected="selected" value="16">16</option>), response.body
-    assert_match %(id="created_at_year" inputmode="numeric" name="profile[created_at_parts][year]" type="text" value="2026"), response.body
+    assert_match %(id="created_at_year" name="profile[created_at_parts][year]" type="number" value="2026"), response.body
     assert_match %(<select id="created_at_hour" name="profile[created_at_parts][hour]">), response.body
     assert_match %(<option selected="selected" value="8">8</option>), response.body
     assert_match %(<select id="created_at_minute" name="profile[created_at_parts][minute]">), response.body

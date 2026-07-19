@@ -723,7 +723,7 @@ label {
   width: 4.5rem;
 }
 
-.datetime-picker__field.datetime-picker__field--year input[type="text"] {
+.datetime-picker__field.datetime-picker__field--year input[type="number"] {
   width: 6rem;
 }
 
@@ -735,6 +735,7 @@ input[type="text"],
 input[type="email"],
 input[type="password"],
 input[type="url"],
+input[type="number"],
 textarea,
 select {
   width: 100%;
