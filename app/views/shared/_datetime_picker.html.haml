@@ -23,7 +23,7 @@
 
   .datetime-picker__field.datetime-picker__field--year
     %label.visually-hidden{for: "#{field}_year"} Year
-    %input{type: "number", id: "#{field}_year", name: "#{form.object_name}[#{field}_parts][year]", value: value.year, autocomplete: "off"}
+    %input{type: "number", id: "#{field}_year", name: "#{form.object_name}[#{field}_parts][year]", value: value.year, autocomplete: "off", "data-1p-ignore": "true"}
 
   .datetime-picker__field.datetime-picker__field--hour
     %label.visually-hidden{for: "#{field}_hour"} Hour
