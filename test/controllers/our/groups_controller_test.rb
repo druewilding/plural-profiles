@@ -224,6 +224,16 @@ class Our::GroupsControllerTest < ActionDispatch::IntegrationTest
     assert_in_delta original_created_at.to_i, @group.reload.created_at.to_i, 1
   end
 
+  test "update rejects a day that doesn't exist in the given month" do
+    sign_in_as @user
+    original_created_at = @group.created_at
+    patch our_group_path(@group), params: {
+      group: { name: @group.name, created_at_parts: { month: "February", day: "31", year: "2026", hour: "10", minute: "0" } }
+    }
+    assert_redirected_to our_group_path(@group)
+    assert_in_delta original_created_at.to_i, @group.reload.created_at.to_i, 1
+  end
+
   test "edit renders created_at fields in the signed-in user's time zone" do
     @user.update!(time_zone: "Tokyo")
     @group.update!(created_at: Time.utc(2026, 1, 15, 23, 30))

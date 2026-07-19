@@ -18,7 +18,7 @@ module CreatedAtPartsParsing
     hour = Integer(parts[:hour], 10, exception: false)
     minute = Integer(parts[:minute], 10, exception: false)
     return nil if [ month, day, year, hour, minute ].any?(&:nil?)
-    return nil unless (1..12).cover?(month) && (1..31).cover?(day) && (0..23).cover?(hour) && (0..59).cover?(minute)
+    return nil unless Date.valid_date?(year, month, day) && (0..23).cover?(hour) && (0..59).cover?(minute)
 
     format("%04d-%02d-%02dT%02d:%02d", year, month, day, hour, minute)
   end
