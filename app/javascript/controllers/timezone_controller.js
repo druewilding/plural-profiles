@@ -22,6 +22,12 @@ export default class extends Controller {
       .split("; ")
       .find(row => row.startsWith(`${this.constructor.COOKIE_NAME}=`))
     if (!match) return null
-    return decodeURIComponent(match.split("=")[1])
+
+    const rawValue = match.split("=").slice(1).join("=")
+    try {
+      return decodeURIComponent(rawValue)
+    } catch {
+      return null
+    }
   }
 }
