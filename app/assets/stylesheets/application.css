@@ -713,13 +713,13 @@ label {
   gap: 0.5rem;
 }
 
-.datetime-picker__field.datetime-picker__field--month input[type="text"] {
+.datetime-picker__field.datetime-picker__field--month select {
   width: 10rem;
 }
 
-.datetime-picker__field.datetime-picker__field--day input[type="text"],
-.datetime-picker__field.datetime-picker__field--hour input[type="text"],
-.datetime-picker__field.datetime-picker__field--minute input[type="text"] {
+.datetime-picker__field.datetime-picker__field--day select,
+.datetime-picker__field.datetime-picker__field--hour select,
+.datetime-picker__field.datetime-picker__field--minute select {
   width: 4.5rem;
 }
 

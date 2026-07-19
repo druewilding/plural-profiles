@@ -201,12 +201,15 @@ class Our::ProfilesControllerTest < ActionDispatch::IntegrationTest
     assert_response :success
     assert_match "Created at", response.body
     assert_no_match "Created at (UTC)", response.body
-    assert_match %(id="created_at_month" list="created_at_month_options" name="profile[created_at_parts][month]" type="text" value="January"), response.body
-    assert_match %(id="created_at_day" inputmode="numeric" list="created_at_day_options" name="profile[created_at_parts][day]" type="text" value="16"), response.body
+    assert_match %(<select id="created_at_month" name="profile[created_at_parts][month]">), response.body
+    assert_match %(<option selected="selected" value="January">January</option>), response.body
+    assert_match %(<select id="created_at_day" name="profile[created_at_parts][day]">), response.body
+    assert_match %(<option selected="selected" value="16">16</option>), response.body
     assert_match %(id="created_at_year" inputmode="numeric" name="profile[created_at_parts][year]" type="text" value="2026"), response.body
-    assert_no_match "created_at_year_options", response.body
-    assert_match %(id="created_at_hour" inputmode="numeric" list="created_at_hour_options" name="profile[created_at_parts][hour]" type="text" value="8"), response.body
-    assert_match %(id="created_at_minute" inputmode="numeric" list="created_at_minute_options" name="profile[created_at_parts][minute]" type="text" value="30"), response.body
+    assert_match %(<select id="created_at_hour" name="profile[created_at_parts][hour]">), response.body
+    assert_match %(<option selected="selected" value="8">8</option>), response.body
+    assert_match %(<select id="created_at_minute" name="profile[created_at_parts][minute]">), response.body
+    assert_match %(<option selected="selected" value="30">30</option>), response.body
   end
 
   test "update interprets created_at in the signed-in user's time zone" do

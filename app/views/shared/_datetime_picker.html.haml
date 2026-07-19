@@ -3,25 +3,23 @@
 -#   field — the attribute symbol (e.g. :created_at) — submits as "#{form.object_name}[#{field}_parts][month/day/year/hour/minute]"
 -#   value — a Time/ActiveSupport::TimeWithZone already in the viewer's time zone
 -#
--# Plain text inputs paired with <datalist> suggestions — works with no JS (the
--# browser filters suggestions natively), and the server (see profile_params /
--# group_params) tolerantly parses month names or numbers, so typing "June" or
--# "6" both work.
+-# Month/Day/Hour/Minute are real <select> dropdowns (bounded ranges, and this
+-# gives them the exact same native arrow as every other select in the app —
+-# no custom indicator to keep in sync across browsers). Year is unbounded, so
+-# it stays a plain text field. Works with no JS: plain form fields, and the
+-# server (see profile_params/group_params) tolerantly parses the month as a
+-# name or a number.
 
 .datetime-picker
   .datetime-picker__field.datetime-picker__field--month
     %label.visually-hidden{for: "#{field}_month"} Month
-    %input{type: "text", id: "#{field}_month", name: "#{form.object_name}[#{field}_parts][month]", value: value.strftime("%B"), list: "#{field}_month_options", autocomplete: "off"}
-    %datalist{id: "#{field}_month_options"}
-      - Date::MONTHNAMES.compact.each do |name|
-        %option{value: name}
+    %select{id: "#{field}_month", name: "#{form.object_name}[#{field}_parts][month]"}
+      = options_for_select(Date::MONTHNAMES.compact, value.strftime("%B"))
 
   .datetime-picker__field.datetime-picker__field--day
     %label.visually-hidden{for: "#{field}_day"} Day
-    %input{type: "text", inputmode: "numeric", id: "#{field}_day", name: "#{form.object_name}[#{field}_parts][day]", value: value.day, list: "#{field}_day_options", autocomplete: "off"}
-    %datalist{id: "#{field}_day_options"}
-      - (1..31).each do |day|
-        %option{value: day}
+    %select{id: "#{field}_day", name: "#{form.object_name}[#{field}_parts][day]"}
+      = options_for_select((1..31).to_a, value.day)
 
   .datetime-picker__field.datetime-picker__field--year
     %label.visually-hidden{for: "#{field}_year"} Year
@@ -29,18 +27,14 @@
 
   .datetime-picker__field.datetime-picker__field--hour
     %label.visually-hidden{for: "#{field}_hour"} Hour
-    %input{type: "text", inputmode: "numeric", id: "#{field}_hour", name: "#{form.object_name}[#{field}_parts][hour]", value: value.hour, list: "#{field}_hour_options", autocomplete: "off"}
-    %datalist{id: "#{field}_hour_options"}
-      - (0..23).each do |hour|
-        %option{value: hour}
+    %select{id: "#{field}_hour", name: "#{form.object_name}[#{field}_parts][hour]"}
+      = options_for_select((0..23).to_a, value.hour)
 
   %span.datetime-picker__separator :
 
   .datetime-picker__field.datetime-picker__field--minute
     %label.visually-hidden{for: "#{field}_minute"} Minute
-    %input{type: "text", inputmode: "numeric", id: "#{field}_minute", name: "#{form.object_name}[#{field}_parts][minute]", value: value.min, list: "#{field}_minute_options", autocomplete: "off"}
-    %datalist{id: "#{field}_minute_options"}
-      - (0..59).each do |minute|
-        %option{value: minute}
+    %select{id: "#{field}_minute", name: "#{form.object_name}[#{field}_parts][minute]"}
+      = options_for_select((0..59).to_a, value.min)
 
 %p.form-hint (24 hour time)
