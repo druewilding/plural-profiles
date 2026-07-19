@@ -27,7 +27,7 @@ Why this still resolves the original complaints:
 
 **1. Shared partial — `app/views/shared/_datetime_picker.html.haml`**
 
-Locals: `form`, `field` (e.g. `:created_at`), `value` (a zone-aware `Time`). Month/Day/Hour/Minute use `options_for_select` against fixed ranges (`Date::MONTHNAMES.compact`, `1..31`, `0..23`, `0..59`); Year is `form`-independent plain text. All five submit as `#{form.object_name}[#{field}_parts][month|day|year|hour|minute]` — not the real `created_at` attribute name, since the server combines and validates them before assignment.
+Locals: `form`, `field` (e.g. `:created_at`), `value` (a zone-aware `Time`). Month/Day/Hour/Minute use `options_for_select` against fixed ranges (`Date::MONTHNAMES.compact`, `1..31`, `0..23`, `0..59`); Year is an unbounded numeric input. All five submit as `#{form.object_name}[#{field}_parts][month|day|year|hour|minute]` — not the real `created_at` attribute name, since the server combines and validates them before assignment.
 
 **2. Server-side parsing — `app/controllers/concerns/created_at_parts_parsing.rb`**
 
