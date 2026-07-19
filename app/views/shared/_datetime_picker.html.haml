@@ -28,13 +28,13 @@
   .datetime-picker__field.datetime-picker__field--hour
     %label.visually-hidden{for: "#{field}_hour"} Hour
     %select{id: "#{field}_hour", name: "#{form.object_name}[#{field}_parts][hour]"}
-      = options_for_select((0..23).to_a, value.hour)
+      = options_for_select((0..23).map { |hour| format("%02d", hour) }, format("%02d", value.hour))
 
   %span.datetime-picker__separator :
 
   .datetime-picker__field.datetime-picker__field--minute
     %label.visually-hidden{for: "#{field}_minute"} Minute
     %select{id: "#{field}_minute", name: "#{form.object_name}[#{field}_parts][minute]"}
-      = options_for_select((0..59).to_a, value.min)
+      = options_for_select((0..59).map { |minute| format("%02d", minute) }, format("%02d", value.min))
 
 %p.form-hint (24 hour time)

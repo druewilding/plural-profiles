@@ -193,6 +193,15 @@ class Our::GroupsControllerTest < ActionDispatch::IntegrationTest
     assert_equal Time.zone.local(2026, 3, 5, 10, 15), @group.reload.created_at
   end
 
+  test "update accepts zero-padded hour and minute values" do
+    sign_in_as @user
+    patch our_group_path(@group), params: {
+      group: { created_at_parts: { month: "3", day: "5", year: "2026", hour: "08", minute: "09" } }
+    }
+    assert_redirected_to our_group_path(@group)
+    assert_equal Time.zone.local(2026, 3, 5, 8, 9), @group.reload.created_at
+  end
+
   test "update with malformed created_at does not raise" do
     sign_in_as @user
     original_created_at = @group.created_at
@@ -229,7 +238,7 @@ class Our::GroupsControllerTest < ActionDispatch::IntegrationTest
     assert_match %(<option selected="selected" value="16">16</option>), response.body
     assert_match %(id="created_at_year" name="group[created_at_parts][year]" type="number" value="2026"), response.body
     assert_match %(<select id="created_at_hour" name="group[created_at_parts][hour]">), response.body
-    assert_match %(<option selected="selected" value="8">8</option>), response.body
+    assert_match %(<option selected="selected" value="08">08</option>), response.body
     assert_match %(<select id="created_at_minute" name="group[created_at_parts][minute]">), response.body
     assert_match %(<option selected="selected" value="30">30</option>), response.body
   end

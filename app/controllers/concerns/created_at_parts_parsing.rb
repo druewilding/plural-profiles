@@ -12,11 +12,11 @@ module CreatedAtPartsParsing
     return nil if parts.blank?
 
     month = Date::MONTHNAMES.index { |name| name&.casecmp?(parts[:month].to_s.strip) }
-    month ||= Integer(parts[:month], exception: false)
-    day = Integer(parts[:day], exception: false)
-    year = Integer(parts[:year], exception: false)
-    hour = Integer(parts[:hour], exception: false)
-    minute = Integer(parts[:minute], exception: false)
+    month ||= Integer(parts[:month], 10, exception: false)
+    day = Integer(parts[:day], 10, exception: false)
+    year = Integer(parts[:year], 10, exception: false)
+    hour = Integer(parts[:hour], 10, exception: false)
+    minute = Integer(parts[:minute], 10, exception: false)
     return nil if [ month, day, year, hour, minute ].any?(&:nil?)
     return nil unless (1..12).cover?(month) && (1..31).cover?(day) && (0..23).cover?(hour) && (0..59).cover?(minute)
 
