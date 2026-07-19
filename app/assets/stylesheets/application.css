@@ -706,11 +706,35 @@ label {
   color: var(--input-label);
 }
 
+.datetime-picker {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.datetime-picker__field.datetime-picker__field--month input[type="text"] {
+  width: 10rem;
+}
+
+.datetime-picker__field.datetime-picker__field--day input[type="text"],
+.datetime-picker__field.datetime-picker__field--hour input[type="text"],
+.datetime-picker__field.datetime-picker__field--minute input[type="text"] {
+  width: 4.5rem;
+}
+
+.datetime-picker__field.datetime-picker__field--year input[type="text"] {
+  width: 6rem;
+}
+
+.datetime-picker__separator {
+  color: var(--input-label);
+}
+
 input[type="text"],
 input[type="email"],
 input[type="password"],
 input[type="url"],
-input[type="datetime-local"],
 textarea,
 select {
   width: 100%;
@@ -722,15 +746,6 @@ select {
   font-size: 1rem;
   outline: none;
   transition: border-color 0.2s;
-}
-
-input[type="datetime-local"] {
-  width: auto;
-}
-
-input[type="datetime-local"]::-webkit-calendar-picker-indicator {
-  margin-left: 0.5rem;
-  cursor: pointer;
 }
 
 input:focus,

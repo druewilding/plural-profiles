@@ -9,111 +9,83 @@ Profiles and groups have a "Created at" override field (used to backdate/postdat
 - Clicking or tabbing into a segment force-selects the whole 2-digit chunk; you can't place a cursor mid-value and edit a single digit.
 - Because it's one fused value, the segment order is dictated by OS/browser locale (`MM/DD/YYYY` vs `DD/MM/YYYY`), which is a guaranteed source of confusion for international users and something we can't control from the app.
 
-The user pointed to Dreamwidth's date/time entry UI as a better reference: genuinely separate form fields (month name dropdown, plain day/year/hour/minute boxes) rather than one native fused control. This plan replaces the native widget with our own small multi-field picker built from ordinary, individually-labeled form elements, which resolves all four complaints by construction (separate real inputs, month spelled out, normal text-cursor editing, and explicit per-field labels that make ordering unambiguous regardless of locale).
+The user pointed to Dreamwidth's date/time entry UI as a better reference: genuinely separate form fields rather than one native fused control.
 
 This only touches the "Created at" override on `our/profiles/_form.html.haml` and `our/groups/_form.html.haml` — the two places `datetime_local_field` is used (confirmed via repo-wide search; nothing else in the codebase does date/time entry).
 
-## Approach
+## Approach (revised after discussion)
 
-Build a small Stimulus-backed widget: five plain, individually-labeled fields (Month `<select>` with month names, Day/Year/Hour/Minute `<input type="number">`) that a JS controller combines into the existing hidden `YYYY-MM-DDTHH:MM` string on every change — so the value that actually gets submitted, and the controller-side parsing/validation, don't change at all. Ship it as one shared partial so both forms use the same markup and behavior.
+An earlier draft of this plan combined five plain fields into a hidden field via a Stimulus controller. Two follow-up questions changed the design:
+
+1. **"How does this work with no JS?"** — it didn't. The visible fields had no `name`, so with JS disabled, edits never reached the server.
+2. **"Can we get dropdown suggestions?"** — yes, and solving this solves problem 1 for free.
+
+The final approach: five real, individually-labeled `<input type="text">` fields (Month, Day, Year, Hour, Minute), each paired with an HTML `<datalist>` of suggested values via the `list=` attribute. This is a native browser combobox — the browser filters suggestions as you type, entirely without JS, and degrades to a plain text field if `<datalist>` isn't supported. Month's datalist offers full names ("January"…"December"); Day/Hour/Minute offer their valid numeric ranges; Year offers the last 10 years as a starting point but accepts any typed value (unbounded, since `created_at` can be set arbitrarily far in the past or future — see PR #252).
+
+Each field submits its own param (`profile[created_at_parts][month]`, `[day]`, `[year]`, `[hour]`, `[minute]`) rather than being combined client-side. The server combines and validates them — this moves the "is this a valid date" work to a place that works identically with or without JS, and lets the month field accept either a typed name ("June") or a number ("6").
 
 Why this shape:
-- **Reuses existing backend logic untouched.** `profiles_controller.rb#profile_params` / `groups_controller.rb#group_params` already validate the submitted string against `\A\d{4}-\d{2}-\d{2}T\d{2}:\d{2}\z` and diff it against the current value to decide whether to touch the record at all. Keeping the submitted field name/format identical means zero controller changes and zero risk to the timezone-parsing behavior documented in `docs/plan-timezones.md`.
-- **Real inputs, not a custom widget.** `<input type="number">` gives native cursor placement/editing (fixes the "can't edit one digit" complaint) and a `<select>` gives keyboard/screen-reader users a normal, familiar control (fixes the "digits not names" complaint) — no custom keyboard handling to write or get wrong.
-- **One partial, two call sites.** The profile and group forms have byte-for-byte identical markup for this field today; a shared partial keeps them in sync going forward instead of duplicating the picker markup and JS wiring twice.
+- **No JS dependency, by construction.** `<datalist>` filtering is native browser behavior. There is no Stimulus controller in this feature at all.
+- **Real inputs, not a custom widget.** Plain `<input type="text">` gives native cursor placement/editing (fixes "can't edit one digit") and typing a month name is naturally supported without extra markup (fixes "digits not names").
+- **Explicit per-field labels resolve the locale-ordering complaint** regardless of which order the fields are laid out in.
+- **One partial, two call sites.** The profile and group forms had byte-for-byte identical markup for this field; a shared partial keeps them in sync.
+- **Server-side parsing gets free validation.** Range-checking (month 1–12, day 1–31, hour 0–23, minute 0–59) now happens explicitly, rather than relying on the browser's native `datetime-local` widget to prevent invalid values.
 
 ## Implementation
 
-**1. New Stimulus controller — `app/javascript/controllers/datetime_picker_controller.js`**
+**1. Shared partial — `app/views/shared/_datetime_picker.html.haml`**
 
-Targets: `month`, `day`, `year`, `hour`, `minute`, `hidden`. On `change`/`input` of any visible field, recompute the hidden field:
+Locals: `form` (the `form_with` builder), `field` (symbol, e.g. `:created_at`), `value` (a zone-aware `Time`, already converted to the viewer's `Time.zone`, same as the old `.strftime` call). Renders five `.datetime-picker__field` blocks (Month/Day/Year/Hour/Minute), each a visually-hidden `<label>` + `<input type="text" list="...">` + a `<datalist>` of suggestions. Fields submit as `#{form.object_name}[#{field}_parts][month|day|year|hour|minute]` — not the real `created_at` attribute name, since the server needs to combine and validate them first.
 
-```js
-import { Controller } from "@hotwired/stimulus"
+**2. Server-side parsing — `app/controllers/concerns/created_at_parts_parsing.rb`**
 
-export default class extends Controller {
-  static targets = ["month", "day", "year", "hour", "minute", "hidden"]
+New shared concern, `include`d in both `Our::ProfilesController` and `Our::GroupsController`:
 
-  combine() {
-    const fields = [this.monthTarget, this.dayTarget, this.yearTarget, this.hourTarget, this.minuteTarget]
-    if (fields.some((field) => field.value === "")) return
+```ruby
+module CreatedAtPartsParsing
+  extend ActiveSupport::Concern
 
-    const pad = (value) => value.padStart(2, "0")
-    this.hiddenTarget.value =
-      `${this.yearTarget.value}-${this.monthTarget.value}-${pad(this.dayTarget.value)}` +
-      `T${pad(this.hourTarget.value)}:${pad(this.minuteTarget.value)}`
-  }
-}
+  private
+
+  def parse_created_at_parts(parts)
+    return nil if parts.blank?
+
+    month = Date::MONTHNAMES.index { |name| name&.casecmp?(parts[:month].to_s.strip) }
+    month ||= Integer(parts[:month], exception: false)
+    day = Integer(parts[:day], exception: false)
+    year = Integer(parts[:year], exception: false)
+    hour = Integer(parts[:hour], exception: false)
+    minute = Integer(parts[:minute], exception: false)
+    return nil if [month, day, year, hour, minute].any?(&:nil?)
+    return nil unless (1..12).cover?(month) && (1..31).cover?(day) && (0..23).cover?(hour) && (0..59).cover?(minute)
+
+    format("%04d-%02d-%02dT%02d:%02d", year, month, day, hour, minute)
+  end
+end
 ```
 
-No manual registration needed — `app/javascript/controllers/index.js` eager-loads everything under `controllers/**/*_controller`, same as every other Stimulus controller in this app (`heart_picker_controller.js`, `avatar_editor_controller.js`, etc.).
+**3. Controller call sites**
 
-**2. New shared partial — `app/views/shared/_datetime_picker.html.haml`**
+`profile_params`/`group_params` now `permit(created_at_parts: [:month, :day, :year, :hour, :minute], ...)` instead of `:created_at`, then:
 
-Locals: `form` (the `form_with` builder), `field` (symbol, e.g. `:created_at`), `value` (a zone-aware `Time`, already converted to the viewer's `Time.zone` the same way the current `.strftime` call is). Follows the documented-locals comment convention used in `_avatar_editor_dialog.html.haml`.
-
-```haml
--# Locals:
--#   form  — the form_with builder object
--#   field — the attribute symbol (e.g. :created_at)
--#   value — a Time/ActiveSupport::TimeWithZone already in the viewer's time zone
-
-.datetime-picker{data: {controller: "datetime-picker"}}
-  = form.hidden_field field, value: value.strftime("%Y-%m-%dT%H:%M"), data: {"datetime-picker-target": "hidden"}
-
-  .datetime-picker__field
-    %label.visually-hidden{for: "#{field}_month"} Month
-    %select#{"#{field}_month"}{data: {"datetime-picker-target": "month", action: "change->datetime-picker#combine"}}
-      = options_for_select(Date::MONTHNAMES.compact.map.with_index(1) { |name, i| [name, format("%02d", i)] }, format("%02d", value.month))
-
-  .datetime-picker__field
-    %label.visually-hidden{for: "#{field}_day"} Day
-    %input#{"#{field}_day"}{type: "number", min: 1, max: 31, value: value.day, data: {"datetime-picker-target": "day", action: "input->datetime-picker#combine"}}
-
-  .datetime-picker__field
-    %label.visually-hidden{for: "#{field}_year"} Year
-    %input#{"#{field}_year"}{type: "number", min: 1, max: 9999, value: value.year, data: {"datetime-picker-target": "year", action: "input->datetime-picker#combine"}}
-
-  .datetime-picker__field
-    %label.visually-hidden{for: "#{field}_hour"} Hour
-    %input#{"#{field}_hour"}{type: "number", min: 0, max: 23, value: value.hour, data: {"datetime-picker-target": "hour", action: "input->datetime-picker#combine"}}
-
-  .datetime-picker__separator :
-  .datetime-picker__field
-    %label.visually-hidden{for: "#{field}_minute"} Minute
-    %input#{"#{field}_minute"}{type: "number", min: 0, max: 59, value: value.min, data: {"datetime-picker-target": "minute", action: "input->datetime-picker#combine"}}
-
-  %span.form-hint (24 hour time)
+```ruby
+created_at = parse_created_at_parts(p.delete(:created_at_parts))
+if created_at && (@profile&.created_at.nil? || created_at != @profile.created_at.strftime("%Y-%m-%dT%H:%M"))
+  p[:created_at] = created_at
+end
 ```
 
-(Exact id-interpolation syntax to confirm against Haml conventions already in the codebase when implementing — the above is the intended structure, not copy-paste-final Haml.)
+Same shape as the old blank/malformed/unchanged check, just restructured as "add the key when valid and changed" instead of "delete the key when invalid or unchanged" — same net effect (invalid or no-op edits leave `created_at` untouched, matching the existing "malformed does not raise" behavior, now extended to out-of-range values too, e.g. day 40).
 
-**3. Update call sites**
+**4. View call sites**
 
-`app/views/our/profiles/_form.html.haml:66-69` and `app/views/our/groups/_form.html.haml:36-39` — replace the `form.datetime_local_field` line with:
+`app/views/our/profiles/_form.html.haml` and `app/views/our/groups/_form.html.haml` — replace `form.datetime_local_field :created_at, ...` with `render "shared/datetime_picker", form: form, field: :created_at, value: profile.created_at` (`group.created_at` for groups).
 
-```haml
-- if profile.persisted?
-  .form-group
-    = form.label :created_at
-    = render "shared/datetime_picker", form: form, field: :created_at, value: profile.created_at
-```
-
-(same pattern for groups, using `group.created_at`). No other lines in these files change.
-
-**4. CSS — `app/assets/stylesheets/application.css`**
-
-Add a `.datetime-picker` block near the existing `/* Forms */` section: flexbox row, small gap, each `.datetime-picker__field` sized to content (month `<select>` wider, day/hour/minute narrow, year slightly wider), wrapping on narrow viewports. Scope the number-input width override to `.datetime-picker input[type="number"]` specifically — there are no other number inputs in the app today, but scoping avoids ever accidentally affecting one.
-
-**5. No controller/model changes.** `profile_params`/`group_params` keep validating/comparing the exact same `YYYY-MM-DDTHH:MM` string format — the hidden field guarantees that shape whenever all five sub-fields have a value. Existing tests that submit `created_at` directly via `patch` (bypassing the view) are unaffected. The one view-rendering assertion (`profiles_controller_test.rb:173-182`, `assert_match "2026-01-16T08:30", response.body`) still passes because the hidden field's `value` attribute still contains that exact string.
-
-## Known minor limitation (accepted, not newly introduced)
-
-A user could type a 3-digit year or an out-of-range day/hour into the plain number inputs. `min`/`max` attributes give a soft native nudge, but since these fields aren't the ones submitted (the hidden field is), the browser won't block submission on them. If the resulting hidden value doesn't match the controller's regex, the existing code already silently drops the param and leaves `created_at` unchanged (covered by the existing "update with malformed created_at does not raise" test) — same silent-ignore behavior as today, just reachable through a different UI. Not worth extra server validation for this pass.
+**5. CSS** — `.datetime-picker` flexbox row in `app/assets/stylesheets/application.css`, sized per field (month wider for full names, day/hour/minute narrow, year medium), wrapping on narrow viewports.
 
 ## Verification
 
-1. `bin/rails test test/controllers/our/profiles_controller_test.rb test/controllers/our/groups_controller_test.rb` — confirm nothing regresses, especially the timezone-related `created_at` tests.
-2. `bin/rubocop` if any Ruby files change (partial/view only, but run it anyway per repo convention).
-3. Manual, in-browser (via the `run` skill): open a persisted profile's edit page, confirm the five fields render pre-filled with the current `created_at` in the viewer's time zone, matching what `docs/plan-timezones.md` established. Tab through the fields to confirm each is independently focusable/editable with normal cursor placement. Change each field individually and submit; confirm the record's `created_at` updates correctly. Leave the fields untouched and submit; confirm `created_at`/`updated_at` don't change (the "unchanged" delete-param path still works). Repeat for a group.
-4. Quick screen-reader spot check (VoiceOver) that each field announces its label ("Month", "Day", "Year", "Hour", "Minute") rather than reading a fused value.
+1. `bin/rails test test/controllers/our/profiles_controller_test.rb test/controllers/our/groups_controller_test.rb` — covers past/future/malformed/out-of-range/month-as-number and the timezone-aware round trip.
+2. `bin/rubocop`.
+3. Manual, in-browser: open a persisted profile's edit page, confirm all five fields render pre-filled in the viewer's time zone. Tab through with keyboard; confirm cursor placement works normally in each field. Type a partial month name and confirm the `<datalist>` suggestions filter. Submit unchanged and confirm `created_at`/`updated_at` don't move. Disable JS and repeat the edit — it should work identically. Repeat for a group.
+4. Screen-reader spot check that each field announces its label.

@@ -1,5 +1,6 @@
 class Our::ProfilesController < ApplicationController
   include OurSidebar
+  include CreatedAtPartsParsing
   allow_unauthenticated_access only: :show
   before_action :resume_session, only: :show
   before_action :set_profile, only: %i[ show edit update destroy regenerate_uuid ]
@@ -95,12 +96,11 @@ class Our::ProfilesController < ApplicationController
   end
 
   def profile_params
-    params.require(:profile).permit(:name, :pronouns, :subtitle, :tag_line, :description, :avatar, :avatar_alt_text, :avatar_shape, :created_at, :labels_text, :theme_id, group_ids: [], heart_emojis: []).tap do |p|
+    params.require(:profile).permit(:name, :pronouns, :subtitle, :tag_line, :description, :avatar, :avatar_alt_text, :avatar_shape, :labels_text, :theme_id, created_at_parts: [ :month, :day, :year, :hour, :minute ], group_ids: [], heart_emojis: []).tap do |p|
       p[:heart_emojis] = p[:heart_emojis].reject(&:blank?) if p.key?(:heart_emojis)
-      if p[:created_at].blank? ||
-          !p[:created_at].match?(/\A\d{4}-\d{2}-\d{2}T\d{2}:\d{2}\z/) ||
-          (@profile&.created_at && p[:created_at] == @profile.created_at.strftime("%Y-%m-%dT%H:%M"))
-        p.delete(:created_at)
+      created_at = parse_created_at_parts(p.delete(:created_at_parts))
+      if created_at && (@profile&.created_at.nil? || created_at != @profile.created_at.strftime("%Y-%m-%dT%H:%M"))
+        p[:created_at] = created_at
       end
     end
   end

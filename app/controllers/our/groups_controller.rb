@@ -1,5 +1,6 @@
 class Our::GroupsController < ApplicationController
   include OurSidebar
+  include CreatedAtPartsParsing
   allow_unauthenticated_access only: :show
   before_action :resume_session, only: :show
   before_action :set_group, only: %i[ show edit update destroy manage_profiles add_profile remove_profile add_group remove_group regenerate_uuid manage_groups toggle_visibility duplicate duplicate_scan duplicate_resolve duplicate_resolve_post duplicate_confirm duplicate_execute ]
@@ -486,11 +487,10 @@ class Our::GroupsController < ApplicationController
   end
 
   def group_params
-    params.require(:group).permit(:name, :subtitle, :tag_line, :description, :avatar, :avatar_alt_text, :avatar_shape, :created_at, :labels_text, :theme_id).tap do |p|
-      if p[:created_at].blank? ||
-          !p[:created_at].match?(/\A\d{4}-\d{2}-\d{2}T\d{2}:\d{2}\z/) ||
-          (@group&.created_at && p[:created_at] == @group.created_at.strftime("%Y-%m-%dT%H:%M"))
-        p.delete(:created_at)
+    params.require(:group).permit(:name, :subtitle, :tag_line, :description, :avatar, :avatar_alt_text, :avatar_shape, :labels_text, :theme_id, created_at_parts: [ :month, :day, :year, :hour, :minute ]).tap do |p|
+      created_at = parse_created_at_parts(p.delete(:created_at_parts))
+      if created_at && (@group&.created_at.nil? || created_at != @group.created_at.strftime("%Y-%m-%dT%H:%M"))
+        p[:created_at] = created_at
       end
     end
   end
