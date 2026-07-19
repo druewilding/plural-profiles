@@ -39,8 +39,11 @@ class Our::AccountController < ApplicationController
   end
 
   def update_time_zone
-    Current.user.update!(time_zone: params.dig(:user, :time_zone).presence)
-    redirect_to our_account_path, notice: "Time zone updated."
+    if Current.user.update(time_zone: params.dig(:user, :time_zone).presence)
+      redirect_to our_account_path, notice: "Time zone updated."
+    else
+      render :show, status: :unprocessable_entity
+    end
   end
 
   def update_username
