@@ -33,6 +33,7 @@ class User < ApplicationRecord
     format: { with: USERNAME_FORMAT, message: "can only contain lowercase letters, numbers, underscores, and hyphens (no leading/trailing/consecutive special characters)" },
     uniqueness: { case_sensitive: false },
     allow_blank: true
+  validates :time_zone, inclusion: { in: ActiveSupport::TimeZone.all.map(&:name) }, allow_blank: true
   validate :username_not_reserved
 
   generates_token_for :password_reset, expires_in: 1.hour do

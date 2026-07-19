@@ -34,7 +34,10 @@ class Our::AccountController < ApplicationController
   end
 
   def update_preferences
-    Current.user.update!(override_themes: params[:override_themes] == "1")
+    Current.user.update!(
+      override_themes: params[:override_themes] == "1",
+      time_zone: params.dig(:user, :time_zone).presence
+    )
     redirect_to our_account_path, notice: "Preferences updated."
   end
 
