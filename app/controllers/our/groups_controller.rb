@@ -489,7 +489,7 @@ class Our::GroupsController < ApplicationController
     params.require(:group).permit(:name, :subtitle, :tag_line, :description, :avatar, :avatar_alt_text, :avatar_shape, :created_at, :labels_text, :theme_id).tap do |p|
       if p[:created_at].blank? ||
           !p[:created_at].match?(/\A\d{4}-\d{2}-\d{2}T\d{2}:\d{2}\z/) ||
-          (@group&.created_at && p[:created_at] == @group.created_at.utc.strftime("%Y-%m-%dT%H:%M"))
+          (@group&.created_at && p[:created_at] == @group.created_at.strftime("%Y-%m-%dT%H:%M"))
         p.delete(:created_at)
       end
     end
