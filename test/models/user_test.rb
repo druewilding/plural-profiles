@@ -214,6 +214,29 @@ class UserTest < ActiveSupport::TestCase
     assert user.valid?, "Expected 'adminable' to be valid but got: #{user.errors.full_messages}"
   end
 
+  # -- Time zone --
+
+  test "time_zone is optional" do
+    user = users(:two)
+    user.time_zone = nil
+    assert user.valid?
+  end
+
+  test "valid time zones are accepted" do
+    user = users(:two)
+    %w[London Copenhagen Paris UTC].each do |name|
+      user.time_zone = name
+      assert user.valid?, "Expected '#{name}' to be valid but got: #{user.errors.full_messages}"
+    end
+  end
+
+  test "invalid time zone is rejected" do
+    user = users(:two)
+    user.time_zone = "Not A Real Zone"
+    assert_not user.valid?
+    assert user.errors[:time_zone].any?
+  end
+
   # -- sidebar_tree --
 
   test "sidebar_tree returns empty trees and no profiles for a user with no groups or profiles" do

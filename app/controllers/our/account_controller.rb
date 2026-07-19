@@ -38,6 +38,14 @@ class Our::AccountController < ApplicationController
     redirect_to our_account_path, notice: "Preferences updated."
   end
 
+  def update_time_zone
+    if Current.user.update(time_zone: params.dig(:user, :time_zone).presence)
+      redirect_to our_account_path, notice: "Time zone updated."
+    else
+      render :show, status: :unprocessable_entity
+    end
+  end
+
   def update_username
     if Current.user.update(username_params)
       redirect_to our_account_path, notice: "Account name updated."

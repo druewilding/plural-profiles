@@ -81,6 +81,37 @@ class AccountSettingsTest < ApplicationSystemTestCase
     end
   end
 
+  # -- time zone preference --
+
+  test "set an explicit time zone preference" do
+    within(".card", text: "Time zone") do
+      select "London", from: "user_time_zone"
+      click_button "Save time zone"
+    end
+
+    assert_text "Time zone updated."
+    assert_equal "London", @user.reload.time_zone
+  end
+
+  test "browser time zone auto-detect cookie is set on page load" do
+    cookie = page.driver.browser.manage.cookie_named("browser_time_zone")
+    assert cookie, "Expected a browser_time_zone cookie to be set"
+    assert cookie[:value].present?
+  end
+
+  test "clear time zone preference back to auto-detect" do
+    @user.update!(time_zone: "London")
+    visit our_account_path
+
+    within(".card", text: "Time zone") do
+      select "Auto-detect from browser", from: "user_time_zone"
+      click_button "Save time zone"
+    end
+
+    assert_text "Time zone updated."
+    assert_nil @user.reload.time_zone
+  end
+
   # -- invite codes --
 
   test "generate invite code and see it on account page" do

@@ -192,6 +192,27 @@ class Our::GroupsControllerTest < ActionDispatch::IntegrationTest
     assert_in_delta original_created_at.to_i, @group.reload.created_at.to_i, 1
   end
 
+  test "edit renders created_at field in the signed-in user's time zone" do
+    @user.update!(time_zone: "Tokyo")
+    @group.update!(created_at: Time.utc(2026, 1, 15, 23, 30))
+    sign_in_as @user
+    get edit_our_group_path(@group)
+    assert_response :success
+    assert_match "Created at", response.body
+    assert_no_match "Created at (UTC)", response.body
+    assert_match "2026-01-16T08:30", response.body
+  end
+
+  test "update interprets created_at in the signed-in user's time zone" do
+    @user.update!(time_zone: "Tokyo")
+    sign_in_as @user
+    patch our_group_path(@group), params: {
+      group: { created_at: "2026-01-16T08:30" }
+    }
+    assert_redirected_to our_group_path(@group)
+    assert_equal Time.utc(2026, 1, 15, 23, 30), @group.reload.created_at.utc
+  end
+
   test "create saves subtitle and tag_line" do
     sign_in_as @user
     assert_difference("Group.count", 1) do

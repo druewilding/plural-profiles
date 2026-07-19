@@ -32,6 +32,23 @@
 
 .card
   .card__header
+    %h2 Time zone
+  = form_with url: update_time_zone_our_account_path, method: :patch do |form|
+    - if Current.user.errors[:time_zone].any?
+      .error-messages
+        - Current.user.errors.full_messages_for(:time_zone).each do |message|
+          %p= message
+
+    .form-group
+      = label_tag "user_time_zone", "Time zone"
+      = select_tag "user[time_zone]", time_zone_options_for_select(Current.user.time_zone), include_blank: "Auto-detect from browser"
+      %p.form-hint
+        Auto-detect uses your browser's time zone. If it is wrong, you can set it here.
+    .form-group
+      = form.submit "Save time zone"
+
+.card
+  .card__header
     %h2 Account name
   %p An account name lets others find and connect with you without sharing your email address.
   - if Current.user.username_in_database.present?

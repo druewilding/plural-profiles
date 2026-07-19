@@ -99,7 +99,7 @@ class Our::ProfilesController < ApplicationController
       p[:heart_emojis] = p[:heart_emojis].reject(&:blank?) if p.key?(:heart_emojis)
       if p[:created_at].blank? ||
           !p[:created_at].match?(/\A\d{4}-\d{2}-\d{2}T\d{2}:\d{2}\z/) ||
-          (@profile&.created_at && p[:created_at] == @profile.created_at.utc.strftime("%Y-%m-%dT%H:%M"))
+          (@profile&.created_at && p[:created_at] == @profile.created_at.strftime("%Y-%m-%dT%H:%M"))
         p.delete(:created_at)
       end
     end

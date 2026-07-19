@@ -170,6 +170,27 @@ class Our::ProfilesControllerTest < ActionDispatch::IntegrationTest
     assert_in_delta original_created_at.to_i, @profile.reload.created_at.to_i, 1
   end
 
+  test "edit renders created_at field in the signed-in user's time zone" do
+    @user.update!(time_zone: "Tokyo")
+    @profile.update!(created_at: Time.utc(2026, 1, 15, 23, 30))
+    sign_in_as @user
+    get edit_our_profile_path(@profile)
+    assert_response :success
+    assert_match "Created at", response.body
+    assert_no_match "Created at (UTC)", response.body
+    assert_match "2026-01-16T08:30", response.body
+  end
+
+  test "update interprets created_at in the signed-in user's time zone" do
+    @user.update!(time_zone: "Tokyo")
+    sign_in_as @user
+    patch our_profile_path(@profile), params: {
+      profile: { created_at: "2026-01-16T08:30" }
+    }
+    assert_redirected_to our_profile_path(@profile)
+    assert_equal Time.utc(2026, 1, 15, 23, 30), @profile.reload.created_at.utc
+  end
+
   test "create saves subtitle and tag_line" do
     sign_in_as @user
     assert_difference("Profile.count", 1) do
@@ -198,6 +219,53 @@ class Our::ProfilesControllerTest < ActionDispatch::IntegrationTest
     get our_profile_path(@profile)
     assert_response :success
     assert_match "the brave one", response.body
+  end
+
+  # -- Time zone rendering --
+
+  test "show renders created_at in UTC when no preference or cookie is set" do
+    @profile.update!(created_at: Time.utc(2026, 1, 15, 23, 30))
+    sign_in_as @user
+    get our_profile_path(@profile)
+    assert_response :success
+    assert_match "15 January 2026", response.body
+  end
+
+  test "show renders created_at in the signed-in user's time zone preference" do
+    @user.update!(time_zone: "Tokyo")
+    @profile.update!(created_at: Time.utc(2026, 1, 15, 23, 30))
+    sign_in_as @user
+    get our_profile_path(@profile)
+    assert_response :success
+    assert_match "16 January 2026", response.body
+  end
+
+  test "show renders created_at using the browser_time_zone cookie when no account preference is set" do
+    @profile.update!(created_at: Time.utc(2026, 1, 15, 23, 30))
+    sign_in_as @user
+    cookies[:browser_time_zone] = "Asia/Tokyo"
+    get our_profile_path(@profile)
+    assert_response :success
+    assert_match "16 January 2026", response.body
+  end
+
+  test "account time zone preference takes priority over the browser cookie" do
+    @user.update!(time_zone: "UTC")
+    @profile.update!(created_at: Time.utc(2026, 1, 15, 23, 30))
+    sign_in_as @user
+    cookies[:browser_time_zone] = "Asia/Tokyo"
+    get our_profile_path(@profile)
+    assert_response :success
+    assert_match "15 January 2026", response.body
+  end
+
+  test "malformed browser_time_zone cookie falls back to UTC" do
+    @profile.update!(created_at: Time.utc(2026, 1, 15, 23, 30))
+    sign_in_as @user
+    cookies[:browser_time_zone] = "Not/AZone"
+    get our_profile_path(@profile)
+    assert_response :success
+    assert_match "15 January 2026", response.body
   end
 
   # -- Edge case: logged out user gets redirected to public --
