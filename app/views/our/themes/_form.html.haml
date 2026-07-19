@@ -11,7 +11,7 @@
   .form-group
     = form.label :name
     = form.text_field :name, required: true, maxlength: 255,
-      data: { "theme-designer-target": "nameInput", action: "input->theme-designer#updateJsonOutput" }
+      data: { "theme-designer-target": "nameInput", action: "input->theme-designer#updateJsonOutput", "1p-ignore": "true" }
 
   - Theme::PROPERTY_GROUPS.each do |group_key, group_label|
     %hr.form-divider

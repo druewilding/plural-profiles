@@ -160,11 +160,15 @@ class Our::GroupsControllerTest < ActionDispatch::IntegrationTest
     assert_redirected_to our_groups_path
   end
 
+  def created_at_parts_for(time)
+    { month: time.strftime("%B"), day: time.day, year: time.year, hour: time.hour, minute: time.min }
+  end
+
   test "update sets created_at to a past timestamp" do
     sign_in_as @user
     past = 1.year.ago.utc
     patch our_group_path(@group), params: {
-      group: { created_at: past.strftime("%Y-%m-%dT%H:%M") }
+      group: { created_at_parts: created_at_parts_for(past) }
     }
     assert_redirected_to our_group_path(@group)
     assert_in_delta past.to_i, @group.reload.created_at.to_i, 60
@@ -174,17 +178,35 @@ class Our::GroupsControllerTest < ActionDispatch::IntegrationTest
     sign_in_as @user
     future = 1.day.from_now.utc
     patch our_group_path(@group), params: {
-      group: { created_at: future.strftime("%Y-%m-%dT%H:%M") }
+      group: { created_at_parts: created_at_parts_for(future) }
     }
     assert_response :redirect
     assert_in_delta future.to_i, @group.reload.created_at.to_i, 60
+  end
+
+  test "update accepts the month as a number as well as a name" do
+    sign_in_as @user
+    patch our_group_path(@group), params: {
+      group: { created_at_parts: { month: "3", day: "5", year: "2026", hour: "10", minute: "15" } }
+    }
+    assert_redirected_to our_group_path(@group)
+    assert_equal Time.zone.local(2026, 3, 5, 10, 15), @group.reload.created_at
+  end
+
+  test "update accepts zero-padded hour and minute values" do
+    sign_in_as @user
+    patch our_group_path(@group), params: {
+      group: { created_at_parts: { month: "3", day: "5", year: "2026", hour: "08", minute: "09" } }
+    }
+    assert_redirected_to our_group_path(@group)
+    assert_equal Time.zone.local(2026, 3, 5, 8, 9), @group.reload.created_at
   end
 
   test "update with malformed created_at does not raise" do
     sign_in_as @user
     original_created_at = @group.created_at
     patch our_group_path(@group), params: {
-      group: { name: @group.name, created_at: "not-a-date" }
+      group: { name: @group.name, created_at_parts: { month: "not-a-month", day: "5", year: "2026", hour: "10", minute: "0" } }
     }
     # Malformed value is stripped in group_params — update succeeds and
     # created_at is left unchanged.
@@ -192,7 +214,27 @@ class Our::GroupsControllerTest < ActionDispatch::IntegrationTest
     assert_in_delta original_created_at.to_i, @group.reload.created_at.to_i, 1
   end
 
-  test "edit renders created_at field in the signed-in user's time zone" do
+  test "update with out-of-range created_at parts does not raise" do
+    sign_in_as @user
+    original_created_at = @group.created_at
+    patch our_group_path(@group), params: {
+      group: { name: @group.name, created_at_parts: { month: "13", day: "40", year: "2026", hour: "25", minute: "99" } }
+    }
+    assert_redirected_to our_group_path(@group)
+    assert_in_delta original_created_at.to_i, @group.reload.created_at.to_i, 1
+  end
+
+  test "update rejects a day that doesn't exist in the given month" do
+    sign_in_as @user
+    original_created_at = @group.created_at
+    patch our_group_path(@group), params: {
+      group: { name: @group.name, created_at_parts: { month: "February", day: "31", year: "2026", hour: "10", minute: "0" } }
+    }
+    assert_redirected_to our_group_path(@group)
+    assert_in_delta original_created_at.to_i, @group.reload.created_at.to_i, 1
+  end
+
+  test "edit renders created_at fields in the signed-in user's time zone" do
     @user.update!(time_zone: "Tokyo")
     @group.update!(created_at: Time.utc(2026, 1, 15, 23, 30))
     sign_in_as @user
@@ -200,14 +242,22 @@ class Our::GroupsControllerTest < ActionDispatch::IntegrationTest
     assert_response :success
     assert_match "Created at", response.body
     assert_no_match "Created at (UTC)", response.body
-    assert_match "2026-01-16T08:30", response.body
+    assert_match %(<select id="created_at_month" name="group[created_at_parts][month]">), response.body
+    assert_match %(<option selected="selected" value="January">January</option>), response.body
+    assert_match %(<select id="created_at_day" name="group[created_at_parts][day]">), response.body
+    assert_match %(<option selected="selected" value="16">16</option>), response.body
+    assert_match %(id="created_at_year" name="group[created_at_parts][year]" type="number" value="2026"), response.body
+    assert_match %(<select id="created_at_hour" name="group[created_at_parts][hour]">), response.body
+    assert_match %(<option selected="selected" value="08">08</option>), response.body
+    assert_match %(<select id="created_at_minute" name="group[created_at_parts][minute]">), response.body
+    assert_match %(<option selected="selected" value="30">30</option>), response.body
   end
 
   test "update interprets created_at in the signed-in user's time zone" do
     @user.update!(time_zone: "Tokyo")
     sign_in_as @user
     patch our_group_path(@group), params: {
-      group: { created_at: "2026-01-16T08:30" }
+      group: { created_at_parts: { month: "January", day: "16", year: "2026", hour: "8", minute: "30" } }
     }
     assert_redirected_to our_group_path(@group)
     assert_equal Time.utc(2026, 1, 15, 23, 30), @group.reload.created_at.utc

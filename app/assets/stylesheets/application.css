@@ -706,11 +706,36 @@ label {
   color: var(--input-label);
 }
 
+.datetime-picker {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.datetime-picker__field.datetime-picker__field--month select {
+  width: 10rem;
+}
+
+.datetime-picker__field.datetime-picker__field--day select,
+.datetime-picker__field.datetime-picker__field--hour select,
+.datetime-picker__field.datetime-picker__field--minute select {
+  width: 4.5rem;
+}
+
+.datetime-picker__field.datetime-picker__field--year input[type="number"] {
+  width: 6rem;
+}
+
+.datetime-picker__separator {
+  color: var(--input-label);
+}
+
 input[type="text"],
 input[type="email"],
 input[type="password"],
 input[type="url"],
-input[type="datetime-local"],
+input[type="number"],
 textarea,
 select {
   width: 100%;
@@ -722,15 +747,6 @@ select {
   font-size: 1rem;
   outline: none;
   transition: border-color 0.2s;
-}
-
-input[type="datetime-local"] {
-  width: auto;
-}
-
-input[type="datetime-local"]::-webkit-calendar-picker-indicator {
-  margin-left: 0.5rem;
-  cursor: pointer;
 }
 
 input:focus,
@@ -2232,7 +2248,7 @@ input[type="submit"].btn--small,
   input[type="email"],
   input[type="password"],
   input[type="url"],
-  input[type="datetime-local"],
+  input[type="number"],
   textarea,
   select {
     forced-color-adjust: none;
@@ -2271,7 +2287,7 @@ input[type="submit"].btn--small,
   input[type="email"]:focus,
   input[type="password"]:focus,
   input[type="url"]:focus,
-  input[type="datetime-local"]:focus,
+  input[type="number"]:focus,
   textarea:focus,
   select:focus {
     border: 1px solid CanvasText;
