@@ -84,12 +84,12 @@ class AccountSettingsTest < ApplicationSystemTestCase
   # -- time zone preference --
 
   test "set an explicit time zone preference" do
-    within(".card", text: "Display preferences") do
+    within(".card", text: "Time zone") do
       select "London", from: "user_time_zone"
-      click_button "Save preferences"
+      click_button "Save time zone"
     end
 
-    assert_text "Preferences updated."
+    assert_text "Time zone updated."
     assert_equal "London", @user.reload.time_zone
   end
 
@@ -103,12 +103,12 @@ class AccountSettingsTest < ApplicationSystemTestCase
     @user.update!(time_zone: "London")
     visit our_account_path
 
-    within(".card", text: "Display preferences") do
+    within(".card", text: "Time zone") do
       select "Auto-detect from browser", from: "user_time_zone"
-      click_button "Save preferences"
+      click_button "Save time zone"
     end
 
-    assert_text "Preferences updated."
+    assert_text "Time zone updated."
     assert_nil @user.reload.time_zone
   end
 

@@ -28,12 +28,19 @@
       %p.form-hint
         When enabled, public pages will always display in your active theme.
     .form-group
+      = form.submit "Save preferences"
+
+.card
+  .card__header
+    %h2 Time zone
+  = form_with url: update_time_zone_our_account_path, method: :patch do |form|
+    .form-group
       = label_tag "user_time_zone", "Time zone"
       = select_tag "user[time_zone]", time_zone_options_for_select(Current.user.time_zone), include_blank: "Auto-detect from browser"
       %p.form-hint
-        Leave blank to use your browser's detected time zone. Set this if you want times shown in a specific zone regardless of device.
+        Auto-detect uses your browser's time zone. If it is wrong, you can set it here.
     .form-group
-      = form.submit "Save preferences"
+      = form.submit "Save time zone"
 
 .card
   .card__header

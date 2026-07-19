@@ -180,30 +180,37 @@ class Our::AccountControllerTest < ActionDispatch::IntegrationTest
     assert_redirected_to new_session_path
   end
 
-  test "update_preferences sets a valid time zone" do
+  # -- update_time_zone --
+
+  test "update_time_zone sets a valid time zone" do
     sign_in_as @user
     @user.update!(time_zone: nil)
-    patch update_preferences_our_account_path, params: { user: { time_zone: "London" } }
+    patch update_time_zone_our_account_path, params: { user: { time_zone: "London" } }
     assert_redirected_to our_account_path
     follow_redirect!
-    assert_match "Preferences updated.", response.body
+    assert_match "Time zone updated.", response.body
     assert_equal "London", @user.reload.time_zone
   end
 
-  test "update_preferences clears time zone when blank" do
+  test "update_time_zone clears time zone when blank" do
     sign_in_as @user
     @user.update!(time_zone: "London")
-    patch update_preferences_our_account_path, params: { user: { time_zone: "" } }
+    patch update_time_zone_our_account_path, params: { user: { time_zone: "" } }
     assert_redirected_to our_account_path
     assert_nil @user.reload.time_zone
   end
 
-  test "update_preferences rejects an invalid time zone" do
+  test "update_time_zone rejects an invalid time zone" do
     sign_in_as @user
     @user.update!(time_zone: "London")
-    patch update_preferences_our_account_path, params: { user: { time_zone: "Not A Zone" } }
+    patch update_time_zone_our_account_path, params: { user: { time_zone: "Not A Zone" } }
     assert_response :unprocessable_content
     assert_equal "London", @user.reload.time_zone
+  end
+
+  test "update_time_zone redirects unauthenticated user" do
+    patch update_time_zone_our_account_path, params: { user: { time_zone: "London" } }
+    assert_redirected_to new_session_path
   end
 
   # -- update_username --
