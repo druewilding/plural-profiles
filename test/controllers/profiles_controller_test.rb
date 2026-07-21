@@ -19,11 +19,11 @@ class ProfilesControllerTest < ActionDispatch::IntegrationTest
 
   test "show displays heart emojis on profile" do
     profile = profiles(:alice)
-    profile.update!(heart_emojis: %w[36_red_heart 22_violet_heart])
+    profile.update!(heart_emojis: %w[red_heart violet_heart])
     get profile_path(uuid: profile.uuid)
     assert_response :success
-    assert_match "36_red_heart.webp", response.body
-    assert_match "22_violet_heart.webp", response.body
+    assert_match "red_heart.webp", response.body
+    assert_match "violet_heart.webp", response.body
   end
 
   test "show applies profile theme CSS when profile has a theme" do

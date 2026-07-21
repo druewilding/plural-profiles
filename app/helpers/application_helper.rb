@@ -135,8 +135,7 @@ module ApplicationHelper
 
     result = parts.map do |part|
       part.gsub(HEART_EMOJI_PATTERN) do |match|
-        name = Regexp.last_match(1).downcase
-        canonical = Profile.resolve_heart_emoji(name)
+        canonical = Profile.resolve_heart_emoji(Regexp.last_match(1))
         if canonical
           display = Profile.heart_emoji_display_name(canonical)
           '<img src="/images/hearts/%s.webp" title="%s" alt="%s" class="heart-inline" width="24" height="24" loading="lazy">' % [ canonical, display, display ]

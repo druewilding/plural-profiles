@@ -427,24 +427,33 @@ class Our::ProfilesControllerTest < ActionDispatch::IntegrationTest
   test "create with heart emojis saves them" do
     sign_in_as @user
     post our_profiles_path, params: {
-      profile: { name: "Hearty", heart_emojis: %w[01_dewdrop_heart 36_red_heart] }
+      profile: { name: "Hearty", heart_emojis: %w[dewdrop_heart red_heart] }
     }
     assert_redirected_to our_profile_path(Profile.last)
-    assert_equal %w[01_dewdrop_heart 36_red_heart], Profile.last.heart_emojis
+    assert_equal %w[dewdrop_heart red_heart], Profile.last.heart_emojis
   end
 
   test "update sets heart emojis" do
     sign_in_as @user
     patch our_profile_path(@profile), params: {
+      profile: { heart_emojis: %w[violet_heart] }
+    }
+    assert_redirected_to our_profile_path(@profile)
+    assert_equal %w[violet_heart], @profile.reload.heart_emojis
+  end
+
+  test "update accepts heart emojis submitted with a stale number prefix" do
+    sign_in_as @user
+    patch our_profile_path(@profile), params: {
       profile: { heart_emojis: %w[22_violet_heart] }
     }
     assert_redirected_to our_profile_path(@profile)
-    assert_equal %w[22_violet_heart], @profile.reload.heart_emojis
+    assert_equal %w[violet_heart], @profile.reload.heart_emojis
   end
 
   test "update clears heart emojis with empty array" do
     sign_in_as @user
-    @profile.update!(heart_emojis: %w[01_dewdrop_heart])
+    @profile.update!(heart_emojis: %w[dewdrop_heart])
     patch our_profile_path(@profile), params: {
       profile: { heart_emojis: [ "" ] }
     }
@@ -462,11 +471,11 @@ class Our::ProfilesControllerTest < ActionDispatch::IntegrationTest
 
   test "show displays heart emojis" do
     sign_in_as @user
-    @profile.update!(heart_emojis: %w[01_dewdrop_heart 22_violet_heart])
+    @profile.update!(heart_emojis: %w[dewdrop_heart violet_heart])
     get our_profile_path(@profile)
     assert_response :success
-    assert_match "01_dewdrop_heart.webp", response.body
-    assert_match "22_violet_heart.webp", response.body
+    assert_match "dewdrop_heart.webp", response.body
+    assert_match "violet_heart.webp", response.body
   end
 
   # -- labels --
