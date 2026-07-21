@@ -108,7 +108,7 @@ class ProfileTest < ActiveSupport::TestCase
   test "HEART_EMOJIS constant contains expected hearts" do
     assert_includes Profile::HEART_EMOJIS, "01_dewdrop_heart"
     assert_includes Profile::HEART_EMOJIS, "40_red_heart"
-    assert_equal 42, Profile::HEART_EMOJIS.size
+    assert_equal 46, Profile::HEART_EMOJIS.size
   end
 
   test "resolve_heart_emoji returns canonical name for full name" do
@@ -131,7 +131,7 @@ class ProfileTest < ActiveSupport::TestCase
   test "HEART_EMOJI_ALIASES maps every short name to its canonical entry" do
     assert_equal "11_aqua_heart", Profile::HEART_EMOJI_ALIASES["aqua_heart"]
     assert_equal "50cadbury_heart", Profile::HEART_EMOJI_ALIASES["cadbury_heart"]
-    assert_equal 42, Profile::HEART_EMOJI_ALIASES.size
+    assert_equal 46, Profile::HEART_EMOJI_ALIASES.size
   end
 
   # -- labels --
