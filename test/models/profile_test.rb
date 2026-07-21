@@ -114,6 +114,19 @@ class ProfileTest < ActiveSupport::TestCase
     assert profile.errors[:heart_emojis].any? { |e| e.include?("99_fake_heart") }
   end
 
+  test "assigning heart_emojis normalizes uppercase and mixed case" do
+    profile = profiles(:alice)
+    profile.heart_emojis = %w[11_AQUA_HEART Red_Heart]
+    assert_equal %w[aqua_heart red_heart], profile.heart_emojis
+    assert profile.valid?
+  end
+
+  test "resolve_heart_emoji is case-insensitive" do
+    assert_equal "aqua_heart", Profile.resolve_heart_emoji("11_AQUA_HEART")
+    assert_equal "aqua_heart", Profile.resolve_heart_emoji("AQUA_HEART")
+    assert_equal "aqua_heart", Profile.resolve_heart_emoji("Aqua_Heart")
+  end
+
   test "heart_emoji_display_name formats name" do
     profile = profiles(:alice)
     assert_equal "dewdrop heart", profile.heart_emoji_display_name("dewdrop_heart")

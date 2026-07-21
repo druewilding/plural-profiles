@@ -101,7 +101,7 @@ class Profile < ApplicationRecord
   # a number prefix ("11_aqua_heart") — the number is stripped and ignored, since
   # Discord's numbering has changed under us before and will again.
   def self.resolve_heart_emoji(name)
-    bare = name.sub(/\A\d+_?/, "")
+    bare = name.to_s.downcase.sub(/\A\d+_?/, "")
     bare if HEART_EMOJIS.include?(bare)
   end
 
