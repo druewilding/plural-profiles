@@ -283,7 +283,7 @@ class ApplicationHelperTest < ActionView::TestCase
   test "replaces a valid heart emoji code regardless of case" do
     text = "I love this :11_AQUA_HEART: so much"
     result = formatted_description(text)
-    assert_includes result, '<img src="/images/hearts/11_aqua_heart.webp"'
+    assert_includes result, '<img src="/images/hearts/aqua_heart.webp"'
     assert_includes result, 'title="aqua heart"'
     assert_includes result, 'alt="aqua heart"'
     assert_includes result, 'class="heart-inline"'
@@ -293,7 +293,7 @@ class ApplicationHelperTest < ActionView::TestCase
   test "replaces a valid heart emoji code with an image" do
     text = "I love this :11_aqua_heart: so much"
     result = formatted_description(text)
-    assert_includes result, '<img src="/images/hearts/11_aqua_heart.webp"'
+    assert_includes result, '<img src="/images/hearts/aqua_heart.webp"'
     assert_includes result, 'title="aqua heart"'
     assert_includes result, 'alt="aqua heart"'
     assert_includes result, 'class="heart-inline"'
@@ -303,9 +303,9 @@ class ApplicationHelperTest < ActionView::TestCase
   test "replaces multiple adjacent heart emojis" do
     text = ":11_aqua_heart::12_ocean_heart::13_storm_heart:"
     result = formatted_description(text)
-    assert_includes result, '<img src="/images/hearts/11_aqua_heart.webp"'
-    assert_includes result, '<img src="/images/hearts/12_ocean_heart.webp"'
-    assert_includes result, '<img src="/images/hearts/13_storm_heart.webp"'
+    assert_includes result, '<img src="/images/hearts/aqua_heart.webp"'
+    assert_includes result, '<img src="/images/hearts/ocean_heart.webp"'
+    assert_includes result, '<img src="/images/hearts/storm_heart.webp"'
   end
 
   test "leaves unknown heart codes as plain text" do
@@ -325,7 +325,7 @@ class ApplicationHelperTest < ActionView::TestCase
   test "mixes heart emojis with regular text and spoilers" do
     text = "hello :40_red_heart: and ||secret|| bye"
     result = formatted_description(text)
-    assert_includes result, '<img src="/images/hearts/40_red_heart.webp"'
+    assert_includes result, '<img src="/images/hearts/red_heart.webp"'
     assert_includes result, SPOILER_OPEN
   end
 
@@ -341,27 +341,43 @@ class ApplicationHelperTest < ActionView::TestCase
     assert_includes result, 'alt="cadbury heart"'
   end
 
-  test "replaces short alias heart code without number prefix" do
+  test "replaces cadbury heart code regardless of number prefix style" do
+    [ "50cadbury_heart", "51cadbury_heart", "50_cadbury_heart" ].each do |code|
+      result = formatted_description(":#{code}:")
+      assert_includes result, '<img src="/images/hearts/cadbury_heart.webp"', "expected #{code} to resolve"
+      assert_includes result, 'alt="cadbury heart"'
+    end
+  end
+
+  test "replaces heart code given as a bare name without a number prefix" do
     text = "I love this :aqua_heart: so much"
     result = formatted_description(text)
-    assert_includes result, '<img src="/images/hearts/11_aqua_heart.webp"'
+    assert_includes result, '<img src="/images/hearts/aqua_heart.webp"'
     assert_includes result, 'title="aqua heart"'
     assert_includes result, 'alt="aqua heart"'
     assert_not_includes result, ":aqua_heart:"
   end
 
-  test "replaces cadbury alias without number prefix" do
+  test "replaces cadbury heart code" do
     text = "here is :cadbury_heart: for you"
     result = formatted_description(text)
-    assert_includes result, '<img src="/images/hearts/50cadbury_heart.webp"'
+    assert_includes result, '<img src="/images/hearts/cadbury_heart.webp"'
     assert_includes result, 'alt="cadbury heart"'
     assert_not_includes result, ":cadbury_heart:"
   end
 
-  test "replaces short alias case-insensitively" do
+  test "replaces a heart code that still carries an old number prefix" do
+    text = "here is :25_shadow_heart: even though it's now 26"
+    result = formatted_description(text)
+    assert_includes result, '<img src="/images/hearts/shadow_heart.webp"'
+    assert_includes result, 'alt="shadow heart"'
+    assert_not_includes result, ":25_shadow_heart:"
+  end
+
+  test "replaces bare heart code case-insensitively" do
     text = ":AQUA_HEART:"
     result = formatted_description(text)
-    assert_includes result, '<img src="/images/hearts/11_aqua_heart.webp"'
+    assert_includes result, '<img src="/images/hearts/aqua_heart.webp"'
     assert_not_includes result, ":AQUA_HEART:"
   end
 
@@ -369,24 +385,24 @@ class ApplicationHelperTest < ActionView::TestCase
     text = "Use <code>:11_aqua_heart:</code> to show a heart"
     result = formatted_description(text)
     assert_includes result, "<code>:11_aqua_heart:</code>"
-    assert_not_includes result, '<img src="/images/hearts/11_aqua_heart.webp"'
+    assert_not_includes result, '<img src="/images/hearts/aqua_heart.webp"'
   end
 
   test "converts hearts outside code but not inside" do
     text = ":40_red_heart: and <code>:11_aqua_heart:</code> and :13_storm_heart:"
     result = formatted_description(text)
-    assert_includes result, '<img src="/images/hearts/40_red_heart.webp"'
-    assert_includes result, '<img src="/images/hearts/13_storm_heart.webp"'
+    assert_includes result, '<img src="/images/hearts/red_heart.webp"'
+    assert_includes result, '<img src="/images/hearts/storm_heart.webp"'
     assert_includes result, "<code>:11_aqua_heart:</code>"
-    assert_not_includes result, '<img src="/images/hearts/11_aqua_heart.webp"'
+    assert_not_includes result, '<img src="/images/hearts/aqua_heart.webp"'
   end
 
   test "does not replace heart emoji codes inside HTML tag attributes" do
     text = '<span class="spoiler" aria-label=":11_aqua_heart:">:40_red_heart:</span>'
     result = formatted_description(text)
     assert_includes result, 'aria-label=":11_aqua_heart:"'
-    assert_includes result, '<img src="/images/hearts/40_red_heart.webp"'
-    assert_not_includes result, '<img src="/images/hearts/11_aqua_heart.webp"'
+    assert_includes result, '<img src="/images/hearts/red_heart.webp"'
+    assert_not_includes result, '<img src="/images/hearts/aqua_heart.webp"'
   end
 
   # -- Multiple blank lines --

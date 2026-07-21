@@ -88,50 +88,52 @@ class ProfileTest < ActiveSupport::TestCase
 
   test "valid heart emojis are accepted" do
     profile = profiles(:alice)
-    profile.heart_emojis = %w[01_dewdrop_heart 40_red_heart]
+    profile.heart_emojis = %w[dewdrop_heart red_heart]
     assert profile.valid?
   end
 
   test "invalid heart emoji names are rejected" do
     profile = profiles(:alice)
-    profile.heart_emojis = %w[01_dewdrop_heart fake_heart]
+    profile.heart_emojis = %w[dewdrop_heart fake_heart]
     assert_not profile.valid?
     assert profile.errors[:heart_emojis].any? { |e| e.include?("fake_heart") }
   end
 
   test "heart_emoji_display_name formats name" do
     profile = profiles(:alice)
-    assert_equal "dewdrop heart", profile.heart_emoji_display_name("01_dewdrop_heart")
-    assert_equal "cadbury heart", profile.heart_emoji_display_name("50cadbury_heart")
+    assert_equal "dewdrop heart", profile.heart_emoji_display_name("dewdrop_heart")
+    assert_equal "cadbury heart", profile.heart_emoji_display_name("cadbury_heart")
   end
 
   test "HEART_EMOJIS constant contains expected hearts" do
-    assert_includes Profile::HEART_EMOJIS, "01_dewdrop_heart"
-    assert_includes Profile::HEART_EMOJIS, "40_red_heart"
+    assert_includes Profile::HEART_EMOJIS, "dewdrop_heart"
+    assert_includes Profile::HEART_EMOJIS, "red_heart"
     assert_equal 46, Profile::HEART_EMOJIS.size
   end
 
-  test "resolve_heart_emoji returns canonical name for full name" do
-    assert_equal "11_aqua_heart", Profile.resolve_heart_emoji("11_aqua_heart")
-    assert_equal "50cadbury_heart", Profile.resolve_heart_emoji("50cadbury_heart")
+  test "resolve_heart_emoji returns canonical name for bare name" do
+    assert_equal "aqua_heart", Profile.resolve_heart_emoji("aqua_heart")
+    assert_equal "cadbury_heart", Profile.resolve_heart_emoji("cadbury_heart")
   end
 
-  test "resolve_heart_emoji returns canonical name for short alias" do
-    assert_equal "11_aqua_heart", Profile.resolve_heart_emoji("aqua_heart")
-    assert_equal "50cadbury_heart", Profile.resolve_heart_emoji("cadbury_heart")
-    assert_equal "01_dewdrop_heart", Profile.resolve_heart_emoji("dewdrop_heart")
-    assert_equal "40_red_heart", Profile.resolve_heart_emoji("red_heart")
+  test "resolve_heart_emoji strips a number prefix regardless of what number it is" do
+    assert_equal "aqua_heart", Profile.resolve_heart_emoji("11_aqua_heart")
+    assert_equal "cadbury_heart", Profile.resolve_heart_emoji("50cadbury_heart")
+    assert_equal "dewdrop_heart", Profile.resolve_heart_emoji("01_dewdrop_heart")
+    assert_equal "red_heart", Profile.resolve_heart_emoji("36_red_heart")
+    assert_equal "red_heart", Profile.resolve_heart_emoji("999_red_heart")
+  end
+
+  test "resolve_heart_emoji handles cadbury's no-underscore number prefix in every form" do
+    assert_equal "cadbury_heart", Profile.resolve_heart_emoji("cadbury_heart")
+    assert_equal "cadbury_heart", Profile.resolve_heart_emoji("50cadbury_heart")
+    assert_equal "cadbury_heart", Profile.resolve_heart_emoji("51cadbury_heart")
+    assert_equal "cadbury_heart", Profile.resolve_heart_emoji("50_cadbury_heart")
   end
 
   test "resolve_heart_emoji returns nil for unknown name" do
     assert_nil Profile.resolve_heart_emoji("fake_heart")
     assert_nil Profile.resolve_heart_emoji("99_fake_heart")
-  end
-
-  test "HEART_EMOJI_ALIASES maps every short name to its canonical entry" do
-    assert_equal "11_aqua_heart", Profile::HEART_EMOJI_ALIASES["aqua_heart"]
-    assert_equal "50cadbury_heart", Profile::HEART_EMOJI_ALIASES["cadbury_heart"]
-    assert_equal 46, Profile::HEART_EMOJI_ALIASES.size
   end
 
   # -- labels --

@@ -2,61 +2,57 @@ class Profile < ApplicationRecord
   include HasAvatar
   include HasLabels
 
+  # Order here is the display order on the profile form. Numbers are not part of
+  # the stored/canonical name — Discord's numbering churns as hearts are added,
+  # so heart_emojis and emoji codes in text are keyed on the name alone.
   HEART_EMOJIS = [
-    "01_dewdrop_heart",
-    "02_spring_heart",
-    "03_hunter_heart",
-    "04_woods_heart",
-    "05_seafoam_heart",
-    "06_fern_heart",
-    "08_moss_heart",
-    "09_bramble_heart",
-    "10_wild_heart",
-    "11_aqua_heart",
-    "12_ocean_heart",
-    "13_storm_heart",
-    "14_abyss_heart",
-    "14_frozen_heart",
-    "16_ice_heart",
-    "18_cornflower_heart",
-    "19_azure_heart",
-    "20_nightsky_heart",
-    "21_haunted_heart",
-    "22_mist_heart",
-    "23_lavender_heart",
-    "24_violet_heart",
-    "25_aubegine_heart",
-    "26_shadow_heart",
-    "28_inky_heart",
-    "29_blossom_heart",
-    "30_burgundy_heart",
-    "31_arcane_heart",
-    "32_void_heart",
-    "33_vulnerable_heart",
-    "34_filthy_heart",
-    "35_passionate_heart",
-    "36_blackened_heart",
-    "38_hungry_heart",
-    "39_princess_heart",
-    "40_red_heart",
-    "41_murder_heart",
-    "42_dawn_heart",
-    "43_peach_heart",
-    "44_fawn_heart",
-    "45_fur_heart",
-    "46_soil_heart",
-    "48_nox_heart",
-    "50cadbury_heart",
-    "50maroon_heart",
-    "50sunshine_heart"
+    "dewdrop_heart",
+    "spring_heart",
+    "hunter_heart",
+    "woods_heart",
+    "seafoam_heart",
+    "fern_heart",
+    "moss_heart",
+    "bramble_heart",
+    "wild_heart",
+    "aqua_heart",
+    "ocean_heart",
+    "storm_heart",
+    "abyss_heart",
+    "frozen_heart",
+    "ice_heart",
+    "cornflower_heart",
+    "azure_heart",
+    "nightsky_heart",
+    "haunted_heart",
+    "mist_heart",
+    "lavender_heart",
+    "violet_heart",
+    "aubegine_heart",
+    "shadow_heart",
+    "inky_heart",
+    "blossom_heart",
+    "burgundy_heart",
+    "arcane_heart",
+    "void_heart",
+    "vulnerable_heart",
+    "filthy_heart",
+    "passionate_heart",
+    "blackened_heart",
+    "hungry_heart",
+    "princess_heart",
+    "red_heart",
+    "murder_heart",
+    "dawn_heart",
+    "peach_heart",
+    "fawn_heart",
+    "fur_heart",
+    "soil_heart",
+    "nox_heart",
+    "cadbury_heart",
+    "maroon_heart",
+    "sunshine_heart"
   ].freeze
-
-  # Maps short names (without number prefix) to canonical names,
-  # so :cadbury_heart: works as well as :50cadbury_heart:
-  HEART_EMOJI_ALIASES = HEART_EMOJIS.each_with_object({}) do |name, map|
-    short = name.sub(/\A\d+_?/, "")
-    map[short] = name unless short == name
-  end.freeze
 
   belongs_to :user
   belongs_to :theme, optional: true
@@ -97,14 +93,16 @@ class Profile < ApplicationRecord
   end
 
   def self.heart_emoji_display_name(heart)
-    heart.sub(/\A\d+_?/, "").tr("_", " ")
+    heart.tr("_", " ")
   end
 
   # Resolve a heart name to its canonical HEART_EMOJIS entry.
-  # Accepts both full names ("11_aqua_heart") and short aliases ("aqua_heart").
+  # Accepts both the bare name ("aqua_heart") and older pastes that still carry
+  # a number prefix ("11_aqua_heart") — the number is stripped and ignored, since
+  # Discord's numbering has changed under us before and will again.
   def self.resolve_heart_emoji(name)
-    return name if HEART_EMOJIS.include?(name)
-    HEART_EMOJI_ALIASES[name]
+    bare = name.sub(/\A\d+_?/, "")
+    bare if HEART_EMOJIS.include?(bare)
   end
 
   def heart_emoji_display_name(heart)
