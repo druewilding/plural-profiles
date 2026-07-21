@@ -109,6 +109,13 @@ class Profile < ApplicationRecord
     self.class.heart_emoji_display_name(heart)
   end
 
+  # Normalizes any number-prefixed entries (e.g. a stale form submitted after a
+  # renumber) to their bare canonical form, so only genuinely unknown hearts
+  # fail validation.
+  def heart_emojis=(values)
+    super(Array(values).map { |value| value.blank? ? value : (self.class.resolve_heart_emoji(value) || value) })
+  end
+
   private
 
   def generate_uuid

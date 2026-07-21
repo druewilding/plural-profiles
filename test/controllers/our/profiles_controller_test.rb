@@ -442,6 +442,15 @@ class Our::ProfilesControllerTest < ActionDispatch::IntegrationTest
     assert_equal %w[violet_heart], @profile.reload.heart_emojis
   end
 
+  test "update accepts heart emojis submitted with a stale number prefix" do
+    sign_in_as @user
+    patch our_profile_path(@profile), params: {
+      profile: { heart_emojis: %w[22_violet_heart] }
+    }
+    assert_redirected_to our_profile_path(@profile)
+    assert_equal %w[violet_heart], @profile.reload.heart_emojis
+  end
+
   test "update clears heart emojis with empty array" do
     sign_in_as @user
     @profile.update!(heart_emojis: %w[dewdrop_heart])

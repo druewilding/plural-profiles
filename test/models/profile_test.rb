@@ -99,6 +99,21 @@ class ProfileTest < ActiveSupport::TestCase
     assert profile.errors[:heart_emojis].any? { |e| e.include?("fake_heart") }
   end
 
+  test "assigning heart_emojis normalizes old number prefixes to their bare form" do
+    profile = profiles(:alice)
+    profile.heart_emojis = %w[13_storm_heart 50cadbury_heart]
+    assert_equal %w[storm_heart cadbury_heart], profile.heart_emojis
+    assert profile.valid?
+  end
+
+  test "assigning heart_emojis leaves genuinely unknown hearts untouched so they still fail validation" do
+    profile = profiles(:alice)
+    profile.heart_emojis = %w[dewdrop_heart 99_fake_heart]
+    assert_equal %w[dewdrop_heart 99_fake_heart], profile.heart_emojis
+    assert_not profile.valid?
+    assert profile.errors[:heart_emojis].any? { |e| e.include?("99_fake_heart") }
+  end
+
   test "heart_emoji_display_name formats name" do
     profile = profiles(:alice)
     assert_equal "dewdrop heart", profile.heart_emoji_display_name("dewdrop_heart")
