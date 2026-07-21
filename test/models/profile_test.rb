@@ -88,7 +88,7 @@ class ProfileTest < ActiveSupport::TestCase
 
   test "valid heart emojis are accepted" do
     profile = profiles(:alice)
-    profile.heart_emojis = %w[01_dewdrop_heart 36_red_heart]
+    profile.heart_emojis = %w[01_dewdrop_heart 40_red_heart]
     assert profile.valid?
   end
 
@@ -107,7 +107,7 @@ class ProfileTest < ActiveSupport::TestCase
 
   test "HEART_EMOJIS constant contains expected hearts" do
     assert_includes Profile::HEART_EMOJIS, "01_dewdrop_heart"
-    assert_includes Profile::HEART_EMOJIS, "36_red_heart"
+    assert_includes Profile::HEART_EMOJIS, "40_red_heart"
     assert_equal 42, Profile::HEART_EMOJIS.size
   end
 
@@ -120,7 +120,7 @@ class ProfileTest < ActiveSupport::TestCase
     assert_equal "11_aqua_heart", Profile.resolve_heart_emoji("aqua_heart")
     assert_equal "50cadbury_heart", Profile.resolve_heart_emoji("cadbury_heart")
     assert_equal "01_dewdrop_heart", Profile.resolve_heart_emoji("dewdrop_heart")
-    assert_equal "36_red_heart", Profile.resolve_heart_emoji("red_heart")
+    assert_equal "40_red_heart", Profile.resolve_heart_emoji("red_heart")
   end
 
   test "resolve_heart_emoji returns nil for unknown name" do

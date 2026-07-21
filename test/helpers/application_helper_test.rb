@@ -323,9 +323,9 @@ class ApplicationHelperTest < ActionView::TestCase
   end
 
   test "mixes heart emojis with regular text and spoilers" do
-    text = "hello :36_red_heart: and ||secret|| bye"
+    text = "hello :40_red_heart: and ||secret|| bye"
     result = formatted_description(text)
-    assert_includes result, '<img src="/images/hearts/36_red_heart.webp"'
+    assert_includes result, '<img src="/images/hearts/40_red_heart.webp"'
     assert_includes result, SPOILER_OPEN
   end
 
@@ -373,19 +373,19 @@ class ApplicationHelperTest < ActionView::TestCase
   end
 
   test "converts hearts outside code but not inside" do
-    text = ":36_red_heart: and <code>:11_aqua_heart:</code> and :13_storm_heart:"
+    text = ":40_red_heart: and <code>:11_aqua_heart:</code> and :13_storm_heart:"
     result = formatted_description(text)
-    assert_includes result, '<img src="/images/hearts/36_red_heart.webp"'
+    assert_includes result, '<img src="/images/hearts/40_red_heart.webp"'
     assert_includes result, '<img src="/images/hearts/13_storm_heart.webp"'
     assert_includes result, "<code>:11_aqua_heart:</code>"
     assert_not_includes result, '<img src="/images/hearts/11_aqua_heart.webp"'
   end
 
   test "does not replace heart emoji codes inside HTML tag attributes" do
-    text = '<span class="spoiler" aria-label=":11_aqua_heart:">:36_red_heart:</span>'
+    text = '<span class="spoiler" aria-label=":11_aqua_heart:">:40_red_heart:</span>'
     result = formatted_description(text)
     assert_includes result, 'aria-label=":11_aqua_heart:"'
-    assert_includes result, '<img src="/images/hearts/36_red_heart.webp"'
+    assert_includes result, '<img src="/images/hearts/40_red_heart.webp"'
     assert_not_includes result, '<img src="/images/hearts/11_aqua_heart.webp"'
   end
 
