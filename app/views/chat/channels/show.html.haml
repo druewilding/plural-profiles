@@ -15,10 +15,9 @@
   .chat-messages-scroll{data: {"chat-scroll-target": "scrollable"}}
     #chat-messages.chat-messages{data: {"chat-scroll-target": "messages"}}
       - if @has_more_messages
-        %turbo-frame#older-messages{src: chat_server_channel_messages_path(@server, @channel, before_id: @messages.first.id), loading: "lazy"}
+        %turbo-frame#older-messages{src: chat_server_channel_messages_path(@server, @channel, before_id: @messages.first.id, before_created_at: @messages.first.created_at.iso8601(6)), loading: "lazy"}
       - if @messages.any?
-        - @messages.each do |message|
-          = render "chat/messages/message", message: message
+        = render "chat/messages/message_list", messages: @messages
       - else
         %p No messages yet. Say hello!
 

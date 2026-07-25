@@ -12,9 +12,9 @@ module Chat
     # up through history — see app/views/chat/messages/index.html.haml for the
     # chained-frame pagination this renders.
     def index
-      before_id = params[:before_id].to_i
-      @messages = @channel.messages.where("id < ?", before_id).order(created_at: :desc).limit(Chat::Message::PAGE_SIZE).to_a.reverse
-      @has_more_messages = @messages.any? && @channel.messages.where("id < ?", @messages.first.id).exists?
+      cursor = Chat::Message.new(id: params[:before_id], created_at: Time.iso8601(params[:before_created_at]))
+      @messages = Chat::Message.latest_page(@channel.messages.before_cursor(cursor))
+      @has_more_messages = @messages.any? && @channel.messages.before_cursor(@messages.first).exists?
     end
 
     def create
@@ -22,8 +22,8 @@ module Chat
       if @message.save
         redirect_to chat_server_channel_path(@server, @channel)
       else
-        @messages = @channel.messages.order(created_at: :desc).limit(Chat::Message::PAGE_SIZE).to_a.reverse
-        @has_more_messages = @messages.any? && @channel.messages.where("id < ?", @messages.first.id).exists?
+        @messages = Chat::Message.latest_page(@channel.messages)
+        @has_more_messages = @messages.any? && @channel.messages.before_cursor(@messages.first).exists?
         render "chat/channels/show", status: :unprocessable_entity
       end
     end

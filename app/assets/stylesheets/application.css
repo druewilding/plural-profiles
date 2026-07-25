@@ -3637,6 +3637,26 @@ turbo-frame {
   gap: 1rem;
 }
 
+.chat-date-divider {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  margin: 0.25rem 0;
+  color: color-mix(in srgb, var(--text) 65%, transparent);
+  font-size: 0.76rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.chat-date-divider::before,
+.chat-date-divider::after {
+  content: "";
+  flex: 1;
+  height: 1px;
+  background-color: var(--pane-border);
+}
+
 .chat-message {
   display: flex;
   gap: 0.65rem;

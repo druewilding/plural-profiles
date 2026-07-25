@@ -10,6 +10,14 @@ module ApplicationHelper
     "chat.#{main_site_host}"
   end
 
+  def chat_date_divider_label(date)
+    case date
+    when Date.current then "Today"
+    when Date.current - 1 then "Yesterday"
+    else date.strftime("%A, %-d %B %Y")
+    end
+  end
+
   DESCRIPTION_EXTRA_TAGS = %w[details summary span b i u s table thead tbody tfoot tr th td].to_set.freeze
   DESCRIPTION_EXTRA_ATTRIBUTES = %w[open class role tabindex aria-label aria-expanded colspan rowspan data-spoiler-hint style width height].to_set.freeze
 
