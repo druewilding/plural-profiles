@@ -15,6 +15,10 @@ Rails.application.configure do
   # Enable server timing.
   config.server_timing = true
 
+  # Allow lvh.me (and subdomains, e.g. chat.lvh.me) for exercising subdomain routing
+  # locally — it's a public DNS entry that resolves to 127.0.0.1, needing no /etc/hosts edit.
+  config.hosts << ".lvh.me"
+
   # Enable/disable Action Controller caching. By default Action Controller caching is disabled.
   # Run rails dev:cache to toggle Action Controller caching.
   if Rails.root.join("tmp/caching-dev.txt").exist?
