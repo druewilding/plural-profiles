@@ -3624,24 +3624,40 @@ details.theme-section-card:not([open]) .theme-section-card__header {
   padding: 1rem 1.5rem;
 }
 
-/* turbo-frame has no default display value browsers agree on — treat it as
-   transparent to layout so the lazy-loaded older messages sit inline in the
-   flex column exactly like any other message, rather than in their own box. */
+/* turbo-frame has no default display value browsers agree on. `display:
+   contents` would make it transparent to layout, but Turbo's loading="lazy"
+   detects scroll visibility with an IntersectionObserver on the frame
+   element itself — an element with `display: contents` generates no box at
+   all, so it can never intersect the viewport and the lazy load silently
+   never fires. Use a plain block instead, and give messages/dividers their
+   own margin (below) rather than relying on the parent's flex `gap`, so
+   spacing still looks right regardless of the frame wrapping some of them. */
 turbo-frame {
-  display: contents;
+  display: block;
+}
+
+/* An unloaded lazy turbo-frame is empty, so as a plain block it collapses to
+   ~0 height — an easy target to scroll straight past without it ever truly
+   crossing into the viewport for the IntersectionObserver driving
+   loading="lazy" to catch. Give it a reliable minimum height to scroll onto. */
+#older-messages:not([complete]) {
+  min-height: 40px;
 }
 
 .chat-messages {
   display: flex;
   flex-direction: column;
-  gap: 1rem;
+}
+
+.chat-message,
+.chat-date-divider {
+  margin-bottom: 1rem;
 }
 
 .chat-date-divider {
   display: flex;
   align-items: center;
   gap: 0.75rem;
-  margin: 0.25rem 0;
   color: color-mix(in srgb, var(--text) 65%, transparent);
   font-size: 0.76rem;
   font-weight: 700;
