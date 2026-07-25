@@ -1,4 +1,4 @@
-.chat-message
+.chat-message{id: dom_id(message)}
   - if message.profile
     = link_to profile_path(message.profile.uuid), class: "chat-message__author" do
       - if message.profile.avatar.attached?

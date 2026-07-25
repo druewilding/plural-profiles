@@ -14,7 +14,9 @@
 
   %p= link_to "← Back to #{@server.name}", chat_server_path(@server)
 
-  .chat-messages
+  = turbo_stream_from @channel
+
+  #chat-messages.chat-messages
     - if @messages.any?
       - @messages.each do |message|
         = render "chat/messages/message", message: message

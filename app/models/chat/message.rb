@@ -12,6 +12,8 @@ module Chat
 
     before_validation :resolve_profile, on: :create
 
+    after_create_commit -> { broadcast_append_to channel, target: "chat-messages", partial: "chat/messages/message", locals: { message: self } }
+
     private
 
     def resolve_profile
