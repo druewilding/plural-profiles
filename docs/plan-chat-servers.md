@@ -2,7 +2,7 @@
 
 ## Summary
 
-Add a Discord-like chat area to plural-profiles: servers, channels, messages, threads, invite-based membership with blocking, and Tupperbot-style profile "proxying" (a short code in a message swaps the displayed avatar/name/pronouns for one of the author's profiles, linking to its public page). Servers/channels should be themeable using the existing theme system, and messages need the same hearts/spoilers formatting as descriptions.
+Add a Discord-like chat area to plural-profiles: servers, channels, messages, threads, invite-based membership with blocking, and Tupperbox-style profile "proxying" (a short code in a message swaps the displayed avatar/name/pronouns for one of the author's profiles, linking to its public page). Servers/channels should be themeable using the existing theme system, and messages need the same hearts/spoilers formatting as descriptions.
 
 The open question was structural: build this as a namespaced module inside the existing Rails app, or as a wholly separate Rails app talking to plural-profiles over an API? This matters because of two things already in play: the app is memory-constrained on Scalingo (currently moving from 1×M/512MB to 1×L/1GB after diagnosing swap pressure), and Scalingo is moving toward limiting swap, so future memory headroom is a real constraint, not a hypothetical. Chat adds two historically memory/connection-hungry ingredients — websockets and a fast-growing messages table — so the decision needs to hold up under that constraint, not just under "what's architecturally elegant."
 
@@ -135,7 +135,7 @@ This only works cleanly as a normal FK-backed Rails callback *because* chat mode
 
 **Phase 2 — realtime.** ActionCable channel per `Chat::Channel` broadcasting new messages via Turbo Streams over Solid Cable; a per-user notification stream powering the header icon/dropdown on the main site (unread counts, links to the relevant server/channel).
 
-**Phase 3 — profile proxying.** Short-code-triggered per-message identity override (Tupperbot-style) on top of the identity-resolution infrastructure already built in Phase 1: a unique-per-user short code on `Profile`, and a small parser for the message-send path that resolves to that profile's `id` instead of the membership default for that one message — doesn't touch the stored default, matching Tupperbot's "proxy this message" (not "become this profile going forward") behavior.
+**Phase 3 — profile proxying.** Short-code-triggered per-message identity override (Tupperbox-style) on top of the identity-resolution infrastructure already built in Phase 1: a unique-per-user short code on `Profile`, and a small parser for the message-send path that resolves to that profile's `id` instead of the membership default for that one message — doesn't touch the stored default, matching Tupperbox's "proxy this message" (not "become this profile going forward") behavior.
 
 **Phase 4 — membership, invites, moderation.** `Chat::ServerInvite` (own model, `InviteCode` pattern copied — see "Server invites vs. account invites" above), membership roles, and a blocking model — this is the phase that needs the most original design work since nothing in the codebase does user-to-user blocking today.
 
