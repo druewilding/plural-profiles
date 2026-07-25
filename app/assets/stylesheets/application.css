@@ -110,6 +110,10 @@ body {
   text-transform: uppercase;
 }
 
+.site-header .action-dropdown__menu a {
+  margin-left: 0;
+}
+
 @media (forced-colors: active) {
   .admin-badge {
     border: 1px solid ButtonText;
@@ -3286,7 +3290,13 @@ h1 .heart-inline {
 
 .action-dropdown {
   position: relative;
+  display: inline-flex;
+  align-items: center;
   flex-shrink: 0;
+}
+
+.site-header nav .action-dropdown {
+  margin-left: 1.5rem;
 }
 
 .action-dropdown__trigger {
