@@ -3576,6 +3576,12 @@ details.theme-section-card:not([open]) .theme-section-card__header {
   flex-direction: column;
   padding: 1.5rem;
   overflow-y: auto;
+  /* Same background every .card uses elsewhere in the app. Without this,
+     the pane falls through to the bare page background — which, depending
+     on the active theme, can end up matching --spoiler exactly (spoilers
+     are styled background === border === --spoiler), making spoiler text
+     completely invisible instead of an obviously-clickable redacted box. */
+  background-color: var(--pane-bg);
 }
 
 /* .chat-channel (channel#show) owns its own padding per-section so the
@@ -3602,7 +3608,8 @@ details.theme-section-card:not([open]) .theme-section-card__header {
   align-items: flex-start;
   justify-content: space-between;
   gap: 1rem;
-  padding: 1.5rem 1.5rem 0;
+  padding: 1.5rem 1.5rem 1rem;
+  border-bottom: 1px solid var(--pane-border);
   flex-shrink: 0;
 }
 
