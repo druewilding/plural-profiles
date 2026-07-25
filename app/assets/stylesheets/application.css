@@ -70,6 +70,12 @@ body {
   border-bottom: 1px solid var(--pane-border);
 }
 
+.site-header__brand {
+  display: flex;
+  align-items: center;
+  gap: 0.85rem;
+}
+
 .site-header .logo {
   font-size: 1.25rem;
   font-weight: 700;
@@ -3345,10 +3351,6 @@ h1 .heart-inline {
   flex-shrink: 0;
 }
 
-.site-header nav .action-dropdown {
-  margin-left: 1.5rem;
-}
-
 .action-dropdown__trigger {
   display: inline-flex;
   align-items: center;
@@ -3393,6 +3395,15 @@ h1 .heart-inline {
   border-radius: 8px;
   padding: 0.35rem 0;
   box-shadow: 0 4px 12px color-mix(in srgb, var(--pane-border) 25%, transparent);
+}
+
+/* The domain switcher sits at the left edge of the header now, next to the
+   logo — right: 0 (the default, for menus that hang off a right-aligned nav
+   item) would make it spill further left past its trigger. Open it flush
+   with the trigger's left edge instead. */
+.site-header__brand .action-dropdown__menu {
+  left: 0;
+  right: auto;
 }
 
 .action-dropdown__item {

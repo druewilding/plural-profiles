@@ -4,11 +4,12 @@
 
   %body.chat-body{style: active_theme_style, data: {controller: "timezone"}}
     %header.site-header
-      = link_to chat_root_path, class: "logo" do
-        = render "shared/plural_pride_logo"
-        Plural Profiles Chat
-      %nav
+      .site-header__brand
+        = link_to chat_root_path, class: "logo" do
+          = render "shared/plural_pride_logo"
+          Plural Profiles
         = render "shared/domain_switcher"
+      %nav
         - if authenticated?
           -# Deliberately session_path (same-origin) rather than forcing the
           -# main domain: SessionsController#destroy isn't subdomain-gated,

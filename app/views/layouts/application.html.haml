@@ -4,9 +4,11 @@
 
   %body{style: active_theme_style, data: {controller: "timezone"}}
     %header.site-header
-      = link_to root_path, class: "logo" do
-        = render "shared/plural_pride_logo"
-        Plural Profiles
+      .site-header__brand
+        = link_to root_path, class: "logo" do
+          = render "shared/plural_pride_logo"
+          Plural Profiles
+        = render "shared/domain_switcher"
       %nav
         - if authenticated?
           = link_to "Groups", our_groups_path
@@ -16,7 +18,6 @@
           = link_to "Themes", our_themes_path
           - if Current.user&.admin?
             %span.admin-badge ADMIN
-          = render "shared/domain_switcher"
           = link_to "Sign out", session_path, data: { turbo_method: :delete }
         - else
           = link_to "Sign in", new_session_path
