@@ -40,7 +40,7 @@
   - if @profile.groups.any?
     %h2 In groups
     %ul
-      - @profile.groups.where(user: Current.user).each do |group|
+      - @profile.groups.each do |group|
         %li
           = link_to our_group_path(group) do
             = formatted_inline(group.name)
