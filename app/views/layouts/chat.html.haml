@@ -10,7 +10,7 @@
       %nav
         = render "shared/domain_switcher"
         - if authenticated?
-          = link_to "Sign out", session_path, data: { turbo_method: :delete }
+          = link_to "Sign out", session_url(host: main_site_host), data: { turbo_method: :delete }
 
     - if flash[:notice]
       .flash.flash--notice= flash[:notice]
