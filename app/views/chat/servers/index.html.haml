@@ -1,0 +1,16 @@
+- content_for(:title) { "Chat — Plural Profiles" }
+
+.card
+  .card__header
+    %h1 Your servers
+    = link_to "New server", new_chat_server_path, class: "btn"
+
+  - if @servers.any?
+    %ul.server-list
+      - @servers.each do |server|
+        %li.server-list__item
+          = link_to chat_server_path(server), class: "server-list__link" do
+            = render "chat/shared/avatar", record: server, size: 32
+            = formatted_inline(server.name)
+  - else
+    %p You haven't joined any chat servers yet.

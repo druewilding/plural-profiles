@@ -1,0 +1,7 @@
+- content_for(:title) { "New channel — #{@server.name} — Plural Profiles" }
+
+.card
+  .card__header
+    %h2 New channel
+
+  = render "form", channel: @channel

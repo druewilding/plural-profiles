@@ -170,6 +170,52 @@ ActiveRecord::Base.transaction do
   GroupProfile.create!(group: static_burst, profile: spark)   # should NOT appear in castle_clan
 
   puts "Created 9 group memberships."
+
+  # ── Chat proxy brackets ───────────────────────────────────────────────────
+  #
+  # A few different bracket styles, so the composer's proxy-detection has
+  # something to exercise: prefix-only, prefix+suffix wrap, and suffix-only.
+  # Matching is case-sensitive, so these only ever need to be unique as typed.
+
+  stray.update!(chat_bracket_before: "stray:")                       # prefix-only, e.g. "stray: on the hunt"
+  ember.update!(chat_bracket_before: "{", chat_bracket_after: "}")   # wrap, e.g. "{lighting up the room}"
+  drift.update!(chat_bracket_after: "~drift")                        # suffix-only, e.g. "just passing through~drift"
+
+  puts "Set chat proxy brackets on Stray, Ember, and Drift."
+
+  # ── Chat server ───────────────────────────────────────────────────────────
+
+  server = user.owned_chat_servers.create!(name: "The Warren", subtitle: "A quiet place to check in.")
+  server.memberships.create!(user: user, role: "owner", default_profile: grove)
+
+  general  = server.channels.create!(name: "general",   subtitle: "Say hello.")
+  checkins = server.channels.create!(name: "check-ins", subtitle: "How's everyone doing?")
+  spoilers = server.channels.create!(name: "spoilers",   subtitle: "Wrap anything sensitive in ||spoiler tags||.")
+
+  puts "Created chat server \"The Warren\" with #{[ general, checkins, spoilers ].size} channels."
+
+  # ── Example messages ──────────────────────────────────────────────────────
+  #
+  # Relative-to-now timestamps, from a mix of profiles. Some post via an
+  # explicit profile; the "stray:", "{...}", and "~drift"-suffixed ones
+  # deliberately omit profile so Profile.resolve_chat_proxy picks it from the
+  # brackets instead (and strips them from the stored body), same as a real
+  # user typing them in the composer.
+
+  general.messages.create!(user: user, profile: grove, body: "Hey everyone, welcome to The Warren!", created_at: 3.days.ago)
+  general.messages.create!(user: user, body: "stray: just wandered in, hi all", created_at: 2.days.ago)
+  general.messages.create!(user: user, body: "{waves from the doorway}", created_at: 1.day.ago)
+  general.messages.create!(user: user, profile: shadow, body: "Good to see this place coming together.", created_at: 5.hours.ago)
+  general.messages.create!(user: user, profile: grove, body: "Anyone free to chat later?", created_at: 20.minutes.ago)
+
+  checkins.messages.create!(user: user, profile: mirage, body: "Feeling pretty good today, thanks for asking.", created_at: 1.day.ago)
+  checkins.messages.create!(user: user, body: "doing okay, just tired~drift", created_at: 6.hours.ago)
+  checkins.messages.create!(user: user, profile: ripple, body: "Same as always — steady.", created_at: 45.minutes.ago)
+
+  spoilers.messages.create!(user: user, profile: spark, body: "||Big reveal coming up in the movie||[The Odyssey]", created_at: 2.days.ago)
+  spoilers.messages.create!(user: user, profile: grove, body: "||Oh wow, i can't wait to see how that plays out||", created_at: 3.hours.ago)
+
+  puts "Created 10 example chat messages."
 end
 
 puts ""
@@ -195,6 +241,13 @@ puts "    Override: Drift hidden at path [flux]."
 puts "    Override: Ripple hidden at path [flux]."
 puts "    → Spark (in Static Burst) excluded from Castle Clan."
 puts "    → Drift and Ripple (direct Flux members) excluded from Castle Clan."
+puts ""
+puts "  Chat: server \"The Warren\" with #general, #check-ins, and #spoilers."
+puts "    Posting as Grove by default."
+puts "    Stray: prefix bracket \"stray:\" (e.g. \"stray: on the hunt\")"
+puts "    Ember: wrap brackets \"{\" / \"}\" (e.g. \"{lighting up the room}\")"
+puts "    Drift: suffix bracket \"~drift\" (e.g. \"just passing through~drift\")"
+puts "    10 example messages seeded across the three channels, most recent 20 minutes ago."
 puts ""
 puts "────────────────────────────────"
 puts "Login credentials:"

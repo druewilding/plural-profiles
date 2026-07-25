@@ -32,7 +32,7 @@ module Authentication
 
       if session&.user&.deactivated?
         session.destroy
-        cookies.delete(:session_id)
+        cookies.delete(:session_id, domain: :all, tld_length: 2)
         return nil
       end
 
@@ -51,12 +51,12 @@ module Authentication
     def start_new_session_for(user)
       user.sessions.create!(user_agent: request.user_agent, ip_address: request.remote_ip).tap do |session|
         Current.session = session
-        cookies.signed.permanent[:session_id] = { value: session.id, httponly: true, same_site: :lax }
+        cookies.signed.permanent[:session_id] = { value: session.id, httponly: true, same_site: :lax, domain: :all, tld_length: 2 }
       end
     end
 
     def terminate_session
       Current.session.destroy
-      cookies.delete(:session_id)
+      cookies.delete(:session_id, domain: :all, tld_length: 2)
     end
 end

@@ -1,0 +1,17 @@
+- content_for(:title) { "Join #{plain_field(@server.name)} — Plural Profiles" }
+
+.card
+  .card__header
+    %h2= safe_join([ "Join ", formatted_inline(@server.name) ])
+
+  = form_with url: join_chat_server_path(@server), method: :post do |form|
+    - if @invite_token.present?
+      = hidden_field_tag :invite_token, @invite_token
+
+    .form-group
+      = label_tag "default_profile_id", "Post as"
+      = select_tag "default_profile_id", options_for_select(@profiles.map { |p| [ p.name, p.id ] })
+      %p.form-hint The profile you'll post as by default in this server. You can change this any time.
+
+    .form-group
+      = form.submit "Join server"

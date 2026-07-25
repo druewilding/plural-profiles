@@ -1,0 +1,5 @@
+- if record.avatar.attached?
+  = image_tag record.avatar.variant(resize_to_fill: [size, size]), class: "avatar #{avatar_shape_class(record)}".strip, width: size, height: size, alt: "", loading: "lazy"
+- else
+  .avatar.avatar--placeholder
+    = render "shared/plural_pride_logo"

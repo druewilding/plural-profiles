@@ -26,8 +26,11 @@ export default class extends Controller {
   onDocumentClick(event) {
     if (!this.element.open) return
     if (this.element.contains(event.target)) {
-      // If they clicked a menu item (link), let it navigate then close
-      if (event.target.closest(".action-dropdown__menu")) {
+      // If they clicked an actual menu item (link), let it navigate then
+      // close. Deliberately narrower than "clicked anywhere in the menu" —
+      // some menus (e.g. the profile picker) contain a search input that
+      // must stay open while it's being typed into.
+      if (event.target.closest(".action-dropdown__item")) {
         // Use requestAnimationFrame so the click action fires first
         requestAnimationFrame(() => this.close())
       }

@@ -1,0 +1,26 @@
+.chat-message{id: dom_id(message)}
+  .chat-message__avatar
+    - if message.profile&.avatar&.attached?
+      = image_tag message.profile.avatar.variant(resize_to_fill: [34, 34]), class: "avatar #{avatar_shape_class(message.profile)}".strip, width: 34, height: 34, alt: "", loading: "lazy"
+    - else
+      .avatar.avatar--placeholder
+        = render "shared/plural_pride_logo"
+
+  .chat-message__content
+    .chat-message__who
+      - if message.profile
+        -# Current.user is unset when this partial is rendered outside a real
+        -# request (e.g. a message created from a script) — &. falls back to
+        -# the public link in that case, which is always a safe destination
+        -# (Our::ProfilesController#set_profile redirects there anyway for
+        -# anyone viewing a profile that isn't their own).
+        - profile_link_url = message.profile.user_id == Current.user&.id ? our_profile_url(message.profile, host: main_site_host, port: request.port, protocol: request.protocol) : profile_url(message.profile.uuid, host: main_site_host, port: request.port, protocol: request.protocol)
+        = link_to profile_link_url, class: "chat-message__name-link" do
+          %span.chat-message__name= formatted_inline(message.profile.name)
+        - if message.profile.pronouns.present?
+          %span.chat-message__pronouns= formatted_inline(message.profile.pronouns)
+      - else
+        %span.chat-message__name.chat-message__name--deleted= "#{message.profile_name} (deleted)"
+      %time.chat-message__time{datetime: message.created_at.iso8601}= message.created_at.strftime("%H:%M")
+
+    .chat-message__body{style: "white-space: pre-wrap"}= formatted_inline(message.body)

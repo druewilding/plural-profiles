@@ -1,0 +1,45 @@
+!!!
+%html{lang: "en-GB"}
+  = render "layouts/head"
+
+  %body.chat-body{style: active_theme_style, data: {controller: "timezone"}}
+    %header.site-header
+      .site-header__brand
+        = link_to chat_root_path, class: "logo" do
+          = render "shared/plural_pride_logo"
+          Plural Profiles
+        = render "shared/domain_switcher"
+      %nav
+        - if authenticated?
+          -# Deliberately session_path (same-origin) rather than forcing the
+          -# main domain: SessionsController#destroy isn't subdomain-gated,
+          -# so there's no need to cross hosts on the initial request (and a
+          -# cross-origin POST would trip Rails' Origin-header CSRF check).
+          -#
+          -# The redirect chain after destroying the session (back to this
+          -# host, then on to the main domain's sign-in page) does end up
+          -# crossing origins though — and data: { turbo: false } is required
+          -# for that to work. Without it, Turbo submits via fetch() and
+          -# follows the whole redirect chain through that same fetch, so the
+          -# moment it crosses origins the browser throws a CORS preflight at
+          -# it (this app sets up no CORS handling), which silently breaks
+          -# the flow client-side even though the session was destroyed. A
+          -# real, Turbo-free form submission is a normal top-level
+          -# navigation, which (unlike fetch) is never subject to CORS.
+          = button_to "Sign out", session_path, method: :delete,
+            form: { data: { turbo: false } }, form_class: "site-header__signout", class: "link-button"
+
+    - if flash[:notice]
+      .flash.flash--notice= flash[:notice]
+    - if flash[:alert]
+      .flash.flash--alert= flash[:alert]
+
+    .chat-shell{class: ("chat-shell--channel-open" if @in_channel_chat)}
+      = turbo_stream_from Current.user, :chat_server_rail
+      = render "chat/shared/server_rail"
+      - if @server&.persisted? && (current_membership || server_owner?)
+        = turbo_stream_from Current.user, @server, :chat_channel_pane
+        = render "chat/shared/channel_pane"
+      .chat-main{data: {controller: "spoiler", action: "click->spoiler#toggle keydown->spoiler#keydown"}}
+        = yield
+    = yield :footer

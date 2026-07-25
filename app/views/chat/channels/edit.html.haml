@@ -1,0 +1,7 @@
+- content_for(:title) { "Edit # #{plain_field(@channel.name)} — #{@server.name} — Plural Profiles" }
+
+.card
+  .card__header
+    %h2 Channel settings
+
+  = render "form", channel: @channel

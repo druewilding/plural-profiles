@@ -1,35 +1,14 @@
 !!!
 %html{lang: "en-GB"}
-  %head
-    :javascript
-      document.documentElement.classList.add('js')
-    %title= content_for(:title) || "Plural Profiles"
-    %meta{name: "viewport", content: "width=device-width,initial-scale=1"}
-    %meta{name: "color-scheme", content: "dark light"}
-    %meta{name: "apple-mobile-web-app-capable", content: "yes"}
-    %meta{name: "application-name", content: "Plural Profiles"}
-    %meta{name: "mobile-web-app-capable", content: "yes"}
-    = csrf_meta_tags
-    = csp_meta_tag
-
-    = yield :head
-
-    -# Enable PWA manifest for installable apps (make sure to enable in config/routes.rb too!)
-    -#= tag.link rel: "manifest", href: pwa_manifest_path(format: :json)
-
-    %link{rel: "icon", href: "/logo.png", type: "image/png"}
-    %link{rel: "icon", href: "/logo.svg", type: "image/svg+xml"}
-    %link{rel: "apple-touch-icon", href: "/logo.png"}
-
-    -# Includes all stylesheet files in app/assets/stylesheets
-    = stylesheet_link_tag :app, "data-turbo-track": "reload"
-    = javascript_importmap_tags
+  = render "layouts/head"
 
   %body{style: active_theme_style, data: {controller: "timezone"}}
     %header.site-header
-      = link_to root_path, class: "logo" do
-        = render "shared/plural_pride_logo"
-        Plural Profiles
+      .site-header__brand
+        = link_to root_path, class: "logo" do
+          = render "shared/plural_pride_logo"
+          Plural Profiles
+        = render "shared/domain_switcher"
       %nav
         - if authenticated?
           = link_to "Groups", our_groups_path

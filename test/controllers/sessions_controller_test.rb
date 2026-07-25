@@ -47,6 +47,18 @@ class SessionsControllerTest < ActionDispatch::IntegrationTest
     assert_empty cookies[:session_id]
   end
 
+  test "destroy deletes the session cookie on the same cross-subdomain domain it was set with" do
+    # start_new_session_for sets this cookie with domain: :all (so chat.*
+    # shares it) — deleting it without that same domain option writes a
+    # separate, host-only "deleted" cookie and leaves the real one in place.
+    sign_in_as(User.take)
+
+    delete session_path
+
+    assert_redirected_to new_session_path
+    assert_match(/session_id=;.*domain=/, response.headers["Set-Cookie"].to_s)
+  end
+
   # -- Login with account name --
 
   test "create with account name" do
