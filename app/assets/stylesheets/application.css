@@ -3658,6 +3658,7 @@ turbo-frame {
   display: flex;
   align-items: center;
   gap: 0.75rem;
+  padding-top: 1.5rem;
   color: color-mix(in srgb, var(--text) 65%, transparent);
   font-size: 0.76rem;
   font-weight: 700;
