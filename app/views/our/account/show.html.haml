@@ -24,9 +24,9 @@
     .form-group
       %label.checkbox-label
         = check_box_tag :override_themes, "1", Current.user.override_themes
-        Always use our own theme on public pages
+        Always use our own theme
       %p.form-hint
-        When enabled, public pages will always display in your active theme.
+        When enabled, your active theme is shown everywhere, instead of switching to match whichever profile, group, server, or channel you're viewing. This applies to public profile and group pages, and to chat servers and channels.
     .form-group
       = form.submit "Save preferences"
 
