@@ -33,7 +33,7 @@ module Chat
     private
 
     def resolve_profile
-      self.profile ||= channel&.server&.memberships&.find_by(user_id: user_id)&.default_profile
+      self.profile ||= channel&.default_profile_for(user) || channel&.server&.memberships&.find_by(user_id: user_id)&.default_profile
       self.profile_name ||= profile&.name
     end
   end

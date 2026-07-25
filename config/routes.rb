@@ -74,6 +74,7 @@ Rails.application.routes.draw do
 
         resources :channels, only: %i[show new create edit update], param: :name do
           resources :messages, only: %i[index create]
+          resource :default_profile, only: :update, controller: "channel_default_profiles"
         end
       end
     end

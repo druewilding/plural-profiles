@@ -3786,6 +3786,46 @@ turbo-frame {
   height: 22px;
 }
 
+.composer-posting-as__trigger {
+  display: inline-flex;
+  align-items: center;
+  gap: inherit;
+  cursor: pointer;
+  list-style: none;
+}
+
+.composer-posting-as__trigger::after {
+  content: " ▾";
+  font-size: 0.7rem;
+  opacity: 0.8;
+}
+
+.composer-posting-as__trigger::-webkit-details-marker,
+.composer-posting-as__trigger::marker {
+  display: none;
+}
+
+/* Opens upward from the composer at the bottom of the pane, rather than the
+   default action-dropdown position (below/right), which would put the menu
+   past the viewport edge here. */
+.composer-posting-as .action-dropdown__menu {
+  left: 0;
+  right: auto;
+  top: auto;
+  bottom: calc(100% + 4px);
+}
+
+.composer-posting-as__option {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.composer-posting-as__option .avatar {
+  width: 18px;
+  height: 18px;
+}
+
 .composer-input-row {
   display: flex;
   gap: 0.6rem;

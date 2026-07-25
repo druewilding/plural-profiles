@@ -23,16 +23,21 @@
 
   .composer
     - if current_membership&.default_profile
-      .composer-posting-as
-        - profile = current_membership.default_profile
-        - if profile.avatar.attached?
-          = image_tag profile.avatar.variant(resize_to_fill: [22, 22]), class: "avatar #{avatar_shape_class(profile)}".strip, width: 22, height: 22, alt: "", loading: "lazy"
-        - else
-          .avatar.avatar--placeholder
-            = render "shared/plural_pride_logo"
-        %span
-          Posting as
-          %strong= formatted_inline(profile.name)
+      - current_profile = @channel.default_profile_for(Current.user) || current_membership.default_profile
+      %details.action-dropdown.composer-posting-as{data: {controller: "dropdown"}}
+        %summary.composer-posting-as__trigger
+          = render "chat/shared/avatar", record: current_profile, size: 22
+          %span
+            Posting as
+            %strong= formatted_inline(current_profile.name)
+        .action-dropdown__menu
+          - Current.user.profiles.order(:name).each do |profile|
+            = link_to chat_server_channel_default_profile_path(@server, @channel, profile_uuid: profile.uuid), data: { turbo_method: :patch }, class: "action-dropdown__item composer-posting-as__option" do
+              = render "chat/shared/avatar", record: profile, size: 18
+              - if profile == current_profile
+                %strong= formatted_inline(profile.name)
+              - else
+                = formatted_inline(profile.name)
 
     = form_with model: @message, url: chat_server_channel_messages_path(@server, @channel), scope: :chat_message, data: { controller: "composer" } do |form|
       - if @message.errors.any?
