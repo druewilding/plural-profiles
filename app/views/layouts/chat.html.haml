@@ -19,7 +19,7 @@
 
     .chat-shell
       = render "chat/shared/server_rail"
-      - if @server
+      - if @server&.persisted?
         = render "chat/shared/channel_pane"
       .chat-main{data: {controller: "spoiler", action: "click->spoiler#toggle keydown->spoiler#keydown"}}
         = yield

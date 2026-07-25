@@ -31,12 +31,12 @@
         Posting as
         %strong= formatted_inline(profile.name)
 
-  = form_with model: @message, url: chat_server_channel_messages_path(@server, @channel), scope: :chat_message do |form|
+  = form_with model: @message, url: chat_server_channel_messages_path(@server, @channel), scope: :chat_message, data: { controller: "composer" } do |form|
     - if @message.errors.any?
       .error-messages
         - @message.errors.full_messages.each do |message|
           %p= message
 
     .composer-input-row
-      = form.text_area :body, rows: 2, required: true, placeholder: "Message ##{@channel.name}"
-      = form.submit "Send"
+      = form.text_area :body, rows: 2, required: true, placeholder: "Message ##{@channel.name} (Enter to send, Shift+Enter for a new line)", data: { action: "keydown->composer#submitOnEnter" }
+      = form.submit "Send", class: "visually-hidden"
