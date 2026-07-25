@@ -3493,6 +3493,36 @@ details.theme-section-card:not([open]) .theme-section-card__header {
   height: 100dvh;
 }
 
+.server-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+}
+
+.server-list__link {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  padding: 0.5rem 0.75rem;
+  border-radius: 6px;
+  color: var(--text);
+  text-decoration: none;
+}
+
+.server-list__link:hover {
+  background-color: color-mix(in srgb, var(--text) 8%, transparent);
+}
+
+.server-list__link .avatar {
+  width: 32px;
+  height: 32px;
+  min-width: 32px;
+  min-height: 32px;
+}
+
 .chat-shell {
   flex: 1;
   min-height: 0;
