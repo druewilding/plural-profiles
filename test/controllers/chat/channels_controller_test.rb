@@ -23,7 +23,7 @@ class Chat::ChannelsControllerTest < ActionDispatch::IntegrationTest
   test "show is blocked for a non-member" do
     sign_in_as @outsider
     get chat_server_channel_path(@server, @channel)
-    assert_redirected_to chat_server_path(@server)
+    assert_redirected_to join_chat_server_path(@server)
     assert_equal "Join this server first.", flash[:alert]
   end
 
@@ -39,7 +39,7 @@ class Chat::ChannelsControllerTest < ActionDispatch::IntegrationTest
   test "mark_read is blocked for a non-member" do
     sign_in_as @outsider
     patch mark_read_chat_server_channel_path(@server, @channel)
-    assert_redirected_to chat_server_path(@server)
+    assert_redirected_to join_chat_server_path(@server)
   end
 
   test "new is only accessible to the server owner" do

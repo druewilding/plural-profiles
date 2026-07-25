@@ -28,13 +28,10 @@ class Chat::ServersControllerTest < ActionDispatch::IntegrationTest
     assert_match "general", response.body
   end
 
-  test "show redirects a non-member who isn't the owner" do
+  test "show redirects a non-member who isn't the owner to the join flow" do
     sign_in_as @outsider
     get chat_server_path(@server)
-    # NB: this redirects to itself (show's own require_membership! bounces
-    # right back to show), so the alert never actually reaches a rendered
-    # page for a direct visit — following the redirect just repeats it.
-    assert_redirected_to chat_server_path(@server)
+    assert_redirected_to join_chat_server_path(@server)
     assert_equal "Join this server first.", flash[:alert]
   end
 
@@ -119,32 +116,78 @@ class Chat::ServersControllerTest < ActionDispatch::IntegrationTest
     assert_equal "You're already a member.", flash[:notice]
   end
 
-  test "join renders the profile picker for a non-member with a profile" do
+  test "join without an invite token refuses to show the profile picker" do
     sign_in_as @outsider
     get join_chat_server_path(@server)
+    assert_redirected_to chat_root_path
+    assert_equal "You need a valid invite link to join this server.", flash[:alert]
+  end
+
+  test "join with an unknown invite token refuses to show the profile picker" do
+    sign_in_as @outsider
+    get join_chat_server_path(@server, invite_token: "not-a-real-token")
+    assert_redirected_to chat_root_path
+  end
+
+  test "join with an already-redeemed invite token refuses to show the profile picker" do
+    invite = @server.server_invites.create!(created_by: @owner)
+    invite.redeem!(users(:four))
+
+    sign_in_as @outsider
+    get join_chat_server_path(@server, invite_token: invite.token)
+    assert_redirected_to chat_root_path
+  end
+
+  test "join renders the profile picker for a non-member with a valid invite token" do
+    invite = @server.server_invites.create!(created_by: @owner)
+    sign_in_as @outsider
+    get join_chat_server_path(@server, invite_token: invite.token)
     assert_response :success
     assert_match "Post as", response.body
   end
 
-  test "posting to join creates a member-role membership with the chosen profile" do
+  test "join page does not leak the server's channel names to a non-member" do
+    @server.channels.create!(name: "secret-plans")
+    invite = @server.server_invites.create!(created_by: @owner)
+
     sign_in_as @outsider
-    assert_difference "Chat::Membership.count", 1 do
+    get join_chat_server_path(@server, invite_token: invite.token)
+    assert_response :success
+    assert_no_match "secret-plans", response.body
+  end
+
+  test "posting to join without an invite token does not create a membership" do
+    sign_in_as @outsider
+    assert_no_difference "Chat::Membership.count" do
       post join_chat_server_path(@server), params: { default_profile_id: profiles(:carol).id }
+    end
+    assert_redirected_to chat_root_path
+  end
+
+  test "posting to join with a valid invite token creates a membership and redeems the invite" do
+    invite = @server.server_invites.create!(created_by: @owner)
+    sign_in_as @outsider
+
+    assert_difference "Chat::Membership.count", 1 do
+      post join_chat_server_path(@server), params: { default_profile_id: profiles(:carol).id, invite_token: invite.token }
     end
     assert_redirected_to chat_server_path(@server)
 
     membership = @server.memberships.find_by(user: @outsider)
     assert_equal "member", membership.role
     assert_equal profiles(:carol), membership.default_profile
-  end
-
-  test "posting to join with a valid invite token redeems it" do
-    invite = @server.server_invites.create!(created_by: @owner)
-    sign_in_as @outsider
-
-    post join_chat_server_path(@server), params: { default_profile_id: profiles(:carol).id, invite_token: invite.token }
-
     assert invite.reload.redeemed?
     assert_equal @outsider, invite.redeemed_by
+  end
+
+  test "posting to join with someone else's already-redeemed invite token does not create a membership" do
+    invite = @server.server_invites.create!(created_by: @owner)
+    invite.redeem!(users(:four))
+
+    sign_in_as @outsider
+    assert_no_difference "Chat::Membership.count" do
+      post join_chat_server_path(@server), params: { default_profile_id: profiles(:carol).id, invite_token: invite.token }
+    end
+    assert_redirected_to chat_root_path
   end
 end

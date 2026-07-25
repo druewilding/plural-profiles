@@ -29,7 +29,7 @@ module Chat
     def require_membership!
       return if current_membership || server_owner?
 
-      redirect_to chat_server_path(@server), alert: "Join this server first."
+      redirect_to join_chat_server_path(@server), alert: "Join this server first."
     end
 
     def require_owner!

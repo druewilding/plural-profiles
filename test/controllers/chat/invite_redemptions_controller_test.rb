@@ -19,6 +19,14 @@ class Chat::InviteRedemptionsControllerTest < ActionDispatch::IntegrationTest
     assert_match "Test Server", response.body
   end
 
+  test "show does not leak the server's channel names to a non-member" do
+    @server.channels.create!(name: "secret-plans")
+    sign_in_as @outsider
+    get chat_invite_redemption_path(@invite.token)
+    assert_response :success
+    assert_no_match "secret-plans", response.body
+  end
+
   test "show redirects an already-redeemed invite as no longer valid" do
     @invite.redeem!(@member)
     sign_in_as @outsider

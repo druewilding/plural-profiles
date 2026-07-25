@@ -38,6 +38,6 @@ class Chat::ChannelDefaultProfilesControllerTest < ActionDispatch::IntegrationTe
   test "update is blocked for a non-member" do
     sign_in_as @outsider
     patch chat_server_channel_default_profile_path(@server, @channel), params: { profile_uuid: profiles(:stray).uuid }
-    assert_redirected_to chat_server_path(@server)
+    assert_redirected_to join_chat_server_path(@server)
   end
 end

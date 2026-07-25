@@ -20,7 +20,7 @@
     .chat-shell{class: ("chat-shell--channel-open" if @in_channel_chat)}
       = turbo_stream_from Current.user, :chat_server_rail
       = render "chat/shared/server_rail"
-      - if @server&.persisted?
+      - if @server&.persisted? && (current_membership || server_owner?)
         = turbo_stream_from Current.user, @server, :chat_channel_pane
         = render "chat/shared/channel_pane"
       .chat-main{data: {controller: "spoiler", action: "click->spoiler#toggle keydown->spoiler#keydown"}}

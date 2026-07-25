@@ -46,7 +46,7 @@ class Chat::MessagesControllerTest < ActionDispatch::IntegrationTest
     assert_no_difference "Chat::Message.count" do
       post chat_server_channel_messages_path(@server, @channel), params: { chat_message: { body: "hello there" } }
     end
-    assert_redirected_to chat_server_path(@server)
+    assert_redirected_to join_chat_server_path(@server)
   end
 
   test "index returns messages before the given cursor and flags whether more remain" do
@@ -67,6 +67,6 @@ class Chat::MessagesControllerTest < ActionDispatch::IntegrationTest
   test "index is blocked for a non-member" do
     sign_in_as @outsider
     get chat_server_channel_messages_path(@server, @channel, before_id: 0, before_created_at: Time.current.iso8601(6))
-    assert_redirected_to chat_server_path(@server)
+    assert_redirected_to join_chat_server_path(@server)
   end
 end

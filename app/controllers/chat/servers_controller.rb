@@ -57,16 +57,20 @@ module Chat
         redirect_to chat_server_path(@server), notice: "You're already a member." and return
       end
 
+      @invite = @server.server_invites.unredeemed.find_by(token: params[:invite_token])
+      if @invite.nil?
+        redirect_to chat_root_path, alert: "You need a valid invite link to join this server." and return
+      end
+
       @profiles = Current.user.profiles.order(:name)
       @invite_token = params[:invite_token]
 
       if request.post? && params[:default_profile_id].present?
-        invite = @server.server_invites.unredeemed.find_by(token: params[:invite_token]) if params[:invite_token].present?
         membership = @server.memberships.build(user: Current.user, role: "member", default_profile_id: params[:default_profile_id])
 
         joined = Chat::Membership.transaction do
           next false unless membership.save
-          invite&.redeem!(Current.user)
+          @invite.redeem!(Current.user)
           true
         end
 
