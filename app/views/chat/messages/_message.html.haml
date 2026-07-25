@@ -9,7 +9,13 @@
   .chat-message__content
     .chat-message__who
       - if message.profile
-        = link_to profile_url(message.profile.uuid, host: main_site_host, port: request.port, protocol: request.protocol), class: "chat-message__name-link" do
+        -# Current.user is unset when this partial is rendered outside a real
+        -# request (e.g. a message created from a script) — &. falls back to
+        -# the public link in that case, which is always a safe destination
+        -# (Our::ProfilesController#set_profile redirects there anyway for
+        -# anyone viewing a profile that isn't their own).
+        - profile_link_url = message.profile.user_id == Current.user&.id ? our_profile_url(message.profile, host: main_site_host, port: request.port, protocol: request.protocol) : profile_url(message.profile.uuid, host: main_site_host, port: request.port, protocol: request.protocol)
+        = link_to profile_link_url, class: "chat-message__name-link" do
           %span.chat-message__name= formatted_inline(message.profile.name)
         - if message.profile.pronouns.present?
           %span.chat-message__pronouns= formatted_inline(message.profile.pronouns)

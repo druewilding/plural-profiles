@@ -123,6 +123,8 @@ class Chat::ServersControllerTest < ActionDispatch::IntegrationTest
     sign_in_as profileless
     get join_chat_server_path(@server)
     assert_redirected_to new_our_profile_path(return_to: join_chat_server_path(@server))
+    assert_equal "Create a profile first, then you'll come right back here to finish joining.", flash[:notice]
+    assert_nil flash[:alert]
   end
 
   test "join redirects an existing member straight to the server" do

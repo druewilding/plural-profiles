@@ -76,6 +76,23 @@ class Chat::MessageTest < ActiveSupport::TestCase
     end
   end
 
+  test "the broadcasted message partial renders without a request context and without crashing" do
+    # Current.user is nil here (this is a plain model test, not a request) —
+    # same situation as a message created from a script. The author-link
+    # helper in the message partial must tolerate that rather than blow up
+    # trying to call .id on it.
+    assert_nil Current.user
+
+    streams = capture_turbo_stream_broadcasts @channel do
+      @channel.messages.create!(user: @owner, profile: profiles(:alice), body: "hello")
+    end
+
+    html = streams.first.to_html
+    helpers = Rails.application.routes.url_helpers
+    assert_match helpers.profile_path(profiles(:alice)), html
+    assert_no_match helpers.our_profile_path(profiles(:alice)), html
+  end
+
   test "creating a message broadcasts unread dots to other server members but not the author" do
     assert_turbo_stream_broadcasts [ @other_member, @server, :chat_channel_pane ] do
       @channel.messages.create!(user: @owner, body: "hello")

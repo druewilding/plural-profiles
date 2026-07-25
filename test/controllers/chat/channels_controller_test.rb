@@ -20,6 +20,19 @@ class Chat::ChannelsControllerTest < ActionDispatch::IntegrationTest
     assert_match "hello there", response.body
   end
 
+  test "message author links go to the viewer's own profile page, but the public page for others" do
+    @channel.messages.create!(user: @owner, profile: profiles(:alice), body: "from the owner")
+    @channel.messages.create!(user: @member, profile: profiles(:carol), body: "from the member")
+
+    sign_in_as @owner
+    get chat_server_channel_path(@server, @channel)
+    assert_response :success
+
+    assert_match our_profile_path(profiles(:alice)), response.body
+    assert_match profile_path(profiles(:carol)), response.body
+    assert_no_match our_profile_path(profiles(:carol)), response.body
+  end
+
   test "show is blocked for a non-member" do
     sign_in_as @outsider
     get chat_server_channel_path(@server, @channel)

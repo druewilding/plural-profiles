@@ -50,7 +50,7 @@ module Chat
     def join
       if Current.user.profiles.none?
         redirect_to new_our_profile_path(return_to: join_chat_server_path(@server, invite_token: params[:invite_token])),
-          alert: "Create a profile before joining a chat server." and return
+          notice: "Create a profile first, then you'll come right back here to finish joining." and return
       end
 
       if current_membership
