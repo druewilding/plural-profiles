@@ -65,6 +65,13 @@ Rails.application.configure do
   # Set host to be used by links generated in mailer templates.
   config.action_mailer.default_url_options = { host: ENV.fetch("APP_HOST", "plural-profiles.scalingo.io") }
 
+  # Same problem as mailers, but for rendering outside a request in general (e.g. Turbo
+  # Stream broadcasts triggered from a model callback) — without this, URL helpers used
+  # during a broadcast (including Active Storage avatar image URLs) fall back to Rails'
+  # placeholder host instead of the real one.
+  Rails.application.routes.default_url_options[:host] = ENV.fetch("APP_HOST", "plural-profiles.osc-fr1.scalingo.io")
+  Rails.application.routes.default_url_options[:protocol] = "https"
+
   # Outgoing email via Brevo SMTP.
   config.action_mailer.smtp_settings = {
     address: "smtp-relay.brevo.com",

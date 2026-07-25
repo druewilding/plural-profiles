@@ -44,6 +44,15 @@ Rails.application.configure do
   # Set localhost to be used by links generated in mailer templates.
   config.action_mailer.default_url_options = { host: "localhost", port: 3000 }
 
+  # Rendering outside a request (e.g. Turbo Stream broadcasts triggered from a model
+  # callback) has no request to infer a host from, so URL helpers — including the ones
+  # Active Storage uses for avatar image URLs — fall back to Rails' placeholder host
+  # ("example.org") unless told otherwise here. Use lvh.me, not localhost, so these URLs
+  # resolve the same way whether the broadcast is viewed from the main site or a chat
+  # subdomain page.
+  Rails.application.routes.default_url_options[:host] = "lvh.me"
+  Rails.application.routes.default_url_options[:port] = 3000
+
   # Print deprecation notices to the Rails logger.
   config.active_support.deprecation = :log
 
