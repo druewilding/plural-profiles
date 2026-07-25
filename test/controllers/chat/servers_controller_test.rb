@@ -5,8 +5,10 @@ class Chat::ServersControllerTest < ActionDispatch::IntegrationTest
     host! "chat.example.com"
     @owner = users(:one)
     @outsider = users(:two)
+    @member = users(:three)
     @server = @owner.owned_chat_servers.create!(name: "Owner's Server")
     @server.memberships.create!(user: @owner, role: "owner", default_profile: profiles(:alice))
+    @server.memberships.create!(user: @member, role: "member", default_profile: profiles(:stray))
   end
 
   test "index lists only servers the current user belongs to" do
@@ -74,8 +76,15 @@ class Chat::ServersControllerTest < ActionDispatch::IntegrationTest
     end
   end
 
-  test "edit is only accessible to the owner" do
+  test "edit is blocked for a non-member" do
     sign_in_as @outsider
+    get edit_chat_server_path(@server)
+    assert_redirected_to chat_server_path(@server)
+    assert_equal "Only the server owner can do that.", flash[:alert]
+  end
+
+  test "edit is blocked for a genuine member who isn't the owner" do
+    sign_in_as @member
     get edit_chat_server_path(@server)
     assert_redirected_to chat_server_path(@server)
     assert_equal "Only the server owner can do that.", flash[:alert]
@@ -95,8 +104,15 @@ class Chat::ServersControllerTest < ActionDispatch::IntegrationTest
     assert_not_equal themes(:other_user_theme), @server.reload.theme
   end
 
-  test "update is blocked for a non-owner" do
+  test "update is blocked for a non-member" do
     sign_in_as @outsider
+    patch chat_server_path(@server), params: { chat_server: { name: "Hijacked" } }
+    assert_redirected_to chat_server_path(@server)
+    assert_not_equal "Hijacked", @server.reload.name
+  end
+
+  test "update is blocked for a genuine member who isn't the owner" do
+    sign_in_as @member
     patch chat_server_path(@server), params: { chat_server: { name: "Hijacked" } }
     assert_redirected_to chat_server_path(@server)
     assert_not_equal "Hijacked", @server.reload.name
