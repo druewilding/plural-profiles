@@ -18,8 +18,10 @@
       .flash.flash--alert= flash[:alert]
 
     .chat-shell
+      = turbo_stream_from Current.user, :chat_server_rail
       = render "chat/shared/server_rail"
       - if @server&.persisted?
+        = turbo_stream_from Current.user, @server, :chat_channel_pane
         = render "chat/shared/channel_pane"
       .chat-main{data: {controller: "spoiler", action: "click->spoiler#toggle keydown->spoiler#keydown"}}
         = yield

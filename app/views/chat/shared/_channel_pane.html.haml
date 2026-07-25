@@ -3,8 +3,11 @@
 
   %ul.sidebar-tree__children
     - @server.channels.order(:name).each do |channel|
+      - is_active = params[:uuid] == channel.uuid
       %li
-        = link_to safe_join([ "# ", formatted_inline(channel.name) ]), chat_server_channel_path(@server, channel), class: "sidebar-tree__leaf #{'sidebar-tree__leaf--active' if params[:uuid] == channel.uuid}".strip
+        = link_to chat_server_channel_path(@server, channel), class: "sidebar-tree__leaf #{'sidebar-tree__leaf--active' if is_active}".strip do
+          = safe_join([ "# ", formatted_inline(channel.name) ])
+          = render "chat/shared/channel_dot", channel: channel, unread: !is_active && unread_channel_ids.include?(channel.id)
 
   - if server_owner?
     = link_to "+ Add channel", new_chat_server_channel_path(@server), class: "channel-pane__add-channel"

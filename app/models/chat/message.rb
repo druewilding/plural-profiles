@@ -29,6 +29,7 @@ module Chat
     before_validation :resolve_profile, on: :create
 
     after_create_commit -> { broadcast_append_to channel, target: "chat-messages", partial: "chat/messages/message", locals: { message: self } }
+    after_create_commit :broadcast_unread_dots
 
     private
 
@@ -39,6 +40,28 @@ module Chat
       end
       self.profile ||= channel&.default_profile_for(user) || channel&.server&.memberships&.find_by(user_id: user_id)&.default_profile
       self.profile_name ||= profile&.name
+    end
+
+    # Lights up the sidebar dots live for every other server member. This is
+    # optimistic — it doesn't recheck each recipient's actual read state — but
+    # a brand new message is definitionally unread for everyone but its
+    # author, and it's just an enhancement on top of the per-request Ruby
+    # computation (Chat::ChannelRead.unread_*_for), which stays the source of
+    # truth and self-heals on the next page load regardless of whether this
+    # broadcast reaches anyone. A recipient actively viewing this exact
+    # channel does still receive the "on" push (there's no presence tracking
+    # to know otherwise) — the CSS rule suppressing `.unread-dot` inside the
+    # active sidebar row is what keeps that from visibly flashing on for them.
+    def broadcast_unread_dots
+      server = channel.server
+      server.members.where.not(id: user_id).each do |recipient|
+        broadcast_replace_to [ recipient, server, :chat_channel_pane ],
+          target: "channel_#{channel.id}_sidebar_dot",
+          partial: "chat/shared/channel_dot", locals: { channel: channel, unread: true }
+        broadcast_replace_to [ recipient, :chat_server_rail ],
+          target: "server_#{server.id}_rail_dot",
+          partial: "chat/shared/server_dot", locals: { server: server, unread: true }
+      end
     end
   end
 end

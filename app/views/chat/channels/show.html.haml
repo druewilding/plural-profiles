@@ -1,6 +1,6 @@
 - content_for(:title) { "# #{plain_field(@channel.name)} — #{@server.name} — Plural Profiles" }
 
-.chat-channel{data: {controller: "chat-scroll"}}
+.chat-channel{data: {controller: "chat-scroll channel-read", "channel-read-url-value": mark_read_chat_server_channel_path(@server, @channel)}}
   .chat-channel-header
     %div
       %h1= safe_join([ "# ", formatted_inline(@channel.name) ])

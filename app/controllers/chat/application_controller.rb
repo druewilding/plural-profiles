@@ -37,5 +37,15 @@ module Chat
 
       redirect_to chat_server_path(@server), alert: "Only the server owner can do that."
     end
+
+    def unread_channel_ids
+      @unread_channel_ids ||= Chat::ChannelRead.unread_channel_ids_for(Current.user)
+    end
+    helper_method :unread_channel_ids
+
+    def unread_server_ids
+      @unread_server_ids ||= Chat::ChannelRead.unread_server_ids_for(Current.user)
+    end
+    helper_method :unread_server_ids
   end
 end

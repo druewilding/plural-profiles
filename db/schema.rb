@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_07_25_152741) do
+ActiveRecord::Schema[8.1].define(version: 2026_07_25_160000) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -50,6 +50,15 @@ ActiveRecord::Schema[8.1].define(version: 2026_07_25_152741) do
     t.bigint "user_id", null: false
     t.index ["channel_id", "user_id"], name: "index_chat_channel_default_profiles_on_channel_id_and_user_id", unique: true
     t.index ["profile_id"], name: "index_chat_channel_default_profiles_on_profile_id"
+  end
+
+  create_table "chat_channel_reads", force: :cascade do |t|
+    t.bigint "channel_id", null: false
+    t.datetime "created_at", null: false
+    t.datetime "last_read_at", null: false
+    t.datetime "updated_at", null: false
+    t.bigint "user_id", null: false
+    t.index ["user_id", "channel_id"], name: "index_chat_channel_reads_on_user_id_and_channel_id", unique: true
   end
 
   create_table "chat_channels", force: :cascade do |t|
@@ -393,6 +402,8 @@ ActiveRecord::Schema[8.1].define(version: 2026_07_25_152741) do
   add_foreign_key "chat_channel_default_profiles", "chat_channels", column: "channel_id"
   add_foreign_key "chat_channel_default_profiles", "profiles"
   add_foreign_key "chat_channel_default_profiles", "users"
+  add_foreign_key "chat_channel_reads", "chat_channels", column: "channel_id"
+  add_foreign_key "chat_channel_reads", "users"
   add_foreign_key "chat_channels", "chat_servers", column: "server_id"
   add_foreign_key "chat_channels", "themes", on_delete: :nullify
   add_foreign_key "chat_memberships", "chat_servers", column: "server_id"

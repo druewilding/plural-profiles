@@ -431,6 +431,16 @@ details[open] > .form-section-summary::before {
   font-weight: 600;
 }
 
+/* A live broadcast has no way to know whether the recipient is already
+   looking at this exact channel, so it may push an "unread" dot here even
+   while they're actively reading it live. The active row's own class is set
+   at page render time and untouched by that broadcast (it only replaces the
+   small dot element below), so hiding the dot whenever the row is active is
+   what actually suppresses the false positive. */
+.sidebar-tree__leaf--active .unread-dot {
+  display: none;
+}
+
 .sidebar-tree__row {
   display: flex;
   align-items: flex-start;
@@ -3542,6 +3552,7 @@ details.theme-section-card:not([open]) .theme-section-card__header {
 }
 
 .server-rail__icon {
+  position: relative;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -3574,6 +3585,23 @@ details.theme-section-card:not([open]) .theme-section-card__header {
   color: var(--link);
   font-size: 1.3rem;
   text-decoration: none;
+}
+
+.unread-dot {
+  display: inline-block;
+  align-self: center;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background-color: var(--primary-button-text);
+  flex-shrink: 0;
+}
+
+.unread-dot--rail {
+  position: absolute;
+  top: 0;
+  right: 0;
+  border: 2px solid var(--pane-border);
 }
 
 @media (forced-colors: active) {

@@ -7,6 +7,7 @@ module Chat
 
     has_many :messages, class_name: "Chat::Message", foreign_key: :channel_id, dependent: :destroy
     has_many :channel_default_profiles, class_name: "Chat::ChannelDefaultProfile", foreign_key: :channel_id, dependent: :destroy
+    has_many :channel_reads, class_name: "Chat::ChannelRead", foreign_key: :channel_id, dependent: :destroy
 
     before_create :generate_uuid
 

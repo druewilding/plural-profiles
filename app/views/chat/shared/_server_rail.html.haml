@@ -6,5 +6,6 @@
       - else
         .avatar.avatar--placeholder
           = render "shared/plural_pride_logo"
+      = render "chat/shared/server_dot", server: server, unread: unread_server_ids.include?(server.id)
   = link_to new_chat_server_path, class: "server-rail__icon server-rail__icon--add", title: "Create a server" do
     +

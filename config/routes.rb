@@ -77,6 +77,9 @@ Rails.application.routes.draw do
         resource :invite, only: %i[show create], controller: "server_invites"
 
         resources :channels, only: %i[show new create edit update], param: :uuid do
+          member do
+            patch :mark_read
+          end
           resources :messages, only: %i[index create]
           resource :default_profile, only: :update, controller: "channel_default_profiles"
         end
