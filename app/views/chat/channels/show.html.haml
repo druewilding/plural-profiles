@@ -1,9 +1,9 @@
-- content_for(:title) { "##{@channel.name} — #{@server.name} — Plural Profiles" }
+- content_for(:title) { "# #{@channel.name} — #{@server.name} — Plural Profiles" }
 
 .chat-channel{data: {controller: "chat-scroll"}}
   .chat-channel-header
     %div
-      %h1= "##{formatted_inline(@channel.name)}"
+      %h1= "# #{formatted_inline(@channel.name)}"
       - if @channel.subtitle.present?
         %p.subtitle= formatted_inline(@channel.subtitle)
 

@@ -4,7 +4,7 @@
   %ul.sidebar-tree__children
     - @server.channels.order(:name).each do |channel|
       %li
-        = link_to "##{channel.name}", chat_server_channel_path(@server, channel), class: "sidebar-tree__leaf #{'sidebar-tree__leaf--active' if params[:name] == channel.name}".strip
+        = link_to "# #{channel.name}", chat_server_channel_path(@server, channel), class: "sidebar-tree__leaf #{'sidebar-tree__leaf--active' if params[:name] == channel.name}".strip
 
   - if server_owner?
     = link_to "+ Add channel", new_chat_server_channel_path(@server), class: "channel-pane__add-channel"

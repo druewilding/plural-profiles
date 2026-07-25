@@ -3561,6 +3561,12 @@ details.theme-section-card:not([open]) .theme-section-card__header {
   display: none;
 }
 
+/* The shared --st-indent left-padding exists to make room for the
+   tree-guide line — with that line hidden above, it's just dead space. */
+.channel-pane .sidebar-tree__children {
+  padding-left: 0;
+}
+
 .channel-pane__server-name {
   display: block;
   font-weight: 700;
