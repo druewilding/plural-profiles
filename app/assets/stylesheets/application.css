@@ -3683,6 +3683,12 @@ details.theme-section-card:not([open]) .theme-section-card__header {
   margin: 0;
 }
 
+.chat-channel-header__actions {
+  display: flex;
+  gap: 0.75rem;
+  flex-shrink: 0;
+}
+
 .chat-messages-scroll {
   flex: 1;
   min-height: 0;

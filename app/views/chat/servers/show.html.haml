@@ -9,8 +9,9 @@
       %p.subtitle= formatted_inline(@server.subtitle)
 
   - if server_owner?
-    = link_to "Invite people", chat_server_invite_path(@server), class: "btn btn--secondary"
-    = link_to "Server settings", edit_chat_server_path(@server), class: "btn btn--secondary"
+    .chat-channel-header__actions
+      = link_to "Invite people", chat_server_invite_path(@server), class: "btn btn--secondary"
+      = link_to "Server settings", edit_chat_server_path(@server), class: "btn btn--secondary"
 
 - if @channels.empty?
   %p No channels yet.
