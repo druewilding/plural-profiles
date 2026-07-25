@@ -45,7 +45,7 @@ class ChatOnboardingTest < ApplicationSystemTestCase
     invite_url = find("#invite-share-url").value
     assert_match %r{\Ahttp://chat\.lvh\.me:#{@port}/invite/}, invite_url
 
-    click_link "Sign out"
+    click_button "Sign out"
 
     sign_in_via_browser(@friend)
     visit invite_url
@@ -80,7 +80,7 @@ class ChatOnboardingTest < ApplicationSystemTestCase
     click_button "Join server"
     assert_text "Joined Solo Server."
 
-    click_link "Sign out"
+    click_button "Sign out"
 
     sign_in_via_browser(users(:four))
     visit chat_url("/invite/#{invite.token}")

@@ -10,7 +10,23 @@
       %nav
         = render "shared/domain_switcher"
         - if authenticated?
-          = link_to "Sign out", session_url(host: main_site_host), data: { turbo_method: :delete }
+          -# Deliberately session_path (same-origin) rather than forcing the
+          -# main domain: SessionsController#destroy isn't subdomain-gated,
+          -# so there's no need to cross hosts on the initial request (and a
+          -# cross-origin POST would trip Rails' Origin-header CSRF check).
+          -#
+          -# The redirect chain after destroying the session (back to this
+          -# host, then on to the main domain's sign-in page) does end up
+          -# crossing origins though — and data: { turbo: false } is required
+          -# for that to work. Without it, Turbo submits via fetch() and
+          -# follows the whole redirect chain through that same fetch, so the
+          -# moment it crosses origins the browser throws a CORS preflight at
+          -# it (this app sets up no CORS handling), which silently breaks
+          -# the flow client-side even though the session was destroyed. A
+          -# real, Turbo-free form submission is a normal top-level
+          -# navigation, which (unlike fetch) is never subject to CORS.
+          = button_to "Sign out", session_path, method: :delete,
+            form: { data: { turbo: false } }, form_class: "site-header__signout", class: "link-button"
 
     - if flash[:notice]
       .flash.flash--notice= flash[:notice]

@@ -85,15 +85,30 @@ body {
   height: 1.4em;
 }
 
-.site-header nav a {
+.site-header nav a,
+.site-header nav .link-button {
   color: var(--link);
   text-decoration: none;
   margin-left: 1.5rem;
   font-size: 0.9rem;
 }
 
-.site-header nav a:hover {
+.site-header nav a:hover,
+.site-header nav .link-button:hover {
   text-decoration: underline;
+  background-color: transparent;
+}
+
+.site-header__signout {
+  display: inline;
+}
+
+.link-button {
+  background: none;
+  border: none;
+  padding: 0;
+  font: inherit;
+  cursor: pointer;
 }
 
 .admin-badge {

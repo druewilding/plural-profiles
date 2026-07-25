@@ -24,7 +24,11 @@ class SessionsController < ApplicationController
 
     if user && !user.deactivated?
       start_new_session_for user
-      redirect_to after_authentication_url
+      # after_authentication_url can point back to the chat. subdomain when
+      # that's where the user was bounced from to sign in on the main domain
+      # (see SessionsController#redirect_to_main_domain) — a legitimate
+      # same-app cross-host redirect, same as redirect_to_main_domain below.
+      redirect_to after_authentication_url, allow_other_host: true
     else
       redirect_to new_session_path, alert: "Try another email address or password."
     end
