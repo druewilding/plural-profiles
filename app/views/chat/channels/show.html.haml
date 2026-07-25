@@ -26,7 +26,7 @@
       - current_profile = @channel.default_profile_for(Current.user) || current_membership.default_profile
       %details.action-dropdown.composer-posting-as{data: {controller: "dropdown"}}
         %summary.composer-posting-as__trigger
-          %span{data: {"composer-target": "triggerAvatar"}}
+          %span.composer-posting-as__trigger-avatar{data: {"composer-target": "triggerAvatar"}}
             = render "chat/shared/avatar", record: current_profile, size: 22
           %span
             Posting as

@@ -3851,6 +3851,14 @@ turbo-frame {
   list-style: none;
 }
 
+/* Without this, the wrapping span is a block box around an inline <img>,
+   which leaves a few px of baseline whitespace below the image — inflating
+   the span taller than the 22px avatar and pushing it toward the top of the
+   trigger row instead of centering it. */
+.composer-posting-as__trigger-avatar {
+  display: flex;
+}
+
 .composer-posting-as__trigger::-webkit-details-marker,
 .composer-posting-as__trigger::marker {
   display: none;
