@@ -3933,6 +3933,10 @@ turbo-frame {
   color: color-mix(in srgb, var(--text) 65%, transparent);
 }
 
+.chat-message__pronouns {
+  font-style: italic;
+}
+
 .chat-message__body {
   font-size: 0.92rem;
   margin-top: 0.15rem;
