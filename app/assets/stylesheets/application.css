@@ -3534,6 +3534,15 @@ details.theme-section-card:not([open]) .theme-section-card__header {
   text-decoration: none;
 }
 
+@media (forced-colors: active) {
+  /* Background colors are the first thing forced-colors mode flattens away,
+     so without an explicit border the rail is indistinguishable from the
+     panes either side of it. */
+  .server-rail {
+    border-right: 1px solid CanvasText;
+  }
+}
+
 .channel-pane {
   width: 200px;
   flex-shrink: 0;
@@ -3541,6 +3550,15 @@ details.theme-section-card:not([open]) .theme-section-card__header {
   border-right: 1px solid var(--pane-border);
   padding: 1rem 0.75rem;
   overflow-y: auto;
+}
+
+/* The channel list reuses the group/profile sidebar's tree-guide-line
+   markup for visual consistency, but a channel list has no actual
+   hierarchy to show — the connector lines just imply a nesting that isn't
+   there, so drop them here while keeping the rest of the leaf styling. */
+.channel-pane .sidebar-tree__children > li::before,
+.channel-pane .sidebar-tree__children > .sidebar-tree__leaf::after {
+  display: none;
 }
 
 .channel-pane__server-name {
@@ -3670,8 +3688,18 @@ turbo-frame {
 .chat-date-divider::after {
   content: "";
   flex: 1;
-  height: 1px;
-  background-color: var(--pane-border);
+  /* Same muted, translucent tone as the sidebar tree-guide lines, rather
+     than the harder --pane-border — and a border (not a background bar) so
+     the same CanvasText override used for tree-guide lines elsewhere in
+     forced-colors mode applies here too. */
+  border-top: 1px solid var(--tree-guide);
+}
+
+@media (forced-colors: active) {
+  .chat-date-divider::before,
+  .chat-date-divider::after {
+    border-color: CanvasText;
+  }
 }
 
 .chat-message {
