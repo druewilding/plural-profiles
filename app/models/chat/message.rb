@@ -34,7 +34,7 @@ module Chat
     private
 
     def resolve_profile
-      if (match = Profile.resolve_chat_proxy(user, body))
+      if profile.nil? && (match = Profile.resolve_chat_proxy(user, body))
         self.profile = match[:profile]
         self.body = match[:content]
       end

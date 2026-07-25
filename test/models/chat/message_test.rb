@@ -51,6 +51,14 @@ class Chat::MessageTest < ActiveSupport::TestCase
     assert_equal profiles(:bob), message.profile
   end
 
+  test "an explicitly assigned profile is not overridden even when the body matches another profile's chat proxy brackets" do
+    profiles(:bob).update!(chat_bracket_before: "bob:")
+    message = @channel.messages.create!(user: @owner, profile: profiles(:alice), body: "bob: taking over for a sec")
+
+    assert_equal profiles(:alice), message.profile
+    assert_equal "bob: taking over for a sec", message.body
+  end
+
   test "before_cursor only returns messages strictly earlier than the given message" do
     first = travel_to(2.minutes.ago) { @channel.messages.create!(user: @owner, body: "first") }
     second = travel_to(1.minute.ago) { @channel.messages.create!(user: @owner, body: "second") }
