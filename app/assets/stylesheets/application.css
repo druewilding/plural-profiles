@@ -3517,6 +3517,8 @@ details.theme-section-card:not([open]) .theme-section-card__header {
 .server-rail__icon .avatar {
   width: 42px;
   height: 42px;
+  min-width: 42px;
+  min-height: 42px;
 }
 
 .server-rail__icon:hover {
@@ -3716,6 +3718,8 @@ turbo-frame {
 .chat-message__avatar .avatar {
   width: 34px;
   height: 34px;
+  min-width: 34px;
+  min-height: 34px;
 }
 
 .chat-message__content {
@@ -3781,23 +3785,30 @@ turbo-frame {
   margin-bottom: 0.55rem;
 }
 
+/* .avatar--placeholder carries its own min-width/min-height (see the base
+   rule) to stay visible at its default 64px size elsewhere — here it needs
+   overriding too, or the placeholder ignores the width/height below and
+   renders oversized next to profiles that do have a real avatar image. */
 .composer-posting-as .avatar {
   width: 22px;
   height: 22px;
+  min-width: 22px;
+  min-height: 22px;
+}
+
+.composer-posting-as__option .avatar {
+  width: 20px;
+  height: 20px;
+  min-width: 20px;
+  min-height: 20px;
 }
 
 .composer-posting-as__trigger {
   display: inline-flex;
   align-items: center;
-  gap: inherit;
+  gap: 0.4rem;
   cursor: pointer;
   list-style: none;
-}
-
-.composer-posting-as__trigger::after {
-  content: " ▾";
-  font-size: 0.7rem;
-  opacity: 0.8;
 }
 
 .composer-posting-as__trigger::-webkit-details-marker,
@@ -3815,10 +3826,82 @@ turbo-frame {
   bottom: calc(100% + 4px);
 }
 
+.composer-posting-as__menu {
+  width: max-content;
+  min-width: 260px;
+  max-width: 340px;
+  padding: 0.4rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+}
+
+.composer-posting-as__search {
+  width: 100%;
+  padding: 0.4rem 0.6rem;
+  border-radius: 5px;
+  border: 1px solid var(--pane-border);
+  background-color: var(--page-bg);
+  color: var(--text);
+  font-size: 0.85rem;
+}
+
+.composer-posting-as__options {
+  max-height: 260px;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 0.1rem;
+}
+
 .composer-posting-as__option {
   display: flex;
-  align-items: center;
+  align-items: flex-start;
   gap: 0.5rem;
+  white-space: normal;
+}
+
+.composer-posting-as__option .avatar {
+  margin-top: 0.1rem;
+}
+
+.composer-posting-as__option--current {
+  background-color: color-mix(in srgb, var(--text) 10%, transparent);
+}
+
+.composer-posting-as__option-info {
+  min-width: 0;
+  flex: 1;
+}
+
+.composer-posting-as__option-name-row {
+  display: flex;
+  align-items: baseline;
+  gap: 0.4rem;
+  flex-wrap: wrap;
+}
+
+.composer-posting-as__option-name {
+  font-weight: 500;
+}
+
+.composer-posting-as__option-pronouns {
+  font-size: 0.78rem;
+  font-style: italic;
+  color: color-mix(in srgb, var(--text) 75%, transparent);
+}
+
+.composer-posting-as__option-subtitle {
+  display: block;
+  font-size: 0.78rem;
+  color: color-mix(in srgb, var(--text) 75%, transparent);
+}
+
+.composer-posting-as__empty {
+  padding: 0.5rem 0.75rem;
+  margin: 0;
+  font-size: 0.85rem;
+  color: color-mix(in srgb, var(--text) 65%, transparent);
 }
 
 .composer-posting-as__option .avatar {

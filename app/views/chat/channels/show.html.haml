@@ -30,14 +30,26 @@
           %span
             Posting as
             %strong= formatted_inline(current_profile.name)
-        .action-dropdown__menu
-          - Current.user.profiles.order(:name).each do |profile|
-            = link_to chat_server_channel_default_profile_path(@server, @channel, profile_uuid: profile.uuid), data: { turbo_method: :patch }, class: "action-dropdown__item composer-posting-as__option" do
-              = render "chat/shared/avatar", record: profile, size: 18
-              - if profile == current_profile
-                %strong= formatted_inline(profile.name)
-              - else
-                = formatted_inline(profile.name)
+        .action-dropdown__menu.composer-posting-as__menu{data: {controller: "profile-filter"}}
+          %input.composer-posting-as__search{type: "text", autocomplete: "off", placeholder: "Find a profile…", "aria-label": "Filter profiles", data: {"profile-filter-target": "input", action: "input->profile-filter#apply"}}
+          .composer-posting-as__options{data: {"profile-filter-target": "list"}}
+            - Current.user.profiles.order(:name).includes(avatar_attachment: :blob).each do |profile|
+              - search_text = plain_field([profile.name, profile.pronouns, profile.subtitle, profile.labels.join(" ")].compact.join(" ")).downcase
+              - option_class = "action-dropdown__item composer-posting-as__option#{' composer-posting-as__option--current' if profile == current_profile}"
+              = link_to chat_server_channel_default_profile_path(@server, @channel, profile_uuid: profile.uuid), class: option_class, data: { turbo_method: :patch, "profile-filter-target": "option", search: search_text } do
+                = render "chat/shared/avatar", record: profile, size: 20
+                .composer-posting-as__option-info
+                  .composer-posting-as__option-name-row
+                    %span.composer-posting-as__option-name= formatted_inline(profile.name)
+                    - if profile.pronouns.present?
+                      %span.composer-posting-as__option-pronouns= formatted_inline(profile.pronouns)
+                  - if profile.subtitle.present?
+                    %span.composer-posting-as__option-subtitle= formatted_inline(profile.subtitle)
+                  - if profile.labels.any?
+                    .label-badges
+                      - profile.labels.each do |label|
+                        %span.label-badge.label-badge--sidebar= label
+            %p.composer-posting-as__empty{data: {"profile-filter-target": "empty"}, hidden: true} No profiles match your search.
 
     = form_with model: @message, url: chat_server_channel_messages_path(@server, @channel), scope: :chat_message, data: { controller: "composer" } do |form|
       - if @message.errors.any?
