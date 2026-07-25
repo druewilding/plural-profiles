@@ -10,6 +10,7 @@ module Chat
     has_many :memberships, class_name: "Chat::Membership", foreign_key: :server_id, dependent: :destroy
     has_many :members, through: :memberships, source: :user
     has_many :channels, class_name: "Chat::Channel", foreign_key: :server_id, dependent: :destroy
+    has_many :server_invites, class_name: "Chat::ServerInvite", foreign_key: :server_id, dependent: :destroy
 
     before_create :generate_uuid
 

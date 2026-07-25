@@ -5,6 +5,7 @@ class Our::ProfilesController < ApplicationController
   before_action :resume_session, only: :show
   before_action :set_profile, only: %i[ show edit update destroy regenerate_uuid ]
   before_action :set_groups, only: %i[ new create edit update ]
+  before_action :set_return_to, only: %i[new create]
   before_action :validate_theme_choice, only: %i[create update]
 
   def index
@@ -31,7 +32,7 @@ class Our::ProfilesController < ApplicationController
     @profile = Current.user.profiles.build(profile_params)
 
     if @profile.save
-      redirect_to our_profile_path(@profile), notice: "Profile created."
+      redirect_to @return_to || our_profile_path(@profile), notice: "Profile created."
     else
       load_theme_options
       render :new, status: :unprocessable_entity
@@ -74,6 +75,11 @@ class Our::ProfilesController < ApplicationController
 
   def set_groups
     @groups = Current.user.groups.order_by_name_and_labels
+  end
+
+  def set_return_to
+    value = params[:return_to].to_s
+    @return_to = value if value.start_with?("/") && !value.start_with?("//")
   end
 
   def load_theme_options

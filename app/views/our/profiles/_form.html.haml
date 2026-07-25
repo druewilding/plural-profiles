@@ -4,6 +4,9 @@
       %p= message
 
 = form_with model: profile, url: profile.persisted? ? our_profile_path(profile) : our_profiles_path do |form|
+  - if @return_to.present?
+    = hidden_field_tag :return_to, @return_to
+
   .form-group
     = render "shared/avatar_editor_dialog", record: profile, form: form, param_prefix: "profile"
 

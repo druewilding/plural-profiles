@@ -66,11 +66,15 @@ Rails.application.routes.draw do
     scope module: "chat", as: "chat" do
       root "servers#index"
 
+      get "invite/:token", to: "invite_redemptions#show", as: :invite_redemption
+
       resources :servers, only: %i[index show new create edit update], param: :uuid do
         member do
           get :join
           post :join
         end
+
+        resource :invite, only: %i[show create], controller: "server_invites"
 
         resources :channels, only: %i[show new create edit update], param: :uuid do
           resources :messages, only: %i[index create]

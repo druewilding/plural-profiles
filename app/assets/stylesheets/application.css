@@ -3966,3 +3966,43 @@ turbo-frame {
 .composer-input-row textarea {
   flex: 1;
 }
+
+/* Server invites */
+.invite-generator {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1rem;
+  align-items: flex-start;
+}
+
+.invite-generator .card {
+  flex: 1 1 320px;
+}
+
+.invite-card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  gap: 0.5rem;
+  padding: 1rem 0;
+}
+
+.invite-card .avatar {
+  margin-bottom: 0.25rem;
+}
+
+.invite-card__title {
+  margin: 0;
+}
+
+.invite-card__count {
+  margin: 0;
+  font-size: 0.85rem;
+  color: color-mix(in srgb, var(--text) 65%, transparent);
+}
+
+.invite-card__accept-preview {
+  pointer-events: none;
+  opacity: 0.85;
+}

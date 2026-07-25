@@ -49,7 +49,8 @@ module Chat
 
     def join
       if Current.user.profiles.none?
-        redirect_to new_our_profile_path, alert: "Create a profile before joining a chat server." and return
+        redirect_to new_our_profile_path(return_to: join_chat_server_path(@server, invite_token: params[:invite_token])),
+          alert: "Create a profile before joining a chat server." and return
       end
 
       if current_membership
@@ -57,10 +58,19 @@ module Chat
       end
 
       @profiles = Current.user.profiles.order(:name)
+      @invite_token = params[:invite_token]
 
       if request.post? && params[:default_profile_id].present?
+        invite = @server.server_invites.unredeemed.find_by(token: params[:invite_token]) if params[:invite_token].present?
         membership = @server.memberships.build(user: Current.user, role: "member", default_profile_id: params[:default_profile_id])
-        if membership.save
+
+        joined = Chat::Membership.transaction do
+          next false unless membership.save
+          invite&.redeem!(Current.user)
+          true
+        end
+
+        if joined
           redirect_to chat_server_path(@server), notice: "Joined #{@server.name}."
         else
           render :join, status: :unprocessable_entity

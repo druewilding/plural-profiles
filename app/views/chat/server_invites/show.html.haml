@@ -1,0 +1,22 @@
+- content_for(:title) { "Invite people — #{plain_field(@server.name)} — Plural Profiles" }
+
+.invite-generator
+  .card
+    .card__header
+      %h2 Invite people
+
+    %p.form-hint
+      A single-use link. It isn't addressed to anyone — generating it doesn't ask who it's for, and whoever uses it first is in. If they don't have a Plural Profiles account yet, they'll also need a separate site invite code, same as always.
+
+    .share-url{data: {controller: "clipboard"}}
+      %input{type: "text", value: chat_invite_redemption_url(@invite.token), readonly: true, id: "invite-share-url", data: {"clipboard-target": "source"}}
+      %button.btn{data: {action: "click->clipboard#copy"}}
+        %span{data: {"clipboard-target": "label"}} Copy
+        %span{aria: {hidden: "true"}} ⧉
+
+    = link_to "Generate a new invite", chat_server_invite_path(@server), data: { turbo_method: :post, turbo_confirm: "This will invalidate the current invite link. Are you sure?" }, class: "btn btn--secondary"
+
+  .card
+    .card__header
+      %h2 What they'll see
+    = render "chat/shared/invite_card", server: @server, preview: true, invite_token: nil

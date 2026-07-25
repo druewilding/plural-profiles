@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_07_25_150259) do
+ActiveRecord::Schema[8.1].define(version: 2026_07_25_152741) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -88,6 +88,20 @@ ActiveRecord::Schema[8.1].define(version: 2026_07_25_150259) do
     t.index ["channel_id", "created_at"], name: "index_chat_messages_on_channel_id_and_created_at"
     t.index ["profile_id"], name: "index_chat_messages_on_profile_id"
     t.index ["user_id"], name: "index_chat_messages_on_user_id"
+  end
+
+  create_table "chat_server_invites", force: :cascade do |t|
+    t.datetime "created_at", null: false
+    t.bigint "created_by_id", null: false
+    t.datetime "redeemed_at"
+    t.bigint "redeemed_by_id"
+    t.bigint "server_id", null: false
+    t.string "token", null: false
+    t.datetime "updated_at", null: false
+    t.index ["created_by_id"], name: "index_chat_server_invites_on_created_by_id"
+    t.index ["redeemed_by_id"], name: "index_chat_server_invites_on_redeemed_by_id"
+    t.index ["server_id"], name: "index_chat_server_invites_on_server_id"
+    t.index ["token"], name: "index_chat_server_invites_on_token", unique: true
   end
 
   create_table "chat_servers", force: :cascade do |t|
@@ -387,6 +401,9 @@ ActiveRecord::Schema[8.1].define(version: 2026_07_25_150259) do
   add_foreign_key "chat_messages", "chat_channels", column: "channel_id"
   add_foreign_key "chat_messages", "profiles"
   add_foreign_key "chat_messages", "users"
+  add_foreign_key "chat_server_invites", "chat_servers", column: "server_id"
+  add_foreign_key "chat_server_invites", "users", column: "created_by_id"
+  add_foreign_key "chat_server_invites", "users", column: "redeemed_by_id"
   add_foreign_key "chat_servers", "themes", on_delete: :nullify
   add_foreign_key "chat_servers", "users", column: "owner_id"
   add_foreign_key "group_groups", "groups", column: "child_group_id"
