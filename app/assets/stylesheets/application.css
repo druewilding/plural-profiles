@@ -3978,7 +3978,7 @@ turbo-frame {
   display: inline-flex;
   align-items: center;
   gap: 0.4rem;
-  background-color: color-mix(in srgb, var(--pane-bg) 85%, white 15%);
+  background-color: color-mix(in srgb, var(--pane-bg) 85%, var(--page-bg) 15%);
   border: 1px solid color-mix(in srgb, var(--text) 35%, transparent);
   border-radius: 7px;
   padding: 0.3rem 0.6rem 0.3rem 0.4rem;
