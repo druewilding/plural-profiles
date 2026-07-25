@@ -62,6 +62,23 @@ Rails.application.routes.draw do
     end
   end
 
+  constraints subdomain: "chat" do
+    scope module: "chat", as: "chat" do
+      root "servers#index"
+
+      resources :servers, only: %i[index show new create edit update], param: :uuid do
+        member do
+          get :join
+          post :join
+        end
+
+        resources :channels, only: %i[show new create edit update], param: :name do
+          resources :messages, only: :create
+        end
+      end
+    end
+  end
+
   # Reveal health status on /up that returns 200 if the app boots with no exceptions, otherwise 500.
   # Can be used by load balancers and uptime monitors to verify that the app is live.
   get "up" => "rails/health#show", as: :rails_health_check
