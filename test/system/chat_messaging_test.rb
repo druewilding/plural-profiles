@@ -98,6 +98,27 @@ class ChatMessagingTest < ApplicationSystemTestCase
     end
   end
 
+  test "typing a profile's chat proxy brackets in a different case still posts as that profile" do
+    profiles(:bob).update!(chat_bracket_before: "bob:")
+
+    sign_in_via_browser(@owner)
+    visit chat_url(channel_path)
+
+    fill_in placeholder: "Message ##{@channel.name} (Enter to send, Shift+Enter for a new line)", with: "BOB: shouting today"
+
+    # The live "Posting as" preview (composer_controller.js#matchProxy) should
+    # already have switched before we even submit.
+    assert_selector ".composer-posting-as__trigger", text: profiles(:bob).name
+
+    find("textarea").native.send_keys(:enter)
+
+    within("#chat-messages") do
+      assert_text "shouting today"
+      assert_text profiles(:bob).name
+      assert_no_text "BOB:"
+    end
+  end
+
   test "an unread dot lights up a channel and server that a message arrives in, and clears on read" do
     using_session(:owner) do
       sign_in_via_browser(@owner)
