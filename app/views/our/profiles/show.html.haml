@@ -51,7 +51,7 @@
           - if group.subtitle.present?
             %span.group-list-subtitle= formatted_inline(group.subtitle)
 
-  .timestamps
+  .metadata
     - if @profile.chat_bracket_before.present? || @profile.chat_bracket_after.present?
       %p.profile-chat-proxy
         %strong Chat proxy brackets:

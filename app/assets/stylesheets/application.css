@@ -2171,7 +2171,7 @@ details[open] > .tree-editor__summary::before {
   }
 }
 
-/* Timestamps */
+/* Metadata */
 .profile-chat-proxy code {
   background-color: color-mix(in srgb, var(--input-border) 15%, transparent);
   border: 1px solid color-mix(in srgb, var(--input-border) 40%, transparent);
@@ -2179,26 +2179,26 @@ details[open] > .tree-editor__summary::before {
   padding: 0.1rem 0.4rem;
 }
 
-.timestamps {
+.metadata {
   font-size: 0.85rem;
   border-top: 1px solid var(--input-border);
   padding-top: 1rem;
   margin-bottom: 1.5rem;
 }
 
-.timestamps p {
+.metadata p {
   margin: 0.25rem 0;
 }
 
-.timestamps strong {
+.metadata strong {
   color: var(--heading);
 }
 
-.timestamps time {
+.metadata time {
   margin-left: 0.25rem;
 }
 
-.timestamps .time-ago {
+.metadata .time-ago {
   opacity: 0.7;
 }
 
