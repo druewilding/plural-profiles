@@ -63,7 +63,7 @@ Rails.application.configure do
   # config.action_mailer.raise_delivery_errors = false
 
   # Set host to be used by links generated in mailer templates.
-  config.action_mailer.default_url_options = { host: ENV.fetch("APP_HOST", "plural-profiles.scalingo.io") }
+  config.action_mailer.default_url_options = { host: ENV.fetch("APP_HOST", "plural-profiles.osc-fr1.scalingo.io") }
 
   # Same problem as mailers, but for rendering outside a request in general (e.g. Turbo
   # Stream broadcasts triggered from a model callback) — without this, URL helpers used
