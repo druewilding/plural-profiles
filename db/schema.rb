@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_07_25_102140) do
+ActiveRecord::Schema[8.1].define(version: 2026_07_25_102441) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -40,6 +40,57 @@ ActiveRecord::Schema[8.1].define(version: 2026_07_25_102140) do
     t.bigint "blob_id", null: false
     t.string "variation_digest", null: false
     t.index ["blob_id", "variation_digest"], name: "index_active_storage_variant_records_uniqueness", unique: true
+  end
+
+  create_table "chat_channels", force: :cascade do |t|
+    t.datetime "created_at", null: false
+    t.string "name", null: false
+    t.bigint "server_id", null: false
+    t.string "subtitle"
+    t.bigint "theme_id"
+    t.datetime "updated_at", null: false
+    t.index ["server_id", "name"], name: "index_chat_channels_on_server_id_and_name", unique: true
+    t.index ["theme_id"], name: "index_chat_channels_on_theme_id"
+  end
+
+  create_table "chat_memberships", force: :cascade do |t|
+    t.datetime "created_at", null: false
+    t.bigint "default_profile_id"
+    t.string "role", default: "member", null: false
+    t.bigint "server_id", null: false
+    t.datetime "updated_at", null: false
+    t.bigint "user_id", null: false
+    t.index ["default_profile_id"], name: "index_chat_memberships_on_default_profile_id"
+    t.index ["server_id", "user_id"], name: "index_chat_memberships_on_server_id_and_user_id", unique: true
+    t.index ["user_id"], name: "index_chat_memberships_on_user_id"
+  end
+
+  create_table "chat_messages", force: :cascade do |t|
+    t.text "body", null: false
+    t.bigint "channel_id", null: false
+    t.datetime "created_at", null: false
+    t.bigint "profile_id"
+    t.string "profile_name", null: false
+    t.datetime "updated_at", null: false
+    t.bigint "user_id", null: false
+    t.index ["channel_id", "created_at"], name: "index_chat_messages_on_channel_id_and_created_at"
+    t.index ["profile_id"], name: "index_chat_messages_on_profile_id"
+    t.index ["user_id"], name: "index_chat_messages_on_user_id"
+  end
+
+  create_table "chat_servers", force: :cascade do |t|
+    t.string "avatar_alt_text"
+    t.string "avatar_shape", default: "rounded", null: false
+    t.datetime "created_at", null: false
+    t.string "name", null: false
+    t.bigint "owner_id", null: false
+    t.string "subtitle"
+    t.bigint "theme_id"
+    t.datetime "updated_at", null: false
+    t.string "uuid", null: false
+    t.index ["owner_id"], name: "index_chat_servers_on_owner_id"
+    t.index ["theme_id"], name: "index_chat_servers_on_theme_id"
+    t.index ["uuid"], name: "index_chat_servers_on_uuid", unique: true
   end
 
   create_table "group_groups", force: :cascade do |t|
@@ -311,6 +362,16 @@ ActiveRecord::Schema[8.1].define(version: 2026_07_25_102140) do
 
   add_foreign_key "active_storage_attachments", "active_storage_blobs", column: "blob_id"
   add_foreign_key "active_storage_variant_records", "active_storage_blobs", column: "blob_id"
+  add_foreign_key "chat_channels", "chat_servers", column: "server_id"
+  add_foreign_key "chat_channels", "themes", on_delete: :nullify
+  add_foreign_key "chat_memberships", "chat_servers", column: "server_id"
+  add_foreign_key "chat_memberships", "profiles", column: "default_profile_id"
+  add_foreign_key "chat_memberships", "users"
+  add_foreign_key "chat_messages", "chat_channels", column: "channel_id"
+  add_foreign_key "chat_messages", "profiles"
+  add_foreign_key "chat_messages", "users"
+  add_foreign_key "chat_servers", "themes", on_delete: :nullify
+  add_foreign_key "chat_servers", "users", column: "owner_id"
   add_foreign_key "group_groups", "groups", column: "child_group_id"
   add_foreign_key "group_groups", "groups", column: "parent_group_id"
   add_foreign_key "group_profiles", "groups"
