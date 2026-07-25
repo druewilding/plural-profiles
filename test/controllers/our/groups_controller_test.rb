@@ -24,6 +24,21 @@ class Our::GroupsControllerTest < ActionDispatch::IntegrationTest
     assert_match "Friends", response.body
   end
 
+  test "show displays parent groups" do
+    sign_in_as @user
+    get our_group_path(@group)
+    assert_response :success
+    assert_match "In groups", response.body
+    assert_select "a[href=?]", our_group_path(groups(:everyone)), text: "Everyone"
+  end
+
+  test "show omits parent groups section when group has no parents" do
+    sign_in_as @user
+    get our_group_path(groups(:everyone))
+    assert_response :success
+    assert_no_match "In groups", response.body
+  end
+
   test "new renders form" do
     sign_in_as @user
     get new_our_group_path

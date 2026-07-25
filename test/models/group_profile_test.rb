@@ -18,9 +18,18 @@ class GroupProfileTest < ActiveSupport::TestCase
 
   test "allows same profile in different groups" do
     gp = GroupProfile.new(
-      group: groups(:family),
+      group: groups(:everyone),
       profile: profiles(:alice)
     )
     assert gp.valid?
+  end
+
+  test "prevents linking a profile to another user's group" do
+    gp = GroupProfile.new(
+      group: groups(:family),
+      profile: profiles(:alice)
+    )
+    assert_not gp.valid?
+    assert_includes gp.errors[:profile], "must belong to the same user"
   end
 end

@@ -25,6 +25,20 @@
       .group-description
         = formatted_description(@group.description)
 
+  - parent_groups = @group.parent_groups.order_by_name_and_labels
+  - if parent_groups.any?
+    %h2 In groups
+    %ul
+      - parent_groups.each do |parent|
+        %li
+          = link_to our_group_path(parent) do
+            = formatted_inline(parent.name)
+          - if parent.labels.any?
+            - parent.labels.each do |label|
+              %span.label-badge.label-badge--inline= label
+          - if parent.subtitle.present?
+            %span.group-list-subtitle= formatted_inline(parent.subtitle)
+
   .timestamps
     %p
       %strong Created:
