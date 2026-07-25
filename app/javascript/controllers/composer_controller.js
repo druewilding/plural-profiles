@@ -64,10 +64,12 @@ export default class extends Controller {
         if (bodySuffix !== suffix.toLowerCase()) return
       }
 
-      const contentEnd = suffix ? body.length - suffix.length : body.length
-      const content = body.slice(prefix.length, contentEnd).trim()
-      if (!content) return
-
+      // Deliberately not requiring non-blank content here, unlike
+      // Profile.resolve_chat_proxy: the preview should switch the instant the
+      // brackets themselves match (e.g. right after typing "arki:"), not wait
+      // for the first character of the actual message. The real send-time
+      // match still requires content, so an empty send falls back to the
+      // real default rather than posting a blank message as the wrong profile.
       const specificity = prefix.length + suffix.length
       if (!best || specificity > best.specificity) best = { option, specificity }
     })
