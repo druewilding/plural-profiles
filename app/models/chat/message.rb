@@ -54,7 +54,7 @@ module Chat
     # active sidebar row is what keeps that from visibly flashing on for them.
     def broadcast_unread_dots
       server = channel.server
-      server.members.where.not(id: user_id).each do |recipient|
+      server.members.where.not(id: user_id).find_each do |recipient|
         broadcast_replace_to [ recipient, server, :chat_channel_pane ],
           target: "channel_#{channel.id}_sidebar_dot",
           partial: "chat/shared/channel_dot", locals: { channel: channel, unread: true }
