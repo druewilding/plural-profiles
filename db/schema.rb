@@ -210,10 +210,10 @@ ActiveRecord::Schema[8.1].define(version: 2026_07_25_160000) do
     t.datetime "updated_at", null: false
     t.bigint "user_id", null: false
     t.string "uuid", null: false
+    t.index "user_id, COALESCE(chat_bracket_before, ''::character varying), COALESCE(chat_bracket_after, ''::character varying)", name: "index_profiles_on_user_id_and_chat_bracket_pair", unique: true, where: "((chat_bracket_before IS NOT NULL) OR (chat_bracket_after IS NOT NULL))"
     t.index ["copied_from_id"], name: "index_profiles_on_copied_from_id"
     t.index ["labels"], name: "index_profiles_on_labels", using: :gin
     t.index ["theme_id"], name: "index_profiles_on_theme_id"
-    t.index ["user_id", "chat_bracket_before", "chat_bracket_after"], name: "index_profiles_on_user_id_and_chat_bracket_pair", unique: true
     t.index ["user_id"], name: "index_profiles_on_user_id"
     t.index ["uuid"], name: "index_profiles_on_uuid", unique: true
   end
