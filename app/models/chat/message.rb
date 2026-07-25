@@ -33,6 +33,10 @@ module Chat
     private
 
     def resolve_profile
+      if (match = Profile.resolve_chat_proxy(user, body))
+        self.profile = match[:profile]
+        self.body = match[:content]
+      end
       self.profile ||= channel&.default_profile_for(user) || channel&.server&.memberships&.find_by(user_id: user_id)&.default_profile
       self.profile_name ||= profile&.name
     end

@@ -315,4 +315,106 @@ class ProfileTest < ActiveSupport::TestCase
     original.destroy
     assert_nil copy.reload.copied_from_id
   end
+
+  # -- Chat proxy brackets (Phase 3) --
+
+  test "chat_brackets is optional" do
+    profile = users(:one).profiles.build(name: "No Brackets")
+    assert profile.valid?
+  end
+
+  test "chat_brackets accepts a colon-style template" do
+    profile = users(:one).profiles.build(name: "Guy", chat_brackets: "guy: text")
+    assert profile.valid?
+  end
+
+  test "chat_brackets accepts a brace-style template" do
+    profile = users(:one).profiles.build(name: "Brace", chat_brackets: "{text}")
+    assert profile.valid?
+  end
+
+  test "chat_brackets rejects a template without the word text" do
+    profile = users(:one).profiles.build(name: "No Placeholder", chat_brackets: "guy:")
+    assert_not profile.valid?
+    assert profile.errors[:chat_brackets].any? { |e| e.include?("text") }
+  end
+
+  test "chat_brackets rejects a template with the word text more than once" do
+    profile = users(:one).profiles.build(name: "Double", chat_brackets: "text text")
+    assert_not profile.valid?
+    assert profile.errors[:chat_brackets].any? { |e| e.include?("text") }
+  end
+
+  test "chat_brackets rejects bare text with nothing before or after" do
+    profile = users(:one).profiles.build(name: "Bare", chat_brackets: "text")
+    assert_not profile.valid?
+  end
+
+  test "chat_brackets normalizes blank input to nil" do
+    profile = users(:one).profiles.build(name: "Blank", chat_brackets: "   ")
+    profile.valid?
+    assert_nil profile.chat_brackets
+  end
+
+  test "chat_brackets strips surrounding whitespace" do
+    profile = users(:one).profiles.build(name: "Spacey", chat_brackets: "  guy: text  ")
+    profile.valid?
+    assert_equal "guy: text", profile.chat_brackets
+  end
+
+  test "chat_brackets must be unique per user, case-insensitively" do
+    users(:one).profiles.create!(name: "First", chat_brackets: "guy: text")
+    dupe = users(:one).profiles.build(name: "Second", chat_brackets: "GUY: text")
+    assert_not dupe.valid?
+    assert_includes dupe.errors[:chat_brackets], "has already been taken"
+  end
+
+  test "chat_brackets can repeat across different users" do
+    users(:one).profiles.create!(name: "Mine", chat_brackets: "guy: text")
+    other = users(:two).profiles.build(name: "Theirs", chat_brackets: "guy: text")
+    assert other.valid?
+  end
+
+  test "resolve_chat_proxy matches a colon-style prefix, case-insensitively" do
+    profile = users(:one).profiles.create!(name: "Guy", chat_brackets: "guy: text")
+    match = Profile.resolve_chat_proxy(users(:one), "Guy: hello there")
+    assert_equal profile, match[:profile]
+    assert_equal "hello there", match[:content]
+  end
+
+  test "resolve_chat_proxy matches a brace-style wrap" do
+    profile = users(:one).profiles.create!(name: "Brace", chat_brackets: "{text}")
+    match = Profile.resolve_chat_proxy(users(:one), "{hello there}")
+    assert_equal profile, match[:profile]
+    assert_equal "hello there", match[:content]
+  end
+
+  test "resolve_chat_proxy returns nil when nothing matches" do
+    users(:one).profiles.create!(name: "Guy", chat_brackets: "guy: text")
+    assert_nil Profile.resolve_chat_proxy(users(:one), "just a normal message")
+  end
+
+  test "resolve_chat_proxy returns nil for a blank body" do
+    users(:one).profiles.create!(name: "Guy", chat_brackets: "guy: text")
+    assert_nil Profile.resolve_chat_proxy(users(:one), "")
+  end
+
+  test "resolve_chat_proxy returns nil when the extracted content would be blank" do
+    users(:one).profiles.create!(name: "Guy", chat_brackets: "guy: text")
+    assert_nil Profile.resolve_chat_proxy(users(:one), "guy:   ")
+  end
+
+  test "resolve_chat_proxy never matches another user's profiles" do
+    users(:two).profiles.create!(name: "Guy", chat_brackets: "guy: text")
+    assert_nil Profile.resolve_chat_proxy(users(:one), "guy: hello")
+  end
+
+  test "resolve_chat_proxy picks the more specific (longer) brackets when more than one matches" do
+    short_match = users(:one).profiles.create!(name: "Short", chat_brackets: "g:text")
+    long_match = users(:one).profiles.create!(name: "Long", chat_brackets: "g: text")
+    match = Profile.resolve_chat_proxy(users(:one), "g: hello")
+    assert_equal long_match, match[:profile]
+    assert_not_equal short_match, match[:profile]
+    assert_equal "hello", match[:content]
+  end
 end

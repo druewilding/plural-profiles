@@ -24,6 +24,12 @@
     = form.text_field :tag_line
 
   .form-group
+    = form.label :chat_brackets, "Chat proxy brackets"
+    = form.text_field :chat_brackets
+    %p.form-hint
+      In chat, typing a message matching this pattern posts it as this profile instead of your default — the word "text" marks where your message goes.
+
+  .form-group
     = form.label :description
     = form.text_area :description, placeholder: "Share something about this profile...", rows: 18
 

@@ -21,22 +21,24 @@
       - else
         %p No messages yet. Say hello!
 
-  .composer
+  .composer{data: {controller: "composer"}}
     - if current_membership&.default_profile
       - current_profile = @channel.default_profile_for(Current.user) || current_membership.default_profile
       %details.action-dropdown.composer-posting-as{data: {controller: "dropdown"}}
         %summary.composer-posting-as__trigger
-          = render "chat/shared/avatar", record: current_profile, size: 22
+          %span{data: {"composer-target": "triggerAvatar"}}
+            = render "chat/shared/avatar", record: current_profile, size: 22
           %span
             Posting as
-            %strong= formatted_inline(current_profile.name)
+            %strong{data: {"composer-target": "triggerName"}}= formatted_inline(current_profile.name)
         .action-dropdown__menu.composer-posting-as__menu{data: {controller: "profile-filter"}}
           %input.composer-posting-as__search{type: "text", autocomplete: "off", placeholder: "Find a profile…", "aria-label": "Filter profiles", data: {"profile-filter-target": "input", action: "input->profile-filter#apply"}}
           .composer-posting-as__options{data: {"profile-filter-target": "list"}}
             - Current.user.profiles.order(:name).includes(avatar_attachment: :blob).each do |profile|
               - search_text = plain_field([profile.name, profile.pronouns, profile.subtitle, profile.labels.join(" ")].compact.join(" ")).downcase
               - option_class = "action-dropdown__item composer-posting-as__option#{' composer-posting-as__option--current' if profile == current_profile}"
-              = link_to chat_server_channel_default_profile_path(@server, @channel, profile_uuid: profile.uuid), class: option_class, data: { turbo_method: :patch, "profile-filter-target": "option", search: search_text } do
+              - proxy_prefix, proxy_suffix = profile.chat_brackets.present? ? profile.chat_brackets.split("text", 2) : [ "", "" ]
+              = link_to chat_server_channel_default_profile_path(@server, @channel, profile_uuid: profile.uuid), class: option_class, data: { turbo_method: :patch, "profile-filter-target": "option", "composer-target": "option", search: search_text, prefix: proxy_prefix, suffix: proxy_suffix.to_s } do
                 = render "chat/shared/avatar", record: profile, size: 20
                 .composer-posting-as__option-info
                   .composer-posting-as__option-name-row
@@ -51,12 +53,12 @@
                         %span.label-badge.label-badge--sidebar= label
             %p.composer-posting-as__empty{data: {"profile-filter-target": "empty"}, hidden: true} No profiles match your search.
 
-    = form_with model: @message, url: chat_server_channel_messages_path(@server, @channel), scope: :chat_message, data: { controller: "composer" } do |form|
+    = form_with model: @message, url: chat_server_channel_messages_path(@server, @channel), scope: :chat_message, data: { "composer-target": "form" } do |form|
       - if @message.errors.any?
         .error-messages
           - @message.errors.full_messages.each do |message|
             %p= message
 
       .composer-input-row
-        = form.text_area :body, rows: 2, required: true, placeholder: "Message ##{@channel.name} (Enter to send, Shift+Enter for a new line)", data: { action: "keydown->composer#submitOnEnter" }
+        = form.text_area :body, rows: 2, required: true, placeholder: "Message ##{@channel.name} (Enter to send, Shift+Enter for a new line)", data: { "composer-target": "textarea", action: "keydown->composer#submitOnEnter input->composer#detectProxy" }
         = form.submit "Send", class: "visually-hidden"
