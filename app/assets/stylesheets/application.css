@@ -2172,6 +2172,13 @@ details[open] > .tree-editor__summary::before {
 }
 
 /* Timestamps */
+.profile-chat-proxy code {
+  background-color: color-mix(in srgb, var(--input-border) 15%, transparent);
+  border: 1px solid color-mix(in srgb, var(--input-border) 40%, transparent);
+  border-radius: 4px;
+  padding: 0.1rem 0.4rem;
+}
+
 .timestamps {
   font-size: 0.85rem;
   border-top: 1px solid var(--input-border);
