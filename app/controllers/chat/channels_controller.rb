@@ -6,7 +6,8 @@ module Chat
     before_action :validate_theme_choice, only: %i[create update]
 
     def show
-      @messages = @channel.messages.order(:created_at)
+      @messages = @channel.messages.order(created_at: :desc).limit(Chat::Message::PAGE_SIZE).to_a.reverse
+      @has_more_messages = @messages.any? && @channel.messages.where("id < ?", @messages.first.id).exists?
       @message = @channel.messages.build
     end
 

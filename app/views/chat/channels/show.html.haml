@@ -1,42 +1,46 @@
 - content_for(:title) { "##{@channel.name} — #{@server.name} — Plural Profiles" }
 
-.chat-channel-header
-  %div
-    %h1= "##{formatted_inline(@channel.name)}"
-    - if @channel.subtitle.present?
-      %p.subtitle= formatted_inline(@channel.subtitle)
+.chat-channel{data: {controller: "chat-scroll"}}
+  .chat-channel-header
+    %div
+      %h1= "##{formatted_inline(@channel.name)}"
+      - if @channel.subtitle.present?
+        %p.subtitle= formatted_inline(@channel.subtitle)
 
-  - if server_owner?
-    = link_to "Channel settings", edit_chat_server_channel_path(@server, @channel), class: "btn btn--secondary"
+    - if server_owner?
+      = link_to "Channel settings", edit_chat_server_channel_path(@server, @channel), class: "btn btn--secondary"
 
-= turbo_stream_from @channel
+  = turbo_stream_from @channel
 
-#chat-messages.chat-messages
-  - if @messages.any?
-    - @messages.each do |message|
-      = render "chat/messages/message", message: message
-  - else
-    %p No messages yet. Say hello!
-
-.composer
-  - if current_membership&.default_profile
-    .composer-posting-as
-      - profile = current_membership.default_profile
-      - if profile.avatar.attached?
-        = image_tag profile.avatar.variant(resize_to_fill: [22, 22]), class: "avatar #{avatar_shape_class(profile)}".strip, width: 22, height: 22, alt: "", loading: "lazy"
+  .chat-messages-scroll{data: {"chat-scroll-target": "scrollable"}}
+    #chat-messages.chat-messages{data: {"chat-scroll-target": "messages"}}
+      - if @has_more_messages
+        %turbo-frame#older-messages{src: chat_server_channel_messages_path(@server, @channel, before_id: @messages.first.id), loading: "lazy"}
+      - if @messages.any?
+        - @messages.each do |message|
+          = render "chat/messages/message", message: message
       - else
-        .avatar.avatar--placeholder
-          = render "shared/plural_pride_logo"
-      %span
-        Posting as
-        %strong= formatted_inline(profile.name)
+        %p No messages yet. Say hello!
 
-  = form_with model: @message, url: chat_server_channel_messages_path(@server, @channel), scope: :chat_message, data: { controller: "composer" } do |form|
-    - if @message.errors.any?
-      .error-messages
-        - @message.errors.full_messages.each do |message|
-          %p= message
+  .composer
+    - if current_membership&.default_profile
+      .composer-posting-as
+        - profile = current_membership.default_profile
+        - if profile.avatar.attached?
+          = image_tag profile.avatar.variant(resize_to_fill: [22, 22]), class: "avatar #{avatar_shape_class(profile)}".strip, width: 22, height: 22, alt: "", loading: "lazy"
+        - else
+          .avatar.avatar--placeholder
+            = render "shared/plural_pride_logo"
+        %span
+          Posting as
+          %strong= formatted_inline(profile.name)
 
-    .composer-input-row
-      = form.text_area :body, rows: 2, required: true, placeholder: "Message ##{@channel.name} (Enter to send, Shift+Enter for a new line)", data: { action: "keydown->composer#submitOnEnter" }
-      = form.submit "Send", class: "visually-hidden"
+    = form_with model: @message, url: chat_server_channel_messages_path(@server, @channel), scope: :chat_message, data: { controller: "composer" } do |form|
+      - if @message.errors.any?
+        .error-messages
+          - @message.errors.full_messages.each do |message|
+            %p= message
+
+      .composer-input-row
+        = form.text_area :body, rows: 2, required: true, placeholder: "Message ##{@channel.name} (Enter to send, Shift+Enter for a new line)", data: { action: "keydown->composer#submitOnEnter" }
+        = form.submit "Send", class: "visually-hidden"

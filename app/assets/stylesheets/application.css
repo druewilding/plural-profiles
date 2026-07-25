@@ -3471,6 +3471,18 @@ details.theme-section-card:not([open]) .theme-section-card__header {
 
 /* ---- Chat ---- */
 
+/* The shared `body` rule only sets min-height: 100vh, which lets the whole
+   page grow past the viewport for tall content — fine for ordinary pages,
+   but it means .chat-shell's flex:1 never gets a definite height to fill,
+   so its own overflow:auto areas (the message history) never actually
+   engage and the composer at the bottom ends up pushed off-screen instead.
+   Pin chat pages to exactly the viewport height so the flex chain resolves
+   properly and only the message history scrolls. */
+.chat-body {
+  height: 100vh;
+  height: 100dvh;
+}
+
 .chat-shell {
   flex: 1;
   min-height: 0;
@@ -3559,8 +3571,30 @@ details.theme-section-card:not([open]) .theme-section-card__header {
 .chat-main {
   flex: 1;
   min-width: 0;
-  overflow-y: auto;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
   padding: 1.5rem;
+  overflow-y: auto;
+}
+
+/* .chat-channel (channel#show) owns its own padding per-section so the
+   composer can sit flush against the bottom of the pane — cancel .chat-main's
+   padding only when it's present, leaving plain pages (server list/settings
+   etc.) with their normal padding. */
+.chat-main:has(.chat-channel) {
+  padding: 0;
+  overflow-y: hidden;
+}
+
+/* Wraps the header, the scrollable history, and the composer for a single
+   channel — a plain flex column so the composer can stay pinned to the
+   bottom (flex-shrink: 0) while only the history area scrolls. */
+.chat-channel {
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
 }
 
 .chat-channel-header {
@@ -3568,18 +3602,32 @@ details.theme-section-card:not([open]) .theme-section-card__header {
   align-items: flex-start;
   justify-content: space-between;
   gap: 1rem;
-  margin-bottom: 1.25rem;
+  padding: 1.5rem 1.5rem 0;
+  flex-shrink: 0;
 }
 
 .chat-channel-header h1 {
   margin: 0;
 }
 
+.chat-messages-scroll {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  padding: 1rem 1.5rem;
+}
+
+/* turbo-frame has no default display value browsers agree on — treat it as
+   transparent to layout so the lazy-loaded older messages sit inline in the
+   flex column exactly like any other message, rather than in their own box. */
+turbo-frame {
+  display: contents;
+}
+
 .chat-messages {
   display: flex;
   flex-direction: column;
   gap: 1rem;
-  margin-bottom: 1rem;
 }
 
 .chat-message {
@@ -3638,9 +3686,9 @@ details.theme-section-card:not([open]) .theme-section-card__header {
 }
 
 .composer {
+  flex-shrink: 0;
   border-top: 1px solid var(--pane-border);
-  padding-top: 0.85rem;
-  margin-top: 0.5rem;
+  padding: 0.85rem 1.5rem 1.25rem;
 }
 
 .composer-posting-as {

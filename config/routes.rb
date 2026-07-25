@@ -73,7 +73,7 @@ Rails.application.routes.draw do
         end
 
         resources :channels, only: %i[show new create edit update], param: :name do
-          resources :messages, only: :create
+          resources :messages, only: %i[index create]
         end
       end
     end

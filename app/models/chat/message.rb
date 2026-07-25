@@ -2,6 +2,8 @@ module Chat
   class Message < ChatRecord
     self.table_name = "chat_messages"
 
+    PAGE_SIZE = 30
+
     belongs_to :channel, class_name: "Chat::Channel"
     belongs_to :user
     belongs_to :profile, optional: true
