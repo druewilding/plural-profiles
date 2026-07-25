@@ -9,6 +9,7 @@ module Chat
       @messages = Chat::Message.latest_page(@channel.messages)
       @has_more_messages = @messages.any? && @channel.messages.before_cursor(@messages.first).exists?
       @message = @channel.messages.build
+      @in_channel_chat = true
     end
 
     # Deliberately not a side effect of the `show` GET — Turbo 8 prefetches

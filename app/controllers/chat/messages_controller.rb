@@ -24,6 +24,7 @@ module Chat
       else
         @messages = Chat::Message.latest_page(@channel.messages)
         @has_more_messages = @messages.any? && @channel.messages.before_cursor(@messages.first).exists?
+        @in_channel_chat = true
         render "chat/channels/show", status: :unprocessable_entity
       end
     end

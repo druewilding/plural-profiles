@@ -2,10 +2,13 @@
 
 .chat-channel{data: {controller: "chat-scroll channel-read", "channel-read-url-value": mark_read_chat_server_channel_path(@server, @channel)}}
   .chat-channel-header
-    %div
-      %h1= safe_join([ "# ", formatted_inline(@channel.name) ])
-      - if @channel.subtitle.present?
-        %p.subtitle= formatted_inline(@channel.subtitle)
+    .chat-channel-header__title
+      = link_to chat_server_path(@server), class: "chat-channel-back", "aria-label": "Back to channels" do
+        %span{"aria-hidden": "true"} ‹
+      %div
+        %h1= safe_join([ "# ", formatted_inline(@channel.name) ])
+        - if @channel.subtitle.present?
+          %p.subtitle= formatted_inline(@channel.subtitle)
 
     - if server_owner?
       = link_to "Channel settings", edit_chat_server_channel_path(@server, @channel), class: "btn btn--secondary"

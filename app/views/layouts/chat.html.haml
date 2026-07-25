@@ -17,7 +17,7 @@
     - if flash[:alert]
       .flash.flash--alert= flash[:alert]
 
-    .chat-shell
+    .chat-shell{class: ("chat-shell--channel-open" if @in_channel_chat)}
       = turbo_stream_from Current.user, :chat_server_rail
       = render "chat/shared/server_rail"
       - if @server&.persisted?

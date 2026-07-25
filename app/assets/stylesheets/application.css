@@ -3746,6 +3746,49 @@ details.theme-section-card:not([open]) .theme-section-card__header {
   flex-shrink: 0;
 }
 
+.chat-channel-header__title {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.5rem;
+}
+
+/* Hidden by default — only shown at the small-screen breakpoint below,
+   where the server rail and channel list collapse away and this is the
+   only way back to them. */
+.chat-channel-back {
+  display: none;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  flex-shrink: 0;
+  border-radius: 6px;
+  color: var(--text);
+  text-decoration: none;
+  font-size: 1.5rem;
+  line-height: 1;
+}
+
+.chat-channel-back:hover {
+  background-color: color-mix(in srgb, var(--text) 10%, transparent);
+}
+
+/* Mobile (600px and below): collapse to a single pane at a time, matching
+   Discord's small-screen behaviour. Reading a specific channel's messages
+   (.chat-shell--channel-open, set by the layout whenever @in_channel_chat is
+   true) hides the server rail and channel list entirely and shows the back
+   arrow above to return to them; everywhere else in chat is unaffected. */
+@media (max-width: 600px) {
+  .chat-shell--channel-open .server-rail,
+  .chat-shell--channel-open .channel-pane {
+    display: none;
+  }
+
+  .chat-channel-back {
+    display: flex;
+  }
+}
+
 .chat-messages-scroll {
   flex: 1;
   min-height: 0;
