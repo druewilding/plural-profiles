@@ -3559,10 +3559,22 @@ details.theme-section-card:not([open]) .theme-section-card__header {
   width: 42px;
   height: 42px;
   flex-shrink: 0;
-  border-radius: 30%;
+  border-radius: 25%;
   color: var(--text);
   text-decoration: none;
   border: 2px solid transparent;
+}
+
+/* Kept in sync with the avatar's own shape modifier (avatar_shape_class),
+   so the ring below always hugs the same outline as the image inside it —
+   a mismatched fixed radius here made the ring look broken on square
+   avatars. */
+.server-rail__icon--circle {
+  border-radius: 50%;
+}
+
+.server-rail__icon--square {
+  border-radius: 0;
 }
 
 .server-rail__icon .avatar {
@@ -3577,7 +3589,8 @@ details.theme-section-card:not([open]) .theme-section-card__header {
 }
 
 .server-rail__icon--active {
-  border-color: var(--primary-button-border);
+  border-color: transparent;
+  box-shadow: 0 0 0 2px var(--pane-border), 0 0 0 4px var(--heading);
 }
 
 .server-rail__icon--add {
@@ -3607,9 +3620,25 @@ details.theme-section-card:not([open]) .theme-section-card__header {
 @media (forced-colors: active) {
   /* Background colors are the first thing forced-colors mode flattens away,
      so without an explicit border the rail is indistinguishable from the
-     panes either side of it. */
+     panes either side of it. Same story for the active-server ring and the
+     unread dots below — box-shadow is dropped outright in forced-colors
+     mode, and background-color fills get replaced with the page background
+     (Canvas), unless the color is an explicit system keyword. */
   .server-rail {
     border-right: 1px solid CanvasText;
+  }
+
+  .server-rail__icon--active {
+    outline: 2px solid CanvasText;
+    outline-offset: 2px;
+  }
+
+  .unread-dot {
+    background-color: CanvasText;
+  }
+
+  .unread-dot--rail {
+    border-color: Canvas;
   }
 }
 
