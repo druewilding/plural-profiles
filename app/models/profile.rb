@@ -61,6 +61,9 @@ class Profile < ApplicationRecord
   has_many :group_profiles, dependent: :destroy
   has_many :groups, through: :group_profiles
 
+  has_many :chat_messages, class_name: "Chat::Message", foreign_key: :profile_id, dependent: :nullify
+  has_many :chat_server_memberships, class_name: "Chat::Membership", foreign_key: :default_profile_id, dependent: :nullify
+
   before_create :generate_uuid
 
   validates :name, presence: true

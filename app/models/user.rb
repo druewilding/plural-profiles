@@ -9,6 +9,11 @@ class User < ApplicationRecord
   has_many :themes, dependent: :destroy
   belongs_to :active_theme, class_name: "Theme", optional: true
 
+  has_many :owned_chat_servers, class_name: "Chat::Server", foreign_key: :owner_id, dependent: :destroy
+  has_many :chat_memberships, class_name: "Chat::Membership", dependent: :destroy
+  has_many :chat_servers, through: :chat_memberships, source: :server
+  has_many :chat_messages, class_name: "Chat::Message", dependent: :destroy
+
   normalizes :email_address, with: ->(e) { e.strip.downcase }
   normalizes :unverified_email_address, with: ->(e) { e.strip.downcase }
   normalizes :username, with: ->(u) { value = u.strip.downcase; value.blank? ? nil : value }, apply_to_nil: false
