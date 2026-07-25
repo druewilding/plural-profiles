@@ -67,14 +67,14 @@ class Profile < ApplicationRecord
 
   before_create :generate_uuid
 
-  normalizes :chat_brackets, with: ->(brackets) { brackets.blank? ? nil : brackets.strip }
+  normalizes :chat_bracket_before, with: ->(value) { value.blank? ? nil : value.strip }
+  normalizes :chat_bracket_after, with: ->(value) { value.blank? ? nil : value.strip }
 
   validates :name, presence: true
   validates :uuid, uniqueness: true
-  validates :chat_brackets, uniqueness: { scope: :user_id, case_sensitive: false }, allow_blank: true
 
   validate :heart_emojis_are_valid
-  validate :chat_brackets_contains_placeholder
+  validate :chat_brackets_unique_per_user
 
   def to_param
     uuid
@@ -118,17 +118,17 @@ class Profile < ApplicationRecord
   end
 
   # Tupperbox-style proxying: given a user and a raw chat message body, finds
-  # the user's own profile (if any) whose chat_brackets template matches —
-  # e.g. brackets "guy: text" matches a body starting with "guy: " (case-
-  # insensitively), brackets "{text}" matches a body wrapped in braces. When
-  # more than one profile matches, the one with the longer (more specific)
-  # brackets wins. Returns nil, or a hash with the matched profile and the
-  # message content with the brackets stripped off.
+  # the user's own profile (if any) whose chat_bracket_before/chat_bracket_after
+  # template matches — e.g. before "guy:" matches a body starting with "guy:"
+  # (case-insensitively), before "{" / after "}" matches a body wrapped in
+  # braces. When more than one profile matches, the one with the longer (more
+  # specific) brackets wins. Returns nil, or a hash with the matched profile
+  # and the message content with the brackets stripped off.
   def self.resolve_chat_proxy(user, body)
     return if body.blank?
-    user.profiles.where.not(chat_brackets: nil).filter_map { |profile|
-      prefix, suffix = profile.chat_brackets.split("text", 2)
-      suffix = suffix.to_s
+    user.profiles.where("chat_bracket_before IS NOT NULL OR chat_bracket_after IS NOT NULL").filter_map { |profile|
+      prefix = profile.chat_bracket_before.to_s
+      suffix = profile.chat_bracket_after.to_s
       next unless body.length >= prefix.length + suffix.length
       next unless body[0, prefix.length].casecmp?(prefix)
       next unless suffix.blank? || body[-suffix.length, suffix.length].to_s.casecmp?(suffix)
@@ -158,12 +158,13 @@ class Profile < ApplicationRecord
     errors.add(:heart_emojis, "contains invalid hearts: #{invalid.join(', ')}") if invalid.any?
   end
 
-  def chat_brackets_contains_placeholder
-    return if chat_brackets.blank?
-    if chat_brackets.scan("text").size != 1
-      return errors.add(:chat_brackets, "must contain the word \"text\" exactly once, e.g. \"guy: text\" or \"{text}\"")
-    end
-    prefix, suffix = chat_brackets.split("text", 2)
-    errors.add(:chat_brackets, "needs something before or after \"text\", e.g. \"guy: text\" or \"{text}\"") if prefix.blank? && suffix.blank?
+  def chat_brackets_unique_per_user
+    return if chat_bracket_before.blank? && chat_bracket_after.blank?
+
+    duplicate = user.profiles.where.not(id: id)
+      .where("LOWER(COALESCE(chat_bracket_before, '')) = ? AND LOWER(COALESCE(chat_bracket_after, '')) = ?",
+        chat_bracket_before.to_s.downcase, chat_bracket_after.to_s.downcase)
+      .exists?
+    errors.add(:base, "The chat proxy brackets are already used by another profile") if duplicate
   end
 end

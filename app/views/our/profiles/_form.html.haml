@@ -27,10 +27,13 @@
     = form.text_field :tag_line
 
   .form-group
-    = form.label :chat_brackets, "Chat proxy brackets"
-    = form.text_field :chat_brackets
+    %label Chat proxy brackets
+    .chat-bracket-fields
+      = form.text_field :chat_bracket_before, "aria-label": "Text before your message"
+      %span.chat-bracket-fields__sample message
+      = form.text_field :chat_bracket_after, "aria-label": "Text after your message"
     %p.form-hint
-      In chat, typing a message matching this pattern posts it as this profile instead of your default — the word "text" marks where your message goes.
+      In chat, typing a message that starts and/or ends with the brackets posts it as this profile, instead of your default. Leave either side blank if you don't need it.
 
   .form-group
     = form.label :description

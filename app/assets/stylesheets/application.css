@@ -2228,6 +2228,24 @@ details[open] > .tree-editor__summary::before {
   margin-top: 0.5rem;
 }
 
+.chat-bracket-fields {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.chat-bracket-fields input {
+  width: auto;
+  flex: 1 1 0;
+  min-width: 0;
+  text-align: center;
+}
+
+.chat-bracket-fields__sample {
+  flex-shrink: 0;
+  opacity: 0.7;
+}
+
 /* Button sizes */
 input[type="submit"].btn--small,
 .btn--small {

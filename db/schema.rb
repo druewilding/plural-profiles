@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_07_25_160000) do
+ActiveRecord::Schema[8.1].define(version: 2026_07_25_173300) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -195,7 +195,8 @@ ActiveRecord::Schema[8.1].define(version: 2026_07_25_160000) do
   create_table "profiles", force: :cascade do |t|
     t.string "avatar_alt_text"
     t.string "avatar_shape", default: "rounded", null: false
-    t.string "chat_brackets"
+    t.string "chat_bracket_after"
+    t.string "chat_bracket_before"
     t.bigint "copied_from_id"
     t.datetime "created_at", null: false
     t.text "description"
@@ -212,7 +213,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_07_25_160000) do
     t.index ["copied_from_id"], name: "index_profiles_on_copied_from_id"
     t.index ["labels"], name: "index_profiles_on_labels", using: :gin
     t.index ["theme_id"], name: "index_profiles_on_theme_id"
-    t.index ["user_id", "chat_brackets"], name: "index_profiles_on_user_id_and_chat_brackets", unique: true
+    t.index ["user_id", "chat_bracket_before", "chat_bracket_after"], name: "index_profiles_on_user_id_and_chat_bracket_pair", unique: true
     t.index ["user_id"], name: "index_profiles_on_user_id"
     t.index ["uuid"], name: "index_profiles_on_uuid", unique: true
   end

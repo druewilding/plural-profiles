@@ -3,9 +3,10 @@ import { Controller } from "@hotwired/stimulus"
 // Owns the whole "posting as" + message composer area. Enter sends the
 // message, Shift+Enter inserts a newline. It also live-previews Tupperbox-
 // style proxying: as you type, if the message matches one of your profiles'
-// chat_brackets (e.g. "guy: text" or "{text}"), the "Posting as" pill swaps
-// to that profile's avatar/name — purely client-side, never touches the
-// stored default. The real match happens again server-side on send
+// chat_bracket_before/chat_bracket_after (e.g. "guy:" ... or "{" ... "}"),
+// the "Posting as" pill swaps to that profile's avatar/name — purely
+// client-side, never touches the stored default. The real match happens
+// again server-side on send
 // (Profile.resolve_chat_proxy), this is just a preview.
 //
 // Usage: wrap the whole `.composer` block with data: { controller: "composer" },

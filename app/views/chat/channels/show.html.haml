@@ -40,7 +40,8 @@
             - Current.user.profiles.order(:name).includes(avatar_attachment: :blob).each do |profile|
               - search_text = plain_field([profile.name, profile.pronouns, profile.subtitle, profile.labels.join(" ")].compact.join(" ")).downcase
               - option_class = "action-dropdown__item composer-posting-as__option#{' composer-posting-as__option--current' if profile == current_profile}"
-              - proxy_prefix, proxy_suffix = profile.chat_brackets.present? ? profile.chat_brackets.split("text", 2) : [ "", "" ]
+              - proxy_prefix = profile.chat_bracket_before.to_s
+              - proxy_suffix = profile.chat_bracket_after.to_s
               = link_to chat_server_channel_default_profile_path(@server, @channel, profile_uuid: profile.uuid), class: option_class, data: { turbo_method: :patch, "profile-filter-target": "option", "composer-target": "option", search: search_text, prefix: proxy_prefix, suffix: proxy_suffix.to_s } do
                 = render "chat/shared/avatar", record: profile, size: 20
                 .composer-posting-as__option-info
