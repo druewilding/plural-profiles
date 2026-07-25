@@ -25,10 +25,11 @@
       .group-description
         = formatted_description(@group.description)
 
-  - if @group.parent_groups.any?
+  - parent_groups = @group.parent_groups.order_by_name_and_labels
+  - if parent_groups.any?
     %h2 In groups
     %ul
-      - @group.parent_groups.each do |parent|
+      - parent_groups.each do |parent|
         %li
           = link_to our_group_path(parent) do
             = formatted_inline(parent.name)
