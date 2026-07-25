@@ -55,8 +55,8 @@ Rails.application.configure do
   # Use memory store for caching (no separate cache database needed).
   config.cache_store = :memory_store
 
-  # Use async adapter for Active Job (no separate queue database needed).
-  config.active_job.queue_adapter = :async
+  # Use Solid Queue for Active Job, backed by the primary database (single-database setup).
+  config.active_job.queue_adapter = :solid_queue
 
   # Ignore bad email addresses and do not raise email delivery errors.
   # Set this to true and configure the email server for immediate delivery to raise delivery errors.
