@@ -1,27 +1,35 @@
-- content_for(:container_class)
 - content_for(:title) { "##{@channel.name} — #{@server.name} — Plural Profiles" }
 
-.card
-  .card__header
-    %div
-      %h1= "##{formatted_inline(@channel.name)}"
-      - if @channel.subtitle.present?
-        %p.subtitle= formatted_inline(@channel.subtitle)
+.chat-channel-header
+  %div
+    %h1= "##{formatted_inline(@channel.name)}"
+    - if @channel.subtitle.present?
+      %p.subtitle= formatted_inline(@channel.subtitle)
 
-    - if server_owner?
-      .profile-actions
-        = link_to "Channel settings", edit_chat_server_channel_path(@server, @channel), class: "btn btn--secondary"
+  - if server_owner?
+    = link_to "Channel settings", edit_chat_server_channel_path(@server, @channel), class: "btn btn--secondary"
 
-  %p= link_to "← Back to #{@server.name}", chat_server_path(@server)
+= turbo_stream_from @channel
 
-  = turbo_stream_from @channel
+#chat-messages.chat-messages
+  - if @messages.any?
+    - @messages.each do |message|
+      = render "chat/messages/message", message: message
+  - else
+    %p No messages yet. Say hello!
 
-  #chat-messages.chat-messages
-    - if @messages.any?
-      - @messages.each do |message|
-        = render "chat/messages/message", message: message
-    - else
-      %p No messages yet. Say hello!
+.composer
+  - if current_membership&.default_profile
+    .composer-posting-as
+      - profile = current_membership.default_profile
+      - if profile.avatar.attached?
+        = image_tag profile.avatar.variant(resize_to_fill: [22, 22]), class: "avatar #{avatar_shape_class(profile)}".strip, width: 22, height: 22, alt: "", loading: "lazy"
+      - else
+        .avatar.avatar--placeholder
+          = render "shared/plural_pride_logo"
+      %span
+        Posting as
+        %strong= formatted_inline(profile.name)
 
   = form_with model: @message, url: chat_server_channel_messages_path(@server, @channel), scope: :chat_message do |form|
     - if @message.errors.any?
@@ -29,8 +37,6 @@
         - @message.errors.full_messages.each do |message|
           %p= message
 
-    .form-group
-      = form.text_area :body, rows: 3, required: true, placeholder: "Message ##{@channel.name}"
-
-    .form-group
+    .composer-input-row
+      = form.text_area :body, rows: 2, required: true, placeholder: "Message ##{@channel.name}"
       = form.submit "Send"

@@ -1,4 +1,15 @@
 module ApplicationHelper
+  # Links from chat pages/broadcasts to public profile/group pages should never
+  # carry the chat. subdomain — those pages aren't chat-namespaced routes, and
+  # a chat. URL for them just reads as a broken/wrong link when shared.
+  def main_site_host
+    request.host.sub(/\Achat\./, "")
+  end
+
+  def chat_site_host
+    "chat.#{main_site_host}"
+  end
+
   DESCRIPTION_EXTRA_TAGS = %w[details summary span b i u s table thead tbody tfoot tr th td].to_set.freeze
   DESCRIPTION_EXTRA_ATTRIBUTES = %w[open class role tabindex aria-label aria-expanded colspan rowspan data-spoiler-hint style width height].to_set.freeze
 

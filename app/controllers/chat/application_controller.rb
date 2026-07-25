@@ -1,5 +1,7 @@
 module Chat
   class ApplicationController < ::ApplicationController
+    layout "chat"
+
     before_action :set_server
 
     private

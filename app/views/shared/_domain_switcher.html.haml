@@ -1,0 +1,8 @@
+%details.action-dropdown{data: { controller: "dropdown" }}
+  %summary.action-dropdown__trigger
+    = request.subdomain == "chat" ? "Chat" : "Plural Profiles"
+  .action-dropdown__menu
+    - if request.subdomain == "chat"
+      = link_to "Plural Profiles", root_url(host: main_site_host), class: "action-dropdown__item"
+    - else
+      = link_to "Chat", chat_root_url(host: chat_site_host), class: "action-dropdown__item"

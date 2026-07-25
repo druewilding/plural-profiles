@@ -1,0 +1,26 @@
+!!!
+%html{lang: "en-GB"}
+  = render "layouts/head"
+
+  %body{style: active_theme_style, data: {controller: "timezone"}}
+    %header.site-header
+      = link_to chat_root_path, class: "logo" do
+        = render "shared/plural_pride_logo"
+        Plural Profiles Chat
+      %nav
+        = render "shared/domain_switcher"
+        - if authenticated?
+          = link_to "Sign out", session_path, data: { turbo_method: :delete }
+
+    - if flash[:notice]
+      .flash.flash--notice= flash[:notice]
+    - if flash[:alert]
+      .flash.flash--alert= flash[:alert]
+
+    .chat-shell
+      = render "chat/shared/server_rail"
+      - if @server
+        = render "chat/shared/channel_pane"
+      .chat-main{data: {controller: "spoiler", action: "click->spoiler#toggle keydown->spoiler#keydown"}}
+        = yield
+    = yield :footer

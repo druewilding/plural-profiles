@@ -1,26 +1,17 @@
 - content_for(:title) { plain_field(@server.name) + " — Plural Profiles" }
 
-.card
-  .card__header
+.chat-channel-header
+  %div
     - if @server.avatar.attached?
       = image_tag @server.avatar.variant(resize_to_fill: [64, 64]), class: "avatar avatar--large #{avatar_shape_class(@server)}".strip, width: 64, height: 64, alt: @server.avatar_alt_text.presence || "", loading: "lazy"
-    %div
-      %h1= formatted_inline(@server.name)
-      - if @server.subtitle.present?
-        %p.subtitle= formatted_inline(@server.subtitle)
+    %h1= formatted_inline(@server.name)
+    - if @server.subtitle.present?
+      %p.subtitle= formatted_inline(@server.subtitle)
 
   - if server_owner?
-    .profile-actions
-      = link_to "Settings", edit_chat_server_path(@server), class: "btn btn--secondary"
-      = link_to "New channel", new_chat_server_channel_path(@server), class: "btn btn--secondary"
+    = link_to "Server settings", edit_chat_server_path(@server), class: "btn btn--secondary"
 
-%h2 Channels
-- if @channels.any?
-  %ul
-    - @channels.each do |channel|
-      %li
-        = link_to "##{channel.name}", chat_server_channel_path(@server, channel)
-        - if channel.subtitle.present?
-          %span.group-list-subtitle= formatted_inline(channel.subtitle)
-- else
+- if @channels.empty?
   %p No channels yet.
+- else
+  %p Select a channel from the list on the left to start reading.
