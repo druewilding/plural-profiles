@@ -72,7 +72,7 @@ Rails.application.routes.draw do
           post :join
         end
 
-        resources :channels, only: %i[show new create edit update], param: :name do
+        resources :channels, only: %i[show new create edit update], param: :uuid do
           resources :messages, only: %i[index create]
           resource :default_profile, only: :update, controller: "channel_default_profiles"
         end

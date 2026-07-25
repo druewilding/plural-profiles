@@ -15,7 +15,7 @@ module Chat
     private
 
     def set_channel
-      @channel = @server.channels.find_by!(name: params[:channel_name])
+      @channel = @server.channels.find_by!(uuid: params[:channel_uuid])
     end
   end
 end

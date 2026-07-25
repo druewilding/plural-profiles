@@ -1,9 +1,9 @@
-- content_for(:title) { "# #{@channel.name} — #{@server.name} — Plural Profiles" }
+- content_for(:title) { "# #{plain_field(@channel.name)} — #{@server.name} — Plural Profiles" }
 
 .chat-channel{data: {controller: "chat-scroll"}}
   .chat-channel-header
     %div
-      %h1= "# #{formatted_inline(@channel.name)}"
+      %h1= safe_join([ "# ", formatted_inline(@channel.name) ])
       - if @channel.subtitle.present?
         %p.subtitle= formatted_inline(@channel.subtitle)
 
@@ -60,5 +60,5 @@
             %p= message
 
       .composer-input-row
-        = form.text_area :body, rows: 2, required: true, autofocus: true, placeholder: "Message ##{@channel.name} (Enter to send, Shift+Enter for a new line)", data: { "composer-target": "textarea", action: "keydown->composer#submitOnEnter input->composer#detectProxy" }
+        = form.text_area :body, rows: 2, required: true, autofocus: true, placeholder: "Message ##{plain_field(@channel.name)} (Enter to send, Shift+Enter for a new line)", data: { "composer-target": "textarea", action: "keydown->composer#submitOnEnter input->composer#detectProxy" }
         = form.submit "Send", class: "visually-hidden"

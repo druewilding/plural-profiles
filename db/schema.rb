@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_07_25_142842) do
+ActiveRecord::Schema[8.1].define(version: 2026_07_25_150259) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -59,8 +59,10 @@ ActiveRecord::Schema[8.1].define(version: 2026_07_25_142842) do
     t.string "subtitle"
     t.bigint "theme_id"
     t.datetime "updated_at", null: false
+    t.string "uuid", null: false
     t.index ["server_id", "name"], name: "index_chat_channels_on_server_id_and_name", unique: true
     t.index ["theme_id"], name: "index_chat_channels_on_theme_id"
+    t.index ["uuid"], name: "index_chat_channels_on_uuid", unique: true
   end
 
   create_table "chat_memberships", force: :cascade do |t|
