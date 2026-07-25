@@ -3976,13 +3976,12 @@ turbo-frame {
 /* Server invites */
 .invite-generator {
   display: flex;
-  flex-wrap: wrap;
+  flex-direction: column;
   gap: 1rem;
-  align-items: flex-start;
 }
 
-.invite-generator .card {
-  flex: 1 1 320px;
+.invite-generator__regenerate {
+  margin-top: 1rem;
 }
 
 .invite-card {

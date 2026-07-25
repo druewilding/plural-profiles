@@ -14,7 +14,7 @@
         %span{data: {"clipboard-target": "label"}} Copy
         %span{aria: {hidden: "true"}} ⧉
 
-    = link_to "Generate a new invite", chat_server_invite_path(@server), data: { turbo_method: :post, turbo_confirm: "This will invalidate the current invite link. Are you sure?" }, class: "btn btn--secondary"
+    = link_to "Generate a new invite", chat_server_invite_path(@server), data: { turbo_method: :post, turbo_confirm: "This will invalidate the current invite link. Are you sure?" }, class: "btn btn--secondary invite-generator__regenerate"
 
   .card
     .card__header
