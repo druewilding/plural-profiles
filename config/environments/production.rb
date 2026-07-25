@@ -89,6 +89,7 @@ Rails.application.configure do
   config.hosts = [
     ENV.fetch("APP_HOST", "plural-profiles.osc-fr1.scalingo.io"),
     "www.#{ENV.fetch('APP_HOST', 'plural-profiles.osc-fr1.scalingo.io')}",
+    "chat.#{ENV.fetch('APP_HOST', 'plural-profiles.osc-fr1.scalingo.io')}",
     "plural-profiles.osc-fr1.scalingo.io"
   ]
 
