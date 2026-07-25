@@ -352,11 +352,17 @@ class ProfileTest < ActiveSupport::TestCase
     assert_equal "!", profile.chat_bracket_after
   end
 
-  test "chat brackets must be a unique before/after combination per user, case-insensitively" do
+  test "chat brackets must be an exact unique before/after combination per user" do
     users(:one).profiles.create!(name: "First", chat_bracket_before: "guy:")
-    dupe = users(:one).profiles.build(name: "Second", chat_bracket_before: "GUY:")
+    dupe = users(:one).profiles.build(name: "Second", chat_bracket_before: "guy:")
     assert_not dupe.valid?
     assert_includes dupe.errors[:base], "The chat proxy brackets are already used by another profile"
+  end
+
+  test "chat brackets in a different case are treated as distinct, not duplicates" do
+    users(:one).profiles.create!(name: "First", chat_bracket_before: "guy:")
+    other = users(:one).profiles.build(name: "Second", chat_bracket_before: "GUY:")
+    assert other.valid?
   end
 
   test "chat brackets allow the same before with a different after" do
@@ -371,11 +377,28 @@ class ProfileTest < ActiveSupport::TestCase
     assert other.valid?
   end
 
-  test "resolve_chat_proxy matches a before-only prefix, case-insensitively" do
+  test "resolve_chat_proxy matches a before-only prefix exactly" do
     profile = users(:one).profiles.create!(name: "Guy", chat_bracket_before: "guy:")
-    match = Profile.resolve_chat_proxy(users(:one), "Guy: hello there")
+    match = Profile.resolve_chat_proxy(users(:one), "guy: hello there")
     assert_equal profile, match[:profile]
     assert_equal "hello there", match[:content]
+  end
+
+  test "resolve_chat_proxy does not match when the case differs" do
+    users(:one).profiles.create!(name: "Guy", chat_bracket_before: "guy:")
+    assert_nil Profile.resolve_chat_proxy(users(:one), "Guy: hello there")
+    assert_nil Profile.resolve_chat_proxy(users(:one), "GUY: hello there")
+  end
+
+  test "chat brackets differing only by case can identify two different profiles" do
+    lower = users(:one).profiles.create!(name: "Lowercase Guy", chat_bracket_before: "guy:")
+    upper = users(:one).profiles.create!(name: "Uppercase Guy", chat_bracket_before: "GUY:")
+
+    lower_match = Profile.resolve_chat_proxy(users(:one), "guy: hi")
+    upper_match = Profile.resolve_chat_proxy(users(:one), "GUY: hi")
+
+    assert_equal lower, lower_match[:profile]
+    assert_equal upper, upper_match[:profile]
   end
 
   test "resolve_chat_proxy matches a before/after wrap" do

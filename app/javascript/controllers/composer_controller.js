@@ -46,8 +46,10 @@ export default class extends Controller {
     }
   }
 
-  // Mirrors Profile.resolve_chat_proxy (app/models/profile.rb) — case-
-  // insensitive prefix/suffix match, longest (most specific) brackets win.
+  // Mirrors Profile.resolve_chat_proxy (app/models/profile.rb) — exact
+  // (case-sensitive) prefix/suffix match, longest (most specific) brackets
+  // win. Case-sensitive deliberately: "guy:" and "GUY:" can identify two
+  // different profiles.
   matchProxy(body) {
     let best = null
 
@@ -57,12 +59,12 @@ export default class extends Controller {
       if (!prefix && !suffix) return
       if (body.length < prefix.length + suffix.length) return
 
-      const bodyPrefix = body.slice(0, prefix.length).toLowerCase()
-      if (bodyPrefix !== prefix.toLowerCase()) return
+      const bodyPrefix = body.slice(0, prefix.length)
+      if (bodyPrefix !== prefix) return
 
       if (suffix) {
-        const bodySuffix = body.slice(body.length - suffix.length).toLowerCase()
-        if (bodySuffix !== suffix.toLowerCase()) return
+        const bodySuffix = body.slice(body.length - suffix.length)
+        if (bodySuffix !== suffix) return
       }
 
       // Deliberately not requiring non-blank content here, unlike

@@ -98,7 +98,7 @@ class ChatMessagingTest < ApplicationSystemTestCase
     end
   end
 
-  test "typing a profile's chat proxy brackets in a different case still posts as that profile" do
+  test "typing a profile's chat proxy brackets in a different case does not match — falls back to the default" do
     profiles(:bob).update!(chat_bracket_before: "bob:")
 
     sign_in_via_browser(@owner)
@@ -107,15 +107,17 @@ class ChatMessagingTest < ApplicationSystemTestCase
     fill_in placeholder: "Message ##{@channel.name} (Enter to send, Shift+Enter for a new line)", with: "BOB: shouting today"
 
     # The live "Posting as" preview (composer_controller.js#matchProxy) should
-    # already have switched before we even submit.
-    assert_selector ".composer-posting-as__trigger", text: profiles(:bob).name
+    # NOT have switched — case-sensitive brackets can identify two different
+    # profiles ("bob:" vs "BOB:"), so a case mismatch is simply no match.
+    assert_selector ".composer-posting-as__trigger", text: profiles(:alice).name
+    assert_no_selector ".composer-posting-as__trigger", text: profiles(:bob).name
 
     find("textarea").native.send_keys(:enter)
 
     within("#chat-messages") do
-      assert_text "shouting today"
-      assert_text profiles(:bob).name
-      assert_no_text "BOB:"
+      assert_text "BOB: shouting today"
+      assert_text profiles(:alice).name
+      assert_no_text profiles(:bob).name
     end
   end
 

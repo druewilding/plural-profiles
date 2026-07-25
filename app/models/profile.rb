@@ -120,18 +120,20 @@ class Profile < ApplicationRecord
   # Tupperbox-style proxying: given a user and a raw chat message body, finds
   # the user's own profile (if any) whose chat_bracket_before/chat_bracket_after
   # template matches — e.g. before "guy:" matches a body starting with "guy:"
-  # (case-insensitively), before "{" / after "}" matches a body wrapped in
-  # braces. When more than one profile matches, the one with the longer (more
-  # specific) brackets wins. Returns nil, or a hash with the matched profile
-  # and the message content with the brackets stripped off.
+  # exactly (case-SENSITIVELY — "Guy:"/"GUY:" won't match "guy:"; different
+  # cases of the same letters are deliberately allowed to identify different
+  # profiles), before "{" / after "}" matches a body wrapped in braces. When
+  # more than one profile matches, the one with the longer (more specific)
+  # brackets wins. Returns nil, or a hash with the matched profile and the
+  # message content with the brackets stripped off.
   def self.resolve_chat_proxy(user, body)
     return if body.blank?
     user.profiles.where("chat_bracket_before IS NOT NULL OR chat_bracket_after IS NOT NULL").filter_map { |profile|
       prefix = profile.chat_bracket_before.to_s
       suffix = profile.chat_bracket_after.to_s
       next unless body.length >= prefix.length + suffix.length
-      next unless body[0, prefix.length].casecmp?(prefix)
-      next unless suffix.blank? || body[-suffix.length, suffix.length].to_s.casecmp?(suffix)
+      next unless body[0, prefix.length] == prefix
+      next unless suffix.blank? || body[-suffix.length, suffix.length].to_s == suffix
       content_end = suffix.blank? ? body.length : body.length - suffix.length
       content = body[prefix.length...content_end].to_s.strip
       next if content.blank?
@@ -162,8 +164,8 @@ class Profile < ApplicationRecord
     return if chat_bracket_before.blank? && chat_bracket_after.blank?
 
     duplicate = user.profiles.where.not(id: id)
-      .where("LOWER(COALESCE(chat_bracket_before, '')) = ? AND LOWER(COALESCE(chat_bracket_after, '')) = ?",
-        chat_bracket_before.to_s.downcase, chat_bracket_after.to_s.downcase)
+      .where("COALESCE(chat_bracket_before, '') = ? AND COALESCE(chat_bracket_after, '') = ?",
+        chat_bracket_before.to_s, chat_bracket_after.to_s)
       .exists?
     errors.add(:base, "The chat proxy brackets are already used by another profile") if duplicate
   end
