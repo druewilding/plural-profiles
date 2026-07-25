@@ -1,0 +1,8 @@
+- content_for(:container_class)
+- content_for(:title) { "New server — Plural Profiles" }
+
+.card
+  .card__header
+    %h2 New server
+
+  = render "form", server: @server

@@ -1,0 +1,17 @@
+.chat-message
+  - if message.profile
+    = link_to profile_path(message.profile.uuid), class: "chat-message__author" do
+      - if message.profile.avatar.attached?
+        = image_tag message.profile.avatar.variant(resize_to_fill: [32, 32]), class: "avatar #{avatar_shape_class(message.profile)}".strip, width: 32, height: 32, alt: "", loading: "lazy"
+      %span.chat-message__name= formatted_inline(message.profile.name)
+      - if message.profile.pronouns.present?
+        %span.chat-message__pronouns= formatted_inline(message.profile.pronouns)
+  - else
+    .chat-message__author.chat-message__author--deleted
+      .avatar.avatar--placeholder
+        = render "shared/plural_pride_logo"
+      %span.chat-message__name= "#{message.profile_name} (deleted)"
+
+  %time.chat-message__time{datetime: message.created_at.iso8601}= message.created_at.strftime("%H:%M")
+
+  .chat-message__body{style: "white-space: pre-wrap"}= formatted_inline(message.body)

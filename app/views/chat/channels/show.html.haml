@@ -1,0 +1,34 @@
+- content_for(:container_class)
+- content_for(:title) { "##{@channel.name} — #{@server.name} — Plural Profiles" }
+
+.card
+  .card__header
+    %div
+      %h1= "##{formatted_inline(@channel.name)}"
+      - if @channel.subtitle.present?
+        %p.subtitle= formatted_inline(@channel.subtitle)
+
+    - if server_owner?
+      .profile-actions
+        = link_to "Channel settings", edit_chat_server_channel_path(@server, @channel), class: "btn btn--secondary"
+
+  %p= link_to "← Back to #{@server.name}", chat_server_path(@server)
+
+  .chat-messages
+    - if @messages.any?
+      - @messages.each do |message|
+        = render "chat/messages/message", message: message
+    - else
+      %p No messages yet. Say hello!
+
+  = form_with model: @message, url: chat_server_channel_messages_path(@server, @channel), scope: :chat_message do |form|
+    - if @message.errors.any?
+      .error-messages
+        - @message.errors.full_messages.each do |message|
+          %p= message
+
+    .form-group
+      = form.text_area :body, rows: 3, required: true, placeholder: "Message ##{@channel.name}"
+
+    .form-group
+      = form.submit "Send"
