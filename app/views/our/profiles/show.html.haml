@@ -37,14 +37,6 @@
     .profile-description
       = formatted_description(@profile.description)
 
-  - if @profile.chat_bracket_before.present? || @profile.chat_bracket_after.present?
-    .profile-chat-proxy
-      %h2 Chat proxy
-      %p
-        Typing
-        %code= [ @profile.chat_bracket_before, "message", @profile.chat_bracket_after ].compact_blank.join(" ")
-        in chat posts as this profile.
-
   - profile_groups = @profile.groups.order_by_name_and_labels
   - if profile_groups.any?
     %h2 In groups
@@ -60,6 +52,10 @@
             %span.group-list-subtitle= formatted_inline(group.subtitle)
 
   .timestamps
+    - if @profile.chat_bracket_before.present? || @profile.chat_bracket_after.present?
+      %p.profile-chat-proxy
+        %strong Chat proxy brackets:
+        %code= [ @profile.chat_bracket_before, "message", @profile.chat_bracket_after ].compact_blank.join(" ")
     %p
       %strong Created:
       %time{datetime: @profile.created_at.iso8601}= @profile.created_at.strftime("%d %B %Y")
