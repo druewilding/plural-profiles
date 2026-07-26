@@ -41,11 +41,27 @@ export default class extends Controller {
     this.defaultPronounsHidden = element.hidden
   }
 
+  // Runs on connect too (not just input) so a validation-error re-render —
+  // which comes back with the rejected body still filled in — starts at the
+  // right height instead of the one-line default.
+  textareaTargetConnected(element) {
+    this.autoGrow()
+  }
+
   submitOnEnter(event) {
     if (event.key !== "Enter" || event.shiftKey) return
 
     event.preventDefault()
     this.formTarget.requestSubmit()
+  }
+
+  // Grows the textarea to fit its content, from one line up to the six-line
+  // cap set by max-height in CSS — past that, min-height/max-height clamp the
+  // element and its own overflow-y: auto takes over scrolling.
+  autoGrow() {
+    const el = this.textareaTarget
+    el.style.height = "auto"
+    el.style.height = `${el.scrollHeight}px`
   }
 
   detectProxy() {

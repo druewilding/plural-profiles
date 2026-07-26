@@ -3817,6 +3817,8 @@ details.theme-section-card:not([open]) .theme-section-card__header {
 .chat-channel-header h1 {
   margin: 0;
   font-size: 1.15rem;
+  flex-shrink: 0;
+  white-space: nowrap;
 }
 
 .chat-channel-header__actions {
@@ -3827,8 +3829,29 @@ details.theme-section-card:not([open]) .theme-section-card__header {
 
 .chat-channel-header__title {
   display: flex;
-  align-items: flex-start;
+  align-items: center;
   gap: 0.5rem;
+  min-width: 0;
+  flex: 1;
+}
+
+/* Name and subtitle share one line rather than stacking — the subtitle is
+   the one that gives way (ellipsis) since the channel name is what
+   identifies the channel and should never get cut off. */
+.chat-channel-header__title-text {
+  display: flex;
+  align-items: baseline;
+  gap: 0.6rem;
+  min-width: 0;
+}
+
+.chat-channel-header__title-text .subtitle {
+  margin: 0;
+  min-width: 0;
+  flex: 1 1 auto;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
 }
 
 /* Hidden by default — only shown at the small-screen breakpoint below,
@@ -4224,11 +4247,17 @@ button.profile-picker__option {
 
 .composer-input-row textarea {
   flex: 1;
+  line-height: 1.4;
   /* The shared textarea rule sets a 100px min-height sized for full-page
-     forms — way more than the composer's own rows="2" needs, and on a
+     forms — way more than the composer's own rows="1" needs, and on a
      fixed-viewport chat layout every extra pixel here is one less pixel for
-     the message history. */
-  min-height: 2.5rem;
+     the message history. composer_controller.js#autoGrow drives the actual
+     height as you type via an inline style; these are just the floor (one
+     line) and ceiling (six lines) it's clamped between. */
+  min-height: 2.6rem;
+  max-height: 9.6rem;
+  resize: none;
+  overflow-y: auto;
 }
 
 /* Server invites */
