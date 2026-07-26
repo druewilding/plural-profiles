@@ -7,7 +7,7 @@
   = form_with url: chat_server_membership_path(@server), method: :patch do |form|
     .form-group
       %label{id: "membership_default_postable_label"} Post as
-      = render "chat/shared/profile_picker", field_name: "default_postable", label_id: "membership_default_postable_label", profiles: @profiles, groups: @groups, selected_postable: current_membership.default_postable
+      = render "chat/shared/profile_picker", field_name: "default_postable", label_id: "membership_default_postable_label", profiles: @profiles, groups: @groups, selected_postable: current_membership&.default_postable
       %p.form-hint The profile or group you'll post as by default in this server. You can change this any time.
 
     .form-group

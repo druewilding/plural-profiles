@@ -10,8 +10,12 @@ module Chat
 
     def update
       default_postable = find_postable(params[:default_postable_type], params[:default_postable_id])
-      current_membership.update!(default_postable: default_postable) if default_postable
-      redirect_to chat_server_path(@server), notice: "Updated your default post as."
+      if default_postable && current_membership
+        current_membership.update!(default_postable: default_postable)
+        redirect_to chat_server_path(@server), notice: "Updated your default post as."
+      else
+        redirect_to chat_server_path(@server), alert: "Couldn't update your default post as."
+      end
     end
 
     private
