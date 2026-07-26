@@ -67,8 +67,8 @@ module Chat
         redirect_to chat_root_path, alert: "You need a valid invite link to join this server." and return
       end
 
-      @profiles = Current.user.profiles.order(:name)
-      @groups = Current.user.groups.order(:name)
+      @profiles = Current.user.profiles.order_by_name_and_labels
+      @groups = Current.user.groups.order_by_name_and_labels
       @invite_token = params[:invite_token]
 
       if request.post? && params[:default_postable_id].present?
