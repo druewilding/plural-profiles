@@ -2319,6 +2319,7 @@ input[type="submit"].btn--small,
   input[type="password"],
   input[type="url"],
   input[type="number"],
+  input[type="search"],
   textarea,
   select {
     forced-color-adjust: none;
@@ -2358,6 +2359,7 @@ input[type="submit"].btn--small,
   input[type="password"]:focus,
   input[type="url"]:focus,
   input[type="number"]:focus,
+  input[type="search"]:focus,
   textarea:focus,
   select:focus {
     border: 1px solid CanvasText;
