@@ -1,35 +1,28 @@
 - # The composer's "Posting as" identity switcher — its own partial (rather
-- # than inline in show.html.haml) so Chat::ChannelDefaultProfilesController#update
-- # can turbo_stream-replace just this node after switching profiles, instead
-- # of redirecting (which would force a full-page Turbo visit and wipe out
-- # whatever the user had typed into the message textarea below it).
+- # than inline in show.html.haml) so Chat::ChannelDefaultPostablesController#update
+- # can turbo_stream-replace just this node after switching who's posting,
+- # instead of redirecting (which would force a full-page Turbo visit and wipe
+- # out whatever the user had typed into the message textarea below it).
+- current_pronouns = current_postable.respond_to?(:pronouns) ? current_postable.pronouns : nil
 %details#posting-as-picker.action-dropdown.profile-picker.composer-posting-as{data: {controller: "dropdown"}}
   %summary.profile-picker__trigger
     %span.profile-picker__trigger-avatar{data: {"composer-target": "triggerAvatar"}}
-      = render "chat/shared/avatar", record: current_profile, size: 22
+      = render "chat/shared/avatar", record: current_postable, size: 22
     %span
       Posting as
-      %strong{data: {"composer-target": "triggerName"}}= formatted_inline(current_profile.name)
-      %span.profile-picker__trigger-pronouns{data: {"composer-target": "triggerPronouns"}, hidden: current_profile.pronouns.blank?}= current_profile.pronouns.presence && formatted_inline(current_profile.pronouns)
+      %strong{data: {"composer-target": "triggerName"}}= formatted_inline(current_postable.name)
+      %span.profile-picker__trigger-pronouns{data: {"composer-target": "triggerPronouns"}, hidden: current_pronouns.blank?}= current_pronouns.presence && formatted_inline(current_pronouns)
   .action-dropdown__menu.profile-picker__menu{data: {controller: "profile-filter"}}
-    %input.profile-picker__search{type: "text", autocomplete: "off", placeholder: "Find a profile…", "aria-label": "Filter profiles", data: {"profile-filter-target": "input", action: "input->profile-filter#apply"}}
+    %input.profile-picker__search{type: "text", autocomplete: "off", placeholder: "Find a profile or group…", "aria-label": "Filter profiles and groups", data: {"profile-filter-target": "input", action: "input->profile-filter#apply"}}
     .profile-picker__options
-      - Current.user.profiles.order(:name).includes(avatar_attachment: :blob).each do |profile|
-        - search_text = plain_field([profile.name, profile.pronouns, profile.subtitle, profile.labels.join(" ")].compact.join(" ")).downcase
-        - option_class = "action-dropdown__item profile-picker__option#{' profile-picker__option--current' if profile == current_profile}"
-        - proxy_prefix = profile.chat_bracket_before.to_s
-        - proxy_suffix = profile.chat_bracket_after.to_s
-        = link_to chat_server_channel_default_profile_path(server, channel, profile_uuid: profile.uuid), class: option_class, data: { turbo_method: :patch, "profile-filter-target": "option", "composer-target": "option", search: search_text, prefix: proxy_prefix, suffix: proxy_suffix.to_s } do
-          = render "chat/shared/avatar", record: profile, size: 20
-          .profile-picker__option-info
-            .profile-picker__option-name-row
-              %span.profile-picker__option-name= formatted_inline(profile.name)
-              - if profile.pronouns.present?
-                %span.profile-picker__option-pronouns= formatted_inline(profile.pronouns)
-            - if profile.subtitle.present?
-              %span.profile-picker__option-subtitle= formatted_inline(profile.subtitle)
-            - if profile.labels.any?
-              .label-badges
-                - profile.labels.each do |label|
-                  %span.label-badge.label-badge--sidebar= label
-      %p.profile-picker__empty{data: {"profile-filter-target": "empty"}, hidden: true} No profiles match your search.
+      - profiles = Current.user.profiles.order(:name).includes(avatar_attachment: :blob)
+      - groups = Current.user.groups.order(:name).includes(avatar_attachment: :blob)
+      - if profiles.any?
+        %p.profile-picker__group-label Profiles
+        - profiles.each do |profile|
+          = render "chat/channels/posting_as_option", postable: profile, current_postable: current_postable, server: server, channel: channel
+      - if groups.any?
+        %p.profile-picker__group-label Groups
+        - groups.each do |group|
+          = render "chat/channels/posting_as_option", postable: group, current_postable: current_postable, server: server, channel: channel
+      %p.profile-picker__empty{data: {"profile-filter-target": "empty"}, hidden: true} No profiles or groups match your search.

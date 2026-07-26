@@ -19,10 +19,11 @@ module Chat
 
     def create
       @server = Current.user.owned_chat_servers.build(server_params)
+      default_postable = find_postable(params.dig(:chat_server, :default_postable_type), params.dig(:chat_server, :default_postable_id))
 
       Chat::Server.transaction do
         @server.save!
-        @server.memberships.create!(user: Current.user, role: "owner", default_profile_id: params[:chat_server][:default_profile_id])
+        @server.memberships.create!(user: Current.user, role: "owner", default_postable: default_postable)
       end
       redirect_to chat_server_path(@server), notice: "Server created."
     rescue ActiveRecord::RecordInvalid
@@ -63,10 +64,12 @@ module Chat
       end
 
       @profiles = Current.user.profiles.order(:name)
+      @groups = Current.user.groups.order(:name)
       @invite_token = params[:invite_token]
 
-      if request.post? && params[:default_profile_id].present?
-        membership = @server.memberships.build(user: Current.user, role: "member", default_profile_id: params[:default_profile_id])
+      if request.post? && params[:default_postable_id].present?
+        default_postable = find_postable(params[:default_postable_type], params[:default_postable_id])
+        membership = @server.memberships.build(user: Current.user, role: "member", default_postable: default_postable)
 
         joined = Chat::Membership.transaction do
           next false unless membership.save
@@ -103,6 +106,19 @@ module Chat
 
     def server_params
       params.require(:chat_server).permit(:name, :subtitle, :theme_id, :avatar, :avatar_shape, :avatar_alt_text)
+    end
+
+    # Deliberately a closed case/when rather than type.constantize — the type
+    # comes straight from request params, and constantizing arbitrary user
+    # input onto a polymorphic association is a classic way to let an
+    # attacker point it at a model it was never meant to reference.
+    def find_postable(type, id)
+      return nil if id.blank?
+
+      case type
+      when "Group" then Current.user.groups.find_by(id: id)
+      else Current.user.profiles.find_by(id: id)
+      end
     end
   end
 end

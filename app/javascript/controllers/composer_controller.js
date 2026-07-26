@@ -3,28 +3,28 @@ import { Controller } from "@hotwired/stimulus"
 // Owns the whole "posting as" + message composer area. Enter sends the
 // message, Shift+Enter inserts a newline. It also live-previews Tupperbox-
 // style proxying: as you type, if the message matches one of your profiles'
-// chat_bracket_before/chat_bracket_after (e.g. "guy:" ... or "{" ... "}"),
-// the "Posting as" pill swaps to that profile's avatar/name — purely
-// client-side, never touches the stored default. The real match happens
-// again server-side on send
-// (Profile.resolve_chat_proxy), this is just a preview.
+// or groups' chat_bracket_before/chat_bracket_after (e.g. "guy:" ... or
+// "{" ... "}"), the "Posting as" pill swaps to that profile/group's
+// avatar/name — purely client-side, never touches the stored default. The
+// real match happens again server-side on send (Chat::ProxyResolver.resolve),
+// this is just a preview.
 //
 // Usage: wrap the whole `.composer` block with data: { controller: "composer" },
 // with data-composer-target="form"/"textarea" on the message form/textarea,
 // "triggerAvatar"/"triggerName"/"triggerPronouns" on the posting-as pill's
 // avatar/name/pronouns, and "option" (plus data-prefix/data-suffix/data-name)
-// on each profile in the posting-as picker.
+// on each profile/group in the posting-as picker.
 export default class extends Controller {
   static targets = [ "form", "textarea", "triggerAvatar", "triggerName", "triggerPronouns", "option" ]
 
   // Rather than caching the "default" trigger HTML once in connect(), track
-  // it via Stimulus's target lifecycle callbacks below — switching profiles
-  // via the picker turbo_stream-replaces just the trigger (see
-  // Chat::ChannelDefaultProfilesController#update), which doesn't reconnect
+  // it via Stimulus's target lifecycle callbacks below — switching who's
+  // posting via the picker turbo_stream-replaces just the trigger (see
+  // Chat::ChannelDefaultPostablesController#update), which doesn't reconnect
   // this controller, so a one-time connect()-time cache would go stale the
-  // moment you switched profiles and then kept typing: the next keystroke
-  // with no bracket match would revert the pill to whatever profile was
-  // selected when the page first loaded, not the one you just switched to.
+  // moment you switched and then kept typing: the next keystroke with no
+  // bracket match would revert the pill to whoever was selected when the
+  // page first loaded, not the one you just switched to.
   // Target[Connected] fires on every genuine node replacement (including
   // ours) but not on the preview's in-place innerHTML mutations below, so
   // the cache only ever reflects the real, server-confirmed default.
@@ -74,10 +74,10 @@ export default class extends Controller {
     }
   }
 
-  // Mirrors Profile.resolve_chat_proxy (app/models/profile.rb) — exact
-  // (case-sensitive) prefix/suffix match, longest (most specific) brackets
-  // win. Case-sensitive deliberately: "guy:" and "GUY:" can identify two
-  // different profiles.
+  // Mirrors Chat::ProxyResolver.resolve (app/models/chat/proxy_resolver.rb)
+  // — exact (case-sensitive) prefix/suffix match, longest (most specific)
+  // brackets win. Case-sensitive deliberately: "guy:" and "GUY:" can
+  // identify two different profiles or groups.
   matchProxy(body) {
     let best = null
 
@@ -96,7 +96,7 @@ export default class extends Controller {
       }
 
       // Deliberately not requiring non-blank content here, unlike
-      // Profile.resolve_chat_proxy: the preview should switch the instant the
+      // Chat::ProxyResolver.resolve: the preview should switch the instant the
       // brackets themselves match (e.g. right after typing "arki:"), not wait
       // for the first character of the actual message. The real send-time
       // match still requires content, so an empty send falls back to the

@@ -20,12 +20,12 @@ class ChatOnboardingTest < ApplicationSystemTestCase
     "http://chat.lvh.me:#{@port}#{path}"
   end
 
-  # The "Post as" field is a searchable profile-picker (same component as the
-  # composer's identity switcher), not a plain <select> — open it, filter down
-  # to the target profile, and click it.
+  # The "Post as" field is a searchable profile/group picker (same component
+  # as the composer's identity switcher), not a plain <select> — open it,
+  # filter down to the target profile or group, and click it.
   def choose_post_as_profile(name)
     find(".profile-picker__trigger").click
-    fill_in placeholder: "Find a profile…", with: name
+    fill_in placeholder: "Find a profile or group…", with: name
     click_button name
   end
 
@@ -78,7 +78,7 @@ class ChatOnboardingTest < ApplicationSystemTestCase
 
   test "an invite link cannot be used twice" do
     server = @owner.owned_chat_servers.create!(name: "Solo Server")
-    server.memberships.create!(user: @owner, role: "owner", default_profile: profiles(:alice))
+    server.memberships.create!(user: @owner, role: "owner", default_postable: profiles(:alice))
     invite = server.server_invites.create!(created_by: @owner)
 
     other_user = users(:three)

@@ -22,10 +22,11 @@
 
   - unless server.persisted?
     - our_profiles = Current.user.profiles.order(:name)
+    - our_groups = Current.user.groups.order(:name)
     .form-group
-      %label{id: "chat_server_default_profile_id_label"} Post as
-      = render "chat/shared/profile_picker", field_name: "chat_server[default_profile_id]", label_id: "chat_server_default_profile_id_label", profiles: our_profiles, selected_profile: our_profiles.first
-      %p.form-hint The profile you'll post as by default in this server. You can change this any time.
+      %label{id: "chat_server_default_postable_label"} Post as
+      = render "chat/shared/profile_picker", field_name: "chat_server[default_postable]", label_id: "chat_server_default_postable_label", profiles: our_profiles, groups: our_groups, selected_postable: our_profiles.first
+      %p.form-hint The profile or group you'll post as by default in this server. You can change this any time.
 
   .form-group
     = form.submit server.persisted? ? "Update server" : "Create server"

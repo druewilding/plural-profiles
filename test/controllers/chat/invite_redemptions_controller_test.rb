@@ -7,8 +7,8 @@ class Chat::InviteRedemptionsControllerTest < ActionDispatch::IntegrationTest
     @member = users(:two)
     @outsider = users(:three)
     @server = @owner.owned_chat_servers.create!(name: "Test Server")
-    @server.memberships.create!(user: @owner, role: "owner", default_profile: profiles(:alice))
-    @server.memberships.create!(user: @member, role: "member", default_profile: profiles(:carol))
+    @server.memberships.create!(user: @owner, role: "owner", default_postable: profiles(:alice))
+    @server.memberships.create!(user: @member, role: "member", default_postable: profiles(:carol))
     @invite = @server.server_invites.create!(created_by: @owner)
   end
 

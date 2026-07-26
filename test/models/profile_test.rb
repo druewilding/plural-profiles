@@ -356,7 +356,7 @@ class ProfileTest < ActiveSupport::TestCase
     users(:one).profiles.create!(name: "First", chat_bracket_before: "guy:")
     dupe = users(:one).profiles.build(name: "Second", chat_bracket_before: "guy:")
     assert_not dupe.valid?
-    assert_includes dupe.errors[:base], "The chat proxy brackets are already used by another profile"
+    assert_includes dupe.errors[:base], "The chat proxy brackets are already used by another profile or group"
   end
 
   test "chat brackets in a different case are treated as distinct, not duplicates" do
@@ -377,70 +377,10 @@ class ProfileTest < ActiveSupport::TestCase
     assert other.valid?
   end
 
-  test "resolve_chat_proxy matches a before-only prefix exactly" do
-    profile = users(:one).profiles.create!(name: "Guy", chat_bracket_before: "guy:")
-    match = Profile.resolve_chat_proxy(users(:one), "guy: hello there")
-    assert_equal profile, match[:profile]
-    assert_equal "hello there", match[:content]
-  end
-
-  test "resolve_chat_proxy does not match when the case differs" do
-    users(:one).profiles.create!(name: "Guy", chat_bracket_before: "guy:")
-    assert_nil Profile.resolve_chat_proxy(users(:one), "Guy: hello there")
-    assert_nil Profile.resolve_chat_proxy(users(:one), "GUY: hello there")
-  end
-
-  test "chat brackets differing only by case can identify two different profiles" do
-    lower = users(:one).profiles.create!(name: "Lowercase Guy", chat_bracket_before: "guy:")
-    upper = users(:one).profiles.create!(name: "Uppercase Guy", chat_bracket_before: "GUY:")
-
-    lower_match = Profile.resolve_chat_proxy(users(:one), "guy: hi")
-    upper_match = Profile.resolve_chat_proxy(users(:one), "GUY: hi")
-
-    assert_equal lower, lower_match[:profile]
-    assert_equal upper, upper_match[:profile]
-  end
-
-  test "resolve_chat_proxy matches a before/after wrap" do
-    profile = users(:one).profiles.create!(name: "Brace", chat_bracket_before: "{", chat_bracket_after: "}")
-    match = Profile.resolve_chat_proxy(users(:one), "{hello there}")
-    assert_equal profile, match[:profile]
-    assert_equal "hello there", match[:content]
-  end
-
-  test "resolve_chat_proxy matches an after-only suffix" do
-    profile = users(:one).profiles.create!(name: "Suffix", chat_bracket_after: "-g")
-    match = Profile.resolve_chat_proxy(users(:one), "hello there-g")
-    assert_equal profile, match[:profile]
-    assert_equal "hello there", match[:content]
-  end
-
-  test "resolve_chat_proxy returns nil when nothing matches" do
-    users(:one).profiles.create!(name: "Guy", chat_bracket_before: "guy:")
-    assert_nil Profile.resolve_chat_proxy(users(:one), "just a normal message")
-  end
-
-  test "resolve_chat_proxy returns nil for a blank body" do
-    users(:one).profiles.create!(name: "Guy", chat_bracket_before: "guy:")
-    assert_nil Profile.resolve_chat_proxy(users(:one), "")
-  end
-
-  test "resolve_chat_proxy returns nil when the extracted content would be blank" do
-    users(:one).profiles.create!(name: "Guy", chat_bracket_before: "guy:")
-    assert_nil Profile.resolve_chat_proxy(users(:one), "guy:   ")
-  end
-
-  test "resolve_chat_proxy never matches another user's profiles" do
-    users(:two).profiles.create!(name: "Guy", chat_bracket_before: "guy:")
-    assert_nil Profile.resolve_chat_proxy(users(:one), "guy: hello")
-  end
-
-  test "resolve_chat_proxy picks the more specific (longer) brackets when more than one matches" do
-    short_match = users(:one).profiles.create!(name: "Short", chat_bracket_before: "g")
-    long_match = users(:one).profiles.create!(name: "Long", chat_bracket_before: "g:")
-    match = Profile.resolve_chat_proxy(users(:one), "g: hello")
-    assert_equal long_match, match[:profile]
-    assert_not_equal short_match, match[:profile]
-    assert_equal "hello", match[:content]
+  test "chat brackets collide with a group's brackets for the same user" do
+    users(:one).groups.create!(name: "Existing Group", chat_bracket_before: "guy:")
+    dupe = users(:one).profiles.build(name: "Second", chat_bracket_before: "guy:")
+    assert_not dupe.valid?
+    assert_includes dupe.errors[:base], "The chat proxy brackets are already used by another profile or group"
   end
 end

@@ -107,6 +107,23 @@ module ApplicationHelper
     end
   end
 
+  # The public-facing URL for a chat message's postable (a Profile or a
+  # Group): the owner's own private management page if the current viewer
+  # owns it, otherwise the public uuid-keyed share page. &. on Current.user
+  # falls back to the public link when there's no request context at all
+  # (e.g. a message broadcast rendered outside a real request) — always a
+  # safe destination, since Our::ProfilesController/Our::GroupsController
+  # redirect there anyway for anyone viewing a postable that isn't theirs.
+  def chat_postable_url(postable)
+    own = postable.user_id == Current.user&.id
+    url_options = { host: main_site_host, port: request.port, protocol: request.protocol }
+    if postable.is_a?(Group)
+      own ? our_group_url(postable, **url_options) : group_url(postable.uuid, **url_options)
+    else
+      own ? our_profile_url(postable, **url_options) : profile_url(postable.uuid, **url_options)
+    end
+  end
+
   private
 
   def newlines_to_br(html)

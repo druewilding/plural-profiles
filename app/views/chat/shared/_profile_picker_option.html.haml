@@ -1,0 +1,18 @@
+- # A single option button in the plain-form "post as" picker (chat/shared/_profile_picker).
+- # postable is a Profile or a Group.
+- pronouns = postable.respond_to?(:pronouns) ? postable.pronouns : nil
+- search_text = plain_field([postable.name, pronouns, postable.subtitle, postable.labels.join(" ")].compact.join(" ")).downcase
+- option_class = "action-dropdown__item profile-picker__option#{' profile-picker__option--current' if postable == selected_postable}"
+%button{type: "button", class: option_class, data: {"profile-filter-target": "option", "profile-picker-target": "option", action: "click->profile-picker#select", "postable-type": postable.class.name, "postable-id": postable.id, search: search_text}}
+  = render "chat/shared/avatar", record: postable, size: 20
+  .profile-picker__option-info
+    .profile-picker__option-name-row
+      %span.profile-picker__option-name= formatted_inline(postable.name)
+      - if pronouns.present?
+        %span.profile-picker__option-pronouns= formatted_inline(pronouns)
+    - if postable.subtitle.present?
+      %span.profile-picker__option-subtitle= formatted_inline(postable.subtitle)
+    - if postable.labels.any?
+      .label-badges
+        - postable.labels.each do |label|
+          %span.label-badge.label-badge--sidebar= label

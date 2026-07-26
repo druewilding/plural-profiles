@@ -7,8 +7,8 @@ class Chat::ChannelsControllerTest < ActionDispatch::IntegrationTest
     @member = users(:two)
     @outsider = users(:three)
     @server = @owner.owned_chat_servers.create!(name: "Test Server")
-    @server.memberships.create!(user: @owner, role: "owner", default_profile: profiles(:alice))
-    @server.memberships.create!(user: @member, role: "member", default_profile: profiles(:carol))
+    @server.memberships.create!(user: @owner, role: "owner", default_postable: profiles(:alice))
+    @server.memberships.create!(user: @member, role: "member", default_postable: profiles(:carol))
     @channel = @server.channels.create!(name: "general")
   end
 
@@ -21,8 +21,8 @@ class Chat::ChannelsControllerTest < ActionDispatch::IntegrationTest
   end
 
   test "message author links go to the viewer's own profile page, but the public page for others" do
-    @channel.messages.create!(user: @owner, profile: profiles(:alice), body: "from the owner")
-    @channel.messages.create!(user: @member, profile: profiles(:carol), body: "from the member")
+    @channel.messages.create!(user: @owner, postable: profiles(:alice), body: "from the owner")
+    @channel.messages.create!(user: @member, postable: profiles(:carol), body: "from the member")
 
     sign_in_as @owner
     get chat_server_channel_path(@server, @channel)

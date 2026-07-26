@@ -6,7 +6,7 @@ module Chat
 
     belongs_to :channel, class_name: "Chat::Channel"
     belongs_to :user
-    belongs_to :profile, optional: true
+    belongs_to :postable, polymorphic: true, optional: true
 
     # Keyset pagination cursor for scroll-back history. Deliberately a composite
     # (created_at, id) comparison rather than `id <` alone — id order and
@@ -23,23 +23,23 @@ module Chat
     end
 
     validates :body, presence: true
-    validates :profile_id, presence: true, on: :create
-    validates :profile_name, presence: true
+    validates :postable_id, presence: true, on: :create
+    validates :postable_name, presence: true
 
-    before_validation :resolve_profile, on: :create
+    before_validation :resolve_postable, on: :create
 
     after_create_commit -> { broadcast_append_to channel, target: "chat-messages", partial: "chat/messages/message", locals: { message: self } }
     after_create_commit :broadcast_unread_dots
 
     private
 
-    def resolve_profile
-      if profile.nil? && (match = Profile.resolve_chat_proxy(user, body))
-        self.profile = match[:profile]
+    def resolve_postable
+      if postable.nil? && (match = Chat::ProxyResolver.resolve(user, body))
+        self.postable = match[:postable]
         self.body = match[:content]
       end
-      self.profile ||= channel&.default_profile_for(user) || channel&.server&.memberships&.find_by(user_id: user_id)&.default_profile
-      self.profile_name ||= profile&.name
+      self.postable ||= channel&.default_postable_for(user) || channel&.server&.memberships&.find_by(user_id: user_id)&.default_postable
+      self.postable_name ||= postable&.name
     end
 
     # Lights up the sidebar dots live for every other server member. This is

@@ -6,11 +6,11 @@ module Chat
 
     belongs_to :server, class_name: "Chat::Server"
     belongs_to :user
-    belongs_to :default_profile, class_name: "Profile", optional: true
+    belongs_to :default_postable, polymorphic: true, optional: true
 
     validates :role, inclusion: { in: ROLES }
     validates :user_id, uniqueness: { scope: :server_id }
-    validate :default_profile_belongs_to_same_user
+    validate :default_postable_belongs_to_same_user
 
     def owner?
       role == "owner"
@@ -18,11 +18,11 @@ module Chat
 
     private
 
-    def default_profile_belongs_to_same_user
-      return unless default_profile
-      return if default_profile.user_id == user_id
+    def default_postable_belongs_to_same_user
+      return unless default_postable
+      return if default_postable.user_id == user_id
 
-      errors.add(:default_profile, "must belong to the same user")
+      errors.add(:default_postable, "must belong to the same user")
     end
   end
 end

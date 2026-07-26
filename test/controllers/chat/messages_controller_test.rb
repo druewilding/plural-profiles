@@ -6,11 +6,11 @@ class Chat::MessagesControllerTest < ActionDispatch::IntegrationTest
     @owner = users(:one)
     @outsider = users(:three)
     @server = @owner.owned_chat_servers.create!(name: "Test Server")
-    @server.memberships.create!(user: @owner, role: "owner", default_profile: profiles(:alice))
+    @server.memberships.create!(user: @owner, role: "owner", default_postable: profiles(:alice))
     @channel = @server.channels.create!(name: "general")
   end
 
-  test "create posts a message as the sender's default profile" do
+  test "create posts a message as the sender's default postable" do
     sign_in_as @owner
     assert_difference "Chat::Message.count", 1 do
       post chat_server_channel_messages_path(@server, @channel), params: { chat_message: { body: "hello there" } }
@@ -19,7 +19,7 @@ class Chat::MessagesControllerTest < ActionDispatch::IntegrationTest
 
     message = Chat::Message.order(:created_at).last
     assert_equal "hello there", message.body
-    assert_equal profiles(:alice), message.profile
+    assert_equal profiles(:alice), message.postable
   end
 
   test "create resolves chat proxy brackets to a different profile" do
@@ -29,8 +29,29 @@ class Chat::MessagesControllerTest < ActionDispatch::IntegrationTest
     post chat_server_channel_messages_path(@server, @channel), params: { chat_message: { body: "bob: hey all" } }
 
     message = Chat::Message.order(:created_at).last
-    assert_equal profiles(:bob), message.profile
+    assert_equal profiles(:bob), message.postable
     assert_equal "hey all", message.body
+  end
+
+  test "create resolves chat proxy brackets to a group" do
+    groups(:friends).update!(chat_bracket_before: "friends:")
+    sign_in_as @owner
+
+    post chat_server_channel_messages_path(@server, @channel), params: { chat_message: { body: "friends: hey all" } }
+
+    message = Chat::Message.order(:created_at).last
+    assert_equal groups(:friends), message.postable
+    assert_equal "hey all", message.body
+  end
+
+  test "create posts as a channel-specific default group" do
+    @channel.channel_default_postables.create!(user: @owner, postable: groups(:friends))
+    sign_in_as @owner
+
+    post chat_server_channel_messages_path(@server, @channel), params: { chat_message: { body: "hello there" } }
+
+    message = Chat::Message.order(:created_at).last
+    assert_equal groups(:friends), message.postable
   end
 
   test "create rejects a blank body" do

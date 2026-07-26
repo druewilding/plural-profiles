@@ -6,8 +6,8 @@ class Chat::ServerInvitesControllerTest < ActionDispatch::IntegrationTest
     @owner = users(:one)
     @member = users(:two)
     @server = @owner.owned_chat_servers.create!(name: "Test Server")
-    @server.memberships.create!(user: @owner, role: "owner", default_profile: profiles(:alice))
-    @server.memberships.create!(user: @member, role: "member", default_profile: profiles(:carol))
+    @server.memberships.create!(user: @owner, role: "owner", default_postable: profiles(:alice))
+    @server.memberships.create!(user: @member, role: "member", default_postable: profiles(:carol))
   end
 
   test "show creates a fresh invite when none exists yet" do
