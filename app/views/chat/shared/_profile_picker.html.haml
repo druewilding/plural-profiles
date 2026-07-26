@@ -1,39 +1,46 @@
-- # Searchable "post as" profile picker for a plain form field — same look
-- # and search behavior as the composer's identity switcher, but fills in a
-- # hidden field instead of firing an immediate PATCH. Usage:
-- #   = render "chat/shared/profile_picker", field_name: "chat_server[default_profile_id]",
-- #       label_id: "chat_server_default_profile_id_label",
-- #       profiles: Current.user.profiles.order(:name), selected_profile: profiles.first
-- # Pair with a plain `%label{id: label_id}` (no `for`) rather than label_tag —
-- # the trigger is a <summary>, not a labelable form control, so a `for`
-- # pointing at it (or at the hidden field) would silently do nothing.
-- selected_profile ||= nil
+- # Searchable "post as" picker (profile or group) for a plain form field —
+- # same look and search behavior as the composer's identity switcher, but
+- # fills in two hidden fields instead of firing an immediate PATCH. Usage:
+- #   = render "chat/shared/profile_picker", field_name: "chat_server[default_postable]",
+- #       label_id: "chat_server_default_postable_label",
+- #       profiles: Current.user.profiles.order(:name), groups: Current.user.groups.order(:name),
+- #       selected_postable: profiles.first
+- # Fills a "_type" and "_id" field derived from field_name — pair with a
+- # plain %label{id: label_id} (no `for`) rather than label_tag, since the
+- # trigger is a <summary>, not a labelable form control, so a `for` pointing
+- # at it (or at the hidden fields) would silently do nothing.
+- selected_postable ||= nil
+- groups ||= []
+- # A bracketed Rails param name (e.g. "chat_server[default_postable]") needs
+- # the suffix inserted BEFORE the closing bracket ("chat_server[default_postable_type]") —
+- # appending it after the bracket instead (a bug this once shipped with)
+- # produces "chat_server[default_postable]_type", which Rack parses as
+- # params[:chat_server][:default_postable][:_type], not the flat
+- # params[:chat_server][:default_postable_type] the controller reads. A
+- # bare field_name (e.g. "default_postable", used by the join form) has no
+- # bracket to worry about, so plain concatenation is correct for it as-is.
+- type_field_name = field_name.end_with?("]") ? field_name.sub(/\]\z/, "_type]") : "#{field_name}_type"
+- id_field_name = field_name.end_with?("]") ? field_name.sub(/\]\z/, "_id]") : "#{field_name}_id"
 %details.action-dropdown.profile-picker{data: {controller: "dropdown profile-picker"}}
-  = hidden_field_tag field_name, selected_profile&.id, data: {"profile-picker-target": "hiddenField"}
+  = hidden_field_tag type_field_name, selected_postable&.class&.name, data: {"profile-picker-target": "hiddenTypeField"}
+  = hidden_field_tag id_field_name, selected_postable&.id, data: {"profile-picker-target": "hiddenField"}
   %summary.profile-picker__trigger{"aria-labelledby": label_id}
     %span.profile-picker__trigger-avatar{data: {"profile-picker-target": "triggerAvatar"}}
-      - if selected_profile
-        = render "chat/shared/avatar", record: selected_profile, size: 22
+      - if selected_postable
+        = render "chat/shared/avatar", record: selected_postable, size: 22
     %span
-      %strong{data: {"profile-picker-target": "triggerName"}}= selected_profile ? formatted_inline(selected_profile.name) : "Choose a profile…"
-      %span.profile-picker__trigger-pronouns{data: {"profile-picker-target": "triggerPronouns"}, hidden: selected_profile&.pronouns.blank?}= selected_profile&.pronouns.presence && formatted_inline(selected_profile.pronouns)
+      %strong{data: {"profile-picker-target": "triggerName"}}= selected_postable ? formatted_inline(selected_postable.name) : "Choose a profile or group…"
+      - selected_pronouns = selected_postable.respond_to?(:pronouns) ? selected_postable.pronouns : nil
+      %span.profile-picker__trigger-pronouns{data: {"profile-picker-target": "triggerPronouns"}, hidden: selected_pronouns.blank?}= selected_pronouns.presence && formatted_inline(selected_pronouns)
   .action-dropdown__menu.profile-picker__menu{data: {controller: "profile-filter"}}
-    %input.profile-picker__search{type: "text", autocomplete: "off", placeholder: "Find a profile…", "aria-label": "Filter profiles", data: {"profile-filter-target": "input", action: "input->profile-filter#apply"}}
+    %input.profile-picker__search{type: "text", autocomplete: "off", placeholder: "Find a profile or group…", "aria-label": "Filter profiles and groups", data: {"profile-filter-target": "input", action: "input->profile-filter#apply"}}
     .profile-picker__options
-      - profiles.each do |profile|
-        - search_text = plain_field([profile.name, profile.pronouns, profile.subtitle, profile.labels.join(" ")].compact.join(" ")).downcase
-        - option_class = "action-dropdown__item profile-picker__option#{' profile-picker__option--current' if profile == selected_profile}"
-        %button{type: "button", class: option_class, data: {"profile-filter-target": "option", "profile-picker-target": "option", action: "click->profile-picker#select", "profile-id": profile.id, search: search_text}}
-          = render "chat/shared/avatar", record: profile, size: 20
-          .profile-picker__option-info
-            .profile-picker__option-name-row
-              %span.profile-picker__option-name= formatted_inline(profile.name)
-              - if profile.pronouns.present?
-                %span.profile-picker__option-pronouns= formatted_inline(profile.pronouns)
-            - if profile.subtitle.present?
-              %span.profile-picker__option-subtitle= formatted_inline(profile.subtitle)
-            - if profile.labels.any?
-              .label-badges
-                - profile.labels.each do |label|
-                  %span.label-badge.label-badge--sidebar= label
-      %p.profile-picker__empty{data: {"profile-filter-target": "empty"}, hidden: true} No profiles match your search.
+      - if profiles.any?
+        %p.profile-picker__group-label Profiles
+        - profiles.each do |profile|
+          = render "chat/shared/profile_picker_option", postable: profile, selected_postable: selected_postable
+      - if groups.any?
+        %p.profile-picker__group-label Groups
+        - groups.each do |group|
+          = render "chat/shared/profile_picker_option", postable: group, selected_postable: selected_postable
+      %p.profile-picker__empty{data: {"profile-filter-target": "empty"}, hidden: true} No profiles or groups match your search.

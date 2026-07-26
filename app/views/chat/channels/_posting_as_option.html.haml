@@ -1,0 +1,23 @@
+- # A single row in the composer's "Posting as" dropdown — shared between the
+- # profiles section and the groups section so both stay pixel- and
+- # behavior-identical (composer_controller.js#matchProxy reads data-prefix/
+- # data-suffix/name/pronouns off whichever option matches, regardless of
+- # section). postable is a Profile or a Group; both respond to name/subtitle/
+- # labels/chat_bracket_before/chat_bracket_after/uuid, but only Profile has
+- # pronouns.
+- pronouns = postable.respond_to?(:pronouns) ? postable.pronouns : nil
+- search_text = plain_field([postable.name, pronouns, postable.subtitle, postable.labels.join(" ")].compact.join(" ")).downcase
+- option_class = "action-dropdown__item profile-picker__option#{' profile-picker__option--current' if postable == current_postable}"
+= link_to chat_server_channel_default_postable_path(server, channel, postable_type: postable.class.name, postable_uuid: postable.uuid), class: option_class, data: { turbo_method: :patch, "profile-filter-target": "option", "composer-target": "option", search: search_text, prefix: postable.chat_bracket_before.to_s, suffix: postable.chat_bracket_after.to_s } do
+  = render "chat/shared/avatar", record: postable, size: 20
+  .profile-picker__option-info
+    .profile-picker__option-name-row
+      %span.profile-picker__option-name= formatted_inline(postable.name)
+      - if pronouns.present?
+        %span.profile-picker__option-pronouns= formatted_inline(pronouns)
+    - if postable.subtitle.present?
+      %span.profile-picker__option-subtitle= formatted_inline(postable.subtitle)
+    - if postable.labels.any?
+      .label-badges
+        - postable.labels.each do |label|
+          %span.label-badge.label-badge--sidebar= label

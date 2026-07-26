@@ -50,22 +50,29 @@ class Chat::ChannelTest < ActiveSupport::TestCase
 
   test "destroying a channel destroys its messages" do
     channel = @server.channels.create!(name: "general")
-    message = channel.messages.create!(user: @owner, profile: profiles(:alice), body: "hi")
+    message = channel.messages.create!(user: @owner, postable: profiles(:alice), body: "hi")
 
     channel.destroy
 
     assert_raises(ActiveRecord::RecordNotFound) { message.reload }
   end
 
-  test "default_profile_for returns the channel-specific override when set" do
+  test "default_postable_for returns the channel-specific override when set" do
     channel = @server.channels.create!(name: "general")
-    channel.channel_default_profiles.create!(user: @owner, profile: profiles(:alice))
+    channel.channel_default_postables.create!(user: @owner, postable: profiles(:alice))
 
-    assert_equal profiles(:alice), channel.default_profile_for(@owner)
+    assert_equal profiles(:alice), channel.default_postable_for(@owner)
   end
 
-  test "default_profile_for returns nil when the user has no override" do
+  test "default_postable_for returns a group override when set" do
     channel = @server.channels.create!(name: "general")
-    assert_nil channel.default_profile_for(@owner)
+    channel.channel_default_postables.create!(user: @owner, postable: groups(:friends))
+
+    assert_equal groups(:friends), channel.default_postable_for(@owner)
+  end
+
+  test "default_postable_for returns nil when the user has no override" do
+    channel = @server.channels.create!(name: "general")
+    assert_nil channel.default_postable_for(@owner)
   end
 end

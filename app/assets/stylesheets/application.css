@@ -4182,6 +4182,24 @@ button.profile-picker__option {
   color: color-mix(in srgb, var(--text) 65%, transparent);
 }
 
+/* Separates the profile options from the group options within the same
+   picker menu — a heading rather than a second scrollable list, so the
+   profile-filter controller's flat option list (and its "no matches" empty
+   state) keeps working unmodified across both sections. */
+.profile-picker__group-label {
+  margin: 0.4rem 0 0.1rem;
+  padding: 0 0.6rem;
+  font-size: 0.72rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: color-mix(in srgb, var(--text) 60%, transparent);
+}
+
+.profile-picker__group-label:first-child {
+  margin-top: 0;
+}
+
 .composer-input-row {
   display: flex;
   gap: 0.6rem;

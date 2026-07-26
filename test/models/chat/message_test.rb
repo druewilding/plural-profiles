@@ -8,54 +8,68 @@ class Chat::MessageTest < ActiveSupport::TestCase
     @owner = users(:one)
     @other_member = users(:two)
     @server = Chat::Server.create!(name: "Test Server", owner: @owner)
-    @server.memberships.create!(user: @owner, role: "owner", default_profile: profiles(:alice))
-    @server.memberships.create!(user: @other_member, role: "member", default_profile: profiles(:carol))
+    @server.memberships.create!(user: @owner, role: "owner", default_postable: profiles(:alice))
+    @server.memberships.create!(user: @other_member, role: "member", default_postable: profiles(:carol))
     @channel = @server.channels.create!(name: "general")
   end
 
   test "requires a body" do
-    message = @channel.messages.new(user: @owner, profile: profiles(:alice))
+    message = @channel.messages.new(user: @owner, postable: profiles(:alice))
     assert_not message.valid?
     assert_includes message.errors[:body], "can't be blank"
   end
 
-  test "requires a profile on create when none can be resolved" do
+  test "requires a postable on create when none can be resolved" do
     outsider = users(:three)
     message = @channel.messages.new(user: outsider, body: "hi")
     assert_not message.valid?
-    assert_includes message.errors[:profile_id], "can't be blank"
+    assert_includes message.errors[:postable_id], "can't be blank"
   end
 
-  test "falls back to the server membership's default profile when there is no channel override" do
+  test "falls back to the server membership's default postable when there is no channel override" do
     message = @channel.messages.create!(user: @owner, body: "hello")
-    assert_equal profiles(:alice), message.profile
-    assert_equal profiles(:alice).name, message.profile_name
+    assert_equal profiles(:alice), message.postable
+    assert_equal profiles(:alice).name, message.postable_name
   end
 
-  test "a channel-specific default profile overrides the server default" do
-    @channel.channel_default_profiles.create!(user: @owner, profile: profiles(:bob))
+  test "a channel-specific default postable overrides the server default" do
+    @channel.channel_default_postables.create!(user: @owner, postable: profiles(:bob))
     message = @channel.messages.create!(user: @owner, body: "hello")
-    assert_equal profiles(:bob), message.profile
+    assert_equal profiles(:bob), message.postable
   end
 
   test "chat proxy brackets in the body select a different profile and strip the prefix" do
     profiles(:bob).update!(chat_bracket_before: "bob:")
     message = @channel.messages.create!(user: @owner, body: "bob: taking over for a sec")
 
-    assert_equal profiles(:bob), message.profile
+    assert_equal profiles(:bob), message.postable
     assert_equal "taking over for a sec", message.body
   end
 
-  test "an explicitly assigned profile is not overridden by resolve_profile" do
-    message = @channel.messages.create!(user: @owner, profile: profiles(:bob), body: "hello")
-    assert_equal profiles(:bob), message.profile
+  test "chat proxy brackets can select a group instead of a profile" do
+    groups(:friends).update!(chat_bracket_before: "friends:")
+    message = @channel.messages.create!(user: @owner, body: "friends: we're all here")
+
+    assert_equal groups(:friends), message.postable
+    assert_equal "we're all here", message.body
   end
 
-  test "an explicitly assigned profile is not overridden even when the body matches another profile's chat proxy brackets" do
-    profiles(:bob).update!(chat_bracket_before: "bob:")
-    message = @channel.messages.create!(user: @owner, profile: profiles(:alice), body: "bob: taking over for a sec")
+  test "a channel-specific default postable can be a group" do
+    @channel.channel_default_postables.create!(user: @owner, postable: groups(:friends))
+    message = @channel.messages.create!(user: @owner, body: "hello")
+    assert_equal groups(:friends), message.postable
+  end
 
-    assert_equal profiles(:alice), message.profile
+  test "an explicitly assigned postable is not overridden by resolve_postable" do
+    message = @channel.messages.create!(user: @owner, postable: profiles(:bob), body: "hello")
+    assert_equal profiles(:bob), message.postable
+  end
+
+  test "an explicitly assigned postable is not overridden even when the body matches another profile's chat proxy brackets" do
+    profiles(:bob).update!(chat_bracket_before: "bob:")
+    message = @channel.messages.create!(user: @owner, postable: profiles(:alice), body: "bob: taking over for a sec")
+
+    assert_equal profiles(:alice), message.postable
     assert_equal "bob: taking over for a sec", message.body
   end
 
@@ -92,13 +106,27 @@ class Chat::MessageTest < ActiveSupport::TestCase
     assert_nil Current.user
 
     streams = capture_turbo_stream_broadcasts @channel do
-      @channel.messages.create!(user: @owner, profile: profiles(:alice), body: "hello")
+      @channel.messages.create!(user: @owner, postable: profiles(:alice), body: "hello")
     end
 
     html = streams.first.to_html
     helpers = Rails.application.routes.url_helpers
     assert_match helpers.profile_path(profiles(:alice)), html
     assert_no_match helpers.our_profile_path(profiles(:alice)), html
+  end
+
+  test "the broadcasted message partial renders a group postable without crashing" do
+    assert_nil Current.user
+    group = groups(:friends).tap { |g| g.update!(user: @owner) }
+
+    streams = capture_turbo_stream_broadcasts @channel do
+      @channel.messages.create!(user: @owner, postable: group, body: "hello")
+    end
+
+    html = streams.first.to_html
+    helpers = Rails.application.routes.url_helpers
+    assert_match helpers.group_path(group), html
+    assert_no_match helpers.our_group_path(group), html
   end
 
   test "creating a message broadcasts unread dots to other server members but not the author" do

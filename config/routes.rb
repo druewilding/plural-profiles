@@ -82,7 +82,7 @@ Rails.application.routes.draw do
             patch :mark_read
           end
           resources :messages, only: %i[index create]
-          resource :default_profile, only: :update, controller: "channel_default_profiles"
+          resource :default_postable, only: :update, controller: "channel_default_postables"
         end
       end
     end

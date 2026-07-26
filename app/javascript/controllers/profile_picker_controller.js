@@ -1,17 +1,19 @@
 import { Controller } from "@hotwired/stimulus"
 
-// The "post as" profile picker for plain forms (creating/joining a server) —
-// clicking an option fills in a hidden field and updates the trigger, rather
-// than firing an immediate PATCH like the composer's picker does. Controller
-// root is the <details> itself (search filtering is a separate profile-filter
-// controller instance scoped to the inner menu).
+// The "post as" picker (profile or group) for plain forms (creating/joining
+// a server) — clicking an option fills in two hidden fields (type + id) and
+// updates the trigger, rather than firing an immediate PATCH like the
+// composer's picker does. Controller root is the <details> itself (search
+// filtering is a separate profile-filter controller instance scoped to the
+// inner menu).
 export default class extends Controller {
-  static targets = [ "hiddenField", "triggerAvatar", "triggerName", "triggerPronouns", "option" ]
+  static targets = [ "hiddenField", "hiddenTypeField", "triggerAvatar", "triggerName", "triggerPronouns", "option" ]
 
   select(event) {
     const option = event.currentTarget
 
-    this.hiddenFieldTarget.value = option.dataset.profileId
+    this.hiddenFieldTarget.value = option.dataset.postableId
+    if (this.hasHiddenTypeFieldTarget) this.hiddenTypeFieldTarget.value = option.dataset.postableType
 
     const avatar = option.querySelector(".avatar")
     if (avatar && this.hasTriggerAvatarTarget) this.triggerAvatarTarget.replaceChildren(avatar.cloneNode(true))

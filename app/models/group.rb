@@ -1,6 +1,7 @@
 class Group < ApplicationRecord
   include HasAvatar
   include HasLabels
+  include ChatProxyable
 
   belongs_to :user
   belongs_to :theme, optional: true
@@ -14,6 +15,10 @@ class Group < ApplicationRecord
   has_many :parent_groups, through: :parent_links, source: :parent_group
   has_many :child_groups, through: :child_links, source: :child_group
   has_many :inclusion_overrides, dependent: :destroy
+
+  has_many :chat_messages, as: :postable, class_name: "Chat::Message", dependent: :nullify
+  has_many :chat_server_memberships, as: :default_postable, class_name: "Chat::Membership", dependent: :nullify
+  has_many :chat_channel_default_postables, as: :postable, class_name: "Chat::ChannelDefaultPostable", dependent: :destroy
 
   before_create :generate_uuid
 

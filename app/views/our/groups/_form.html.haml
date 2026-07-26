@@ -33,6 +33,15 @@
     = form.select :theme_id, grouped_options_for_select(grouped_theme_options(@our_themes, @shared_themes), group.theme_id), { include_blank: "None (use default)" }, {}
     %p.form-hint Visitors to this group's page will see this theme. Leave blank for the site default.
 
+  .form-group
+    %label Chat proxy brackets
+    .chat-bracket-fields
+      = form.text_field :chat_bracket_before, "aria-label": "Text before your message"
+      %span.chat-bracket-fields__sample message
+      = form.text_field :chat_bracket_after, "aria-label": "Text after your message"
+    %p.form-hint
+      In chat, typing a message that starts and/or ends with the brackets posts it as this group, instead of your default. Leave either side blank if you don't need it.
+
   - if group.persisted?
     .form-group
       = form.label :created_at

@@ -6,7 +6,7 @@ module Chat
     belongs_to :theme, optional: true
 
     has_many :messages, class_name: "Chat::Message", foreign_key: :channel_id, dependent: :destroy
-    has_many :channel_default_profiles, class_name: "Chat::ChannelDefaultProfile", foreign_key: :channel_id, dependent: :destroy
+    has_many :channel_default_postables, class_name: "Chat::ChannelDefaultPostable", foreign_key: :channel_id, dependent: :destroy
     has_many :channel_reads, class_name: "Chat::ChannelRead", foreign_key: :channel_id, dependent: :destroy
 
     before_create :generate_uuid
@@ -18,8 +18,8 @@ module Chat
       uuid
     end
 
-    def default_profile_for(user)
-      channel_default_profiles.find_by(user: user)&.profile
+    def default_postable_for(user)
+      channel_default_postables.find_by(user: user)&.postable
     end
 
     private

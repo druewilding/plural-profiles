@@ -31,14 +31,19 @@ class Chat::MembershipTest < ActiveSupport::TestCase
     assert membership.valid?
   end
 
-  test "default_profile must belong to the same user" do
-    membership = @server.memberships.new(user: @owner, role: "owner", default_profile: profiles(:carol))
+  test "default_postable must belong to the same user" do
+    membership = @server.memberships.new(user: @owner, role: "owner", default_postable: profiles(:carol))
     assert_not membership.valid?
-    assert_includes membership.errors[:default_profile], "must belong to the same user"
+    assert_includes membership.errors[:default_postable], "must belong to the same user"
   end
 
-  test "default_profile belonging to the same user is valid" do
-    membership = @server.memberships.new(user: @owner, role: "owner", default_profile: profiles(:alice))
+  test "default_postable belonging to the same user is valid" do
+    membership = @server.memberships.new(user: @owner, role: "owner", default_postable: profiles(:alice))
+    assert membership.valid?
+  end
+
+  test "default_postable can be a group belonging to the same user" do
+    membership = @server.memberships.new(user: @owner, role: "owner", default_postable: groups(:friends))
     assert membership.valid?
   end
 

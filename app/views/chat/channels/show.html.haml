@@ -25,9 +25,9 @@
         %p No messages yet. Say hello!
 
   .composer{data: {controller: "composer"}}
-    - if current_membership&.default_profile
-      - current_profile = @channel.default_profile_for(Current.user) || current_membership.default_profile
-      = render "chat/channels/posting_as_picker", server: @server, channel: @channel, current_profile: current_profile
+    - if current_membership&.default_postable
+      - current_postable = @channel.default_postable_for(Current.user) || current_membership.default_postable
+      = render "chat/channels/posting_as_picker", server: @server, channel: @channel, current_postable: current_postable
 
     = form_with model: @message, url: chat_server_channel_messages_path(@server, @channel), scope: :chat_message, data: { "composer-target": "form" } do |form|
       - if @message.errors.any?

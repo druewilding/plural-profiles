@@ -10,7 +10,7 @@ class ChatAuthenticationRedirectTest < ActionDispatch::IntegrationTest
   test "signing in on the main domain returns you to the chat page you were trying to reach" do
     user = users(:one)
     server = user.owned_chat_servers.create!(name: "Test Server")
-    server.memberships.create!(user: user, role: "owner", default_profile: profiles(:alice))
+    server.memberships.create!(user: user, role: "owner", default_postable: profiles(:alice))
 
     host! "chat.example.com"
     original_url = "http://chat.example.com#{chat_server_path(server)}"

@@ -20,12 +20,12 @@ class ChatOnboardingTest < ApplicationSystemTestCase
     "http://chat.lvh.me:#{@port}#{path}"
   end
 
-  # The "Post as" field is a searchable profile-picker (same component as the
-  # composer's identity switcher), not a plain <select> — open it, filter down
-  # to the target profile, and click it.
+  # The "Post as" field is a searchable profile/group picker (same component
+  # as the composer's identity switcher), not a plain <select> — open it,
+  # filter down to the target profile or group, and click it.
   def choose_post_as_profile(name)
     find(".profile-picker__trigger").click
-    fill_in placeholder: "Find a profile…", with: name
+    fill_in placeholder: "Find a profile or group…", with: name
     click_button name
   end
 
@@ -48,6 +48,15 @@ class ChatOnboardingTest < ApplicationSystemTestCase
 
     assert_text "Channel created."
     assert_text "No messages yet. Say hello!"
+
+    # Posts as the owner, using the default postable chosen on the server
+    # creation form — regression coverage for a bug where that form's picker
+    # (nested under "chat_server[...]") silently failed to set
+    # default_postable_type/_id, leaving the owner unable to post at all.
+    fill_in placeholder: "Message #general (Enter to send, Shift+Enter for a new line)", with: "Welcome to the club!"
+    find("textarea").native.send_keys(:enter)
+    assert_text "Welcome to the club!"
+    assert_text profiles(:alice).name
 
     within(".channel-pane") { click_link "Book Club" } # back to the server page, which has the invite link
     click_link "Invite people"
@@ -78,7 +87,7 @@ class ChatOnboardingTest < ApplicationSystemTestCase
 
   test "an invite link cannot be used twice" do
     server = @owner.owned_chat_servers.create!(name: "Solo Server")
-    server.memberships.create!(user: @owner, role: "owner", default_profile: profiles(:alice))
+    server.memberships.create!(user: @owner, role: "owner", default_postable: profiles(:alice))
     invite = server.server_invites.create!(created_by: @owner)
 
     other_user = users(:three)

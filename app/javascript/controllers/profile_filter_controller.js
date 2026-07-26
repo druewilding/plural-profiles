@@ -36,6 +36,33 @@ export default class extends Controller {
       if (matches) visibleCount++
     })
 
+    this.updateGroupLabels()
+
     if (this.hasEmptyTarget) this.emptyTarget.hidden = visibleCount > 0
+  }
+
+  // Some pickers (e.g. the composer's "Posting as" dropdown) group options
+  // under .profile-picker__group-label headings ("Profiles" / "Groups").
+  // Hides each heading when every option under it got filtered out, so a
+  // search doesn't leave a bare "Groups" heading with nothing beneath it.
+  // A no-op for pickers with no such headings.
+  updateGroupLabels() {
+    const container = this.element.querySelector(".profile-picker__options")
+    if (!container) return
+
+    let currentLabel = null
+    let anyVisible = false
+
+    Array.from(container.children).forEach((child) => {
+      if (child.classList.contains("profile-picker__group-label")) {
+        if (currentLabel) currentLabel.hidden = !anyVisible
+        currentLabel = child
+        anyVisible = false
+        return
+      }
+      if (child.matches('[data-profile-filter-target="option"]') && !child.hidden) anyVisible = true
+    })
+
+    if (currentLabel) currentLabel.hidden = !anyVisible
   }
 }

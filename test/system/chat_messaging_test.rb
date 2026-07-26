@@ -12,8 +12,8 @@ class ChatMessagingTest < ApplicationSystemTestCase
     @member = users(:two)
 
     @server = @owner.owned_chat_servers.create!(name: "Live Server")
-    @server.memberships.create!(user: @owner, role: "owner", default_profile: profiles(:alice))
-    @server.memberships.create!(user: @member, role: "member", default_profile: profiles(:carol))
+    @server.memberships.create!(user: @owner, role: "owner", default_postable: profiles(:alice))
+    @server.memberships.create!(user: @member, role: "member", default_postable: profiles(:carol))
     @channel = @server.channels.create!(name: "general")
     @other_channel = @server.channels.create!(name: "off-topic")
   end
@@ -157,6 +157,44 @@ class ChatMessagingTest < ApplicationSystemTestCase
       assert_text "BOB: shouting today"
       assert_text profiles(:alice).name
       assert_no_text profiles(:bob).name
+    end
+  end
+
+  test "switching the posting-as identity to a group changes whose name is attached to new messages" do
+    sign_in_via_browser(@owner)
+    visit chat_url(channel_path)
+
+    assert_text "Posting as"
+    assert_text profiles(:alice).name
+
+    within(".composer-posting-as") do
+      find(".profile-picker__trigger").click
+      click_link groups(:friends).name
+    end
+
+    assert_selector ".profile-picker__trigger", text: groups(:friends).name
+
+    send_message("Posting for the whole group")
+
+    within("#chat-messages") do
+      assert_text "Posting for the whole group"
+      assert_text groups(:friends).name
+      assert_no_text profiles(:alice).name
+    end
+  end
+
+  test "typing a group's chat proxy brackets posts as that group instead of the default" do
+    groups(:friends).update!(chat_bracket_before: "us:")
+
+    sign_in_via_browser(@owner)
+    visit chat_url(channel_path)
+
+    send_message("us: heading out together")
+
+    within("#chat-messages") do
+      assert_text "heading out together"
+      assert_text groups(:friends).name
+      assert_no_text "us:" # the prefix itself is stripped from the stored body
     end
   end
 

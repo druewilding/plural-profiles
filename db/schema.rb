@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_07_25_160000) do
+ActiveRecord::Schema[8.1].define(version: 2026_07_26_150033) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -42,14 +42,15 @@ ActiveRecord::Schema[8.1].define(version: 2026_07_25_160000) do
     t.index ["blob_id", "variation_digest"], name: "index_active_storage_variant_records_uniqueness", unique: true
   end
 
-  create_table "chat_channel_default_profiles", force: :cascade do |t|
+  create_table "chat_channel_default_postables", force: :cascade do |t|
     t.bigint "channel_id", null: false
     t.datetime "created_at", null: false
-    t.bigint "profile_id", null: false
+    t.bigint "postable_id", null: false
+    t.string "postable_type", null: false
     t.datetime "updated_at", null: false
     t.bigint "user_id", null: false
-    t.index ["channel_id", "user_id"], name: "index_chat_channel_default_profiles_on_channel_id_and_user_id", unique: true
-    t.index ["profile_id"], name: "index_chat_channel_default_profiles_on_profile_id"
+    t.index ["channel_id", "user_id"], name: "index_chat_channel_default_postables_on_channel_id_and_user_id", unique: true
+    t.index ["postable_type", "postable_id"], name: "idx_on_postable_type_postable_id_f889e21558"
   end
 
   create_table "chat_channel_reads", force: :cascade do |t|
@@ -76,12 +77,13 @@ ActiveRecord::Schema[8.1].define(version: 2026_07_25_160000) do
 
   create_table "chat_memberships", force: :cascade do |t|
     t.datetime "created_at", null: false
-    t.bigint "default_profile_id"
+    t.bigint "default_postable_id"
+    t.string "default_postable_type"
     t.string "role", default: "member", null: false
     t.bigint "server_id", null: false
     t.datetime "updated_at", null: false
     t.bigint "user_id", null: false
-    t.index ["default_profile_id"], name: "index_chat_memberships_on_default_profile_id"
+    t.index ["default_postable_type", "default_postable_id"], name: "idx_on_default_postable_type_default_postable_id_782e0a1134"
     t.index ["server_id", "user_id"], name: "index_chat_memberships_on_server_id_and_user_id", unique: true
     t.index ["user_id"], name: "index_chat_memberships_on_user_id"
   end
@@ -90,12 +92,13 @@ ActiveRecord::Schema[8.1].define(version: 2026_07_25_160000) do
     t.text "body", null: false
     t.bigint "channel_id", null: false
     t.datetime "created_at", null: false
-    t.bigint "profile_id"
-    t.string "profile_name", null: false
+    t.bigint "postable_id"
+    t.string "postable_name", null: false
+    t.string "postable_type"
     t.datetime "updated_at", null: false
     t.bigint "user_id", null: false
     t.index ["channel_id", "created_at"], name: "index_chat_messages_on_channel_id_and_created_at"
-    t.index ["profile_id"], name: "index_chat_messages_on_profile_id"
+    t.index ["postable_type", "postable_id"], name: "index_chat_messages_on_postable"
     t.index ["user_id"], name: "index_chat_messages_on_user_id"
   end
 
@@ -151,6 +154,8 @@ ActiveRecord::Schema[8.1].define(version: 2026_07_25_160000) do
   create_table "groups", force: :cascade do |t|
     t.string "avatar_alt_text"
     t.string "avatar_shape", default: "rounded", null: false
+    t.string "chat_bracket_after"
+    t.string "chat_bracket_before"
     t.bigint "copied_from_id"
     t.datetime "created_at", null: false
     t.text "description"
@@ -162,6 +167,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_07_25_160000) do
     t.datetime "updated_at", null: false
     t.bigint "user_id", null: false
     t.string "uuid", null: false
+    t.index "user_id, COALESCE(chat_bracket_before, ''::character varying), COALESCE(chat_bracket_after, ''::character varying)", name: "index_groups_on_user_id_and_chat_bracket_pair", unique: true, where: "((chat_bracket_before IS NOT NULL) OR (chat_bracket_after IS NOT NULL))"
     t.index ["copied_from_id"], name: "index_groups_on_copied_from_id"
     t.index ["labels"], name: "index_groups_on_labels", using: :gin
     t.index ["theme_id"], name: "index_groups_on_theme_id"
@@ -400,18 +406,15 @@ ActiveRecord::Schema[8.1].define(version: 2026_07_25_160000) do
 
   add_foreign_key "active_storage_attachments", "active_storage_blobs", column: "blob_id"
   add_foreign_key "active_storage_variant_records", "active_storage_blobs", column: "blob_id"
-  add_foreign_key "chat_channel_default_profiles", "chat_channels", column: "channel_id"
-  add_foreign_key "chat_channel_default_profiles", "profiles"
-  add_foreign_key "chat_channel_default_profiles", "users"
+  add_foreign_key "chat_channel_default_postables", "chat_channels", column: "channel_id"
+  add_foreign_key "chat_channel_default_postables", "users"
   add_foreign_key "chat_channel_reads", "chat_channels", column: "channel_id"
   add_foreign_key "chat_channel_reads", "users"
   add_foreign_key "chat_channels", "chat_servers", column: "server_id"
   add_foreign_key "chat_channels", "themes", on_delete: :nullify
   add_foreign_key "chat_memberships", "chat_servers", column: "server_id"
-  add_foreign_key "chat_memberships", "profiles", column: "default_profile_id"
   add_foreign_key "chat_memberships", "users"
   add_foreign_key "chat_messages", "chat_channels", column: "channel_id"
-  add_foreign_key "chat_messages", "profiles"
   add_foreign_key "chat_messages", "users"
   add_foreign_key "chat_server_invites", "chat_servers", column: "server_id"
   add_foreign_key "chat_server_invites", "users", column: "created_by_id"

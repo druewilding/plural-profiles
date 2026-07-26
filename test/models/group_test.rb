@@ -1401,4 +1401,38 @@ class GroupTest < ActiveSupport::TestCase
     assert_not stray_entry[:directly_reused]
     assert_nil stray_entry[:reuse_target]
   end
+
+  # -- Chat proxy brackets --
+
+  test "chat brackets are optional" do
+    group = users(:one).groups.build(name: "No Brackets")
+    assert group.valid?
+  end
+
+  test "chat brackets normalize blank input to nil" do
+    group = users(:one).groups.build(name: "Blank", chat_bracket_before: "   ", chat_bracket_after: "   ")
+    group.valid?
+    assert_nil group.chat_bracket_before
+    assert_nil group.chat_bracket_after
+  end
+
+  test "chat brackets must be an exact unique before/after combination per user" do
+    users(:one).groups.create!(name: "First", chat_bracket_before: "friends:")
+    dupe = users(:one).groups.build(name: "Second", chat_bracket_before: "friends:")
+    assert_not dupe.valid?
+    assert_includes dupe.errors[:base], "The chat proxy brackets are already used by another profile or group"
+  end
+
+  test "chat brackets can repeat across different users" do
+    users(:one).groups.create!(name: "Mine", chat_bracket_before: "friends:")
+    other = users(:two).groups.build(name: "Theirs", chat_bracket_before: "friends:")
+    assert other.valid?
+  end
+
+  test "chat brackets collide with a profile's brackets for the same user" do
+    users(:one).profiles.create!(name: "Existing Profile", chat_bracket_before: "friends:")
+    dupe = users(:one).groups.build(name: "Second", chat_bracket_before: "friends:")
+    assert_not dupe.valid?
+    assert_includes dupe.errors[:base], "The chat proxy brackets are already used by another profile or group"
+  end
 end

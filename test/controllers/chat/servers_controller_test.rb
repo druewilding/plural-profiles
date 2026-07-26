@@ -7,8 +7,8 @@ class Chat::ServersControllerTest < ActionDispatch::IntegrationTest
     @outsider = users(:two)
     @member = users(:three)
     @server = @owner.owned_chat_servers.create!(name: "Owner's Server")
-    @server.memberships.create!(user: @owner, role: "owner", default_profile: profiles(:alice))
-    @server.memberships.create!(user: @member, role: "member", default_profile: profiles(:stray))
+    @server.memberships.create!(user: @owner, role: "owner", default_postable: profiles(:alice))
+    @server.memberships.create!(user: @member, role: "member", default_postable: profiles(:stray))
   end
 
   test "index lists only servers the current user belongs to" do
@@ -37,11 +37,11 @@ class Chat::ServersControllerTest < ActionDispatch::IntegrationTest
     assert_equal "Join this server first.", flash[:alert]
   end
 
-  test "create builds the server and an owner membership with the chosen default profile" do
+  test "create builds the server and an owner membership with the chosen default postable" do
     sign_in_as @owner
     assert_difference [ "Chat::Server.count", "Chat::Membership.count" ], 1 do
       post chat_servers_path, params: {
-        chat_server: { name: "New Server", subtitle: "A place to chat", default_profile_id: profiles(:bob).id }
+        chat_server: { name: "New Server", subtitle: "A place to chat", default_postable_type: "Profile", default_postable_id: profiles(:bob).id }
       }
     end
 
@@ -49,7 +49,20 @@ class Chat::ServersControllerTest < ActionDispatch::IntegrationTest
     assert_redirected_to chat_server_path(server)
     membership = server.memberships.find_by(user: @owner)
     assert_equal "owner", membership.role
-    assert_equal profiles(:bob), membership.default_profile
+    assert_equal profiles(:bob), membership.default_postable
+  end
+
+  test "create accepts a group as the chosen default postable" do
+    sign_in_as @owner
+    assert_difference [ "Chat::Server.count", "Chat::Membership.count" ], 1 do
+      post chat_servers_path, params: {
+        chat_server: { name: "New Server", default_postable_type: "Group", default_postable_id: groups(:friends).id }
+      }
+    end
+
+    server = Chat::Server.order(:created_at).last
+    membership = server.memberships.find_by(user: @owner)
+    assert_equal groups(:friends), membership.default_postable
   end
 
   test "create rejects a blank name" do
@@ -177,7 +190,7 @@ class Chat::ServersControllerTest < ActionDispatch::IntegrationTest
   test "posting to join without an invite token does not create a membership" do
     sign_in_as @outsider
     assert_no_difference "Chat::Membership.count" do
-      post join_chat_server_path(@server), params: { default_profile_id: profiles(:carol).id }
+      post join_chat_server_path(@server), params: { default_postable_type: "Profile", default_postable_id: profiles(:carol).id }
     end
     assert_redirected_to chat_root_path
   end
@@ -187,13 +200,13 @@ class Chat::ServersControllerTest < ActionDispatch::IntegrationTest
     sign_in_as @outsider
 
     assert_difference "Chat::Membership.count", 1 do
-      post join_chat_server_path(@server), params: { default_profile_id: profiles(:carol).id, invite_token: invite.token }
+      post join_chat_server_path(@server), params: { default_postable_type: "Profile", default_postable_id: profiles(:carol).id, invite_token: invite.token }
     end
     assert_redirected_to chat_server_path(@server)
 
     membership = @server.memberships.find_by(user: @outsider)
     assert_equal "member", membership.role
-    assert_equal profiles(:carol), membership.default_profile
+    assert_equal profiles(:carol), membership.default_postable
     assert invite.reload.redeemed?
     assert_equal @outsider, invite.redeemed_by
   end
@@ -204,7 +217,7 @@ class Chat::ServersControllerTest < ActionDispatch::IntegrationTest
 
     sign_in_as @outsider
     assert_no_difference "Chat::Membership.count" do
-      post join_chat_server_path(@server), params: { default_profile_id: profiles(:carol).id, invite_token: invite.token }
+      post join_chat_server_path(@server), params: { default_postable_type: "Profile", default_postable_id: profiles(:carol).id, invite_token: invite.token }
     end
     assert_redirected_to chat_root_path
   end
