@@ -4084,17 +4084,42 @@ turbo-frame {
   align-items: flex-start;
   gap: 0.5rem;
   white-space: normal;
+  outline: none;
+}
+
+/* Explicit ring rather than relying on the browser's native default — a
+   <button> and an <a> (the composer uses a link, the plain-form pickers use
+   a button) don't reliably render the same default focus indicator. Outline
+   only appears on focus (rather than an always-on "transparent" placeholder
+   that flips color) because forced-colors mode refuses to treat a transparent
+   outline as invisible — any non-"none" outline-style gets forced to a
+   visible system color regardless of focus state, which would otherwise put
+   a box around every option, focused or not. */
+.profile-picker__option:focus-visible {
+  outline: 2px solid var(--link);
+  outline-offset: -2px;
+}
+
+@media (forced-colors: active) {
+  .profile-picker__option:focus-visible {
+    outline-color: CanvasText;
+  }
 }
 
 /* The composer's picker uses a link (it fires an immediate PATCH); the
    plain-form "post as" pickers use a <button> instead (there's nothing to
    navigate to, just a hidden field to fill in) — reset the UA button chrome
-   without touching the font-size/color already set above for both. */
+   without touching the font-size/color already set above for both.
+   appearance: none keeps the button under our own styling (background,
+   border, outline) in forced-colors mode too — without it, some browsers
+   fall back to native widget rendering for real <button> elements there and
+   ignore the authored focus ring entirely. */
 button.profile-picker__option {
   width: 100%;
   text-align: left;
   background: none;
   border: none;
+  appearance: none;
   font-family: inherit;
   cursor: pointer;
 }
