@@ -16,11 +16,11 @@ class Our::SearchController < ApplicationController
 
     if @query.present?
       term = "%#{Group.sanitize_sql_like(@query)}%"
-      @groups = Current.user.groups.where(GROUP_CONDITIONS, term: term).order_by_name_and_labels
-      @profiles = Current.user.profiles.where(PROFILE_CONDITIONS, term: term).order_by_name_and_labels
+      @groups = Current.user.groups.where(GROUP_CONDITIONS, term: term).order_by_name_and_labels.to_a
+      @profiles = Current.user.profiles.where(PROFILE_CONDITIONS, term: term).order_by_name_and_labels.to_a
     else
-      @groups = Group.none
-      @profiles = Profile.none
+      @groups = []
+      @profiles = []
     end
   end
 end
