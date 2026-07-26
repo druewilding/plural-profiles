@@ -3817,8 +3817,8 @@ details.theme-section-card:not([open]) .theme-section-card__header {
 .chat-channel-header h1 {
   margin: 0;
   font-size: 1.15rem;
-  flex-shrink: 0;
-  white-space: nowrap;
+  min-width: 0;
+  overflow-wrap: anywhere;
 }
 
 .chat-channel-header__actions {
