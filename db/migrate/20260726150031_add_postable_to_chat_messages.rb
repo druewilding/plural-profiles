@@ -21,9 +21,20 @@ class AddPostableToChatMessages < ActiveRecord::Migration[8.1]
     add_index :chat_messages, :profile_id
     add_foreign_key :chat_messages, :profiles
 
+    # profile_name is backfilled from postable_name for every row, group-backed
+    # included — postable_name is still NOT NULL at this point (it isn't
+    # dropped until below), so this satisfies the profile_name NOT NULL
+    # constraint restored below regardless of postable_type. profile_id, by
+    # contrast, can only be reconstructed for Profile-backed rows — a
+    # group-backed message rolls back to look like one whose profile was
+    # deleted (profile_id NULL, profile_name holding the last-known name),
+    # which is exactly the shape this column already tolerated pre-migration.
     execute <<~SQL.squish
-      UPDATE chat_messages SET profile_id = postable_id, profile_name = postable_name
-      WHERE postable_type = 'Profile'
+      UPDATE chat_messages SET profile_name = postable_name
+    SQL
+
+    execute <<~SQL.squish
+      UPDATE chat_messages SET profile_id = postable_id WHERE postable_type = 'Profile'
     SQL
 
     change_column_null :chat_messages, :profile_name, false

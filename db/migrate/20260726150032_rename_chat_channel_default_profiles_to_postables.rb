@@ -24,6 +24,23 @@ class RenameChatChannelDefaultProfilesToPostables < ActiveRecord::Migration[8.1]
   end
 
   def down
+    # Unlike chat_messages (which keeps a profile_name snapshot, so a
+    # group-backed row can roll back to the same "profile was deleted" shape
+    # the schema already tolerated), this table's profile_id was NOT NULL
+    # with no fallback column at all. A group-backed row has no valid value
+    # to put there, so rolling back while one exists would otherwise fail
+    # opaquely on the NOT NULL constraint below — raise a clear, actionable
+    # error instead.
+    group_backed_count = connection.select_value(
+      "SELECT COUNT(*) FROM chat_channel_default_postables WHERE postable_type <> 'Profile'"
+    ).to_i
+    if group_backed_count > 0
+      raise ActiveRecord::IrreversibleMigration,
+        "#{group_backed_count} chat_channel_default_postables row(s) have a Group as their postable, which " \
+        "this migration's down path has no way to represent (profile_id was NOT NULL with no snapshot column). " \
+        "Delete or reassign those rows to a Profile before rolling back."
+    end
+
     add_column :chat_channel_default_postables, :profile_id, :bigint
 
     execute <<~SQL.squish
