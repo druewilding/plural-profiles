@@ -74,10 +74,10 @@
 
 - if @group.child_groups.any?
   .profile-grid
-    - @group.child_groups.order(:name).each do |child|
+    - @group.child_groups.order_by_name_and_labels.each do |child|
       = render "group_card", group: child
 
 - if @group.profiles.any?
   .profile-grid
-    - @group.profiles.order(:name).each do |profile|
+    - @group.profiles.order_by_name_and_labels.each do |profile|
       = render "our/profiles/profile_card", profile: profile

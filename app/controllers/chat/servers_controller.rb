@@ -38,6 +38,10 @@ module Chat
     def update
       @server.avatar.purge if params[:chat_server][:remove_avatar] == "1"
       if @server.update(server_params)
+        if params[:chat_server].key?(:default_postable_id)
+          default_postable = find_postable(params[:chat_server][:default_postable_type], params[:chat_server][:default_postable_id])
+          current_membership&.update!(default_postable: default_postable) if default_postable
+        end
         redirect_to chat_server_path(@server), notice: "Server updated."
       else
         if params.dig(:chat_server, :avatar).present?
@@ -63,8 +67,8 @@ module Chat
         redirect_to chat_root_path, alert: "You need a valid invite link to join this server." and return
       end
 
-      @profiles = Current.user.profiles.order(:name)
-      @groups = Current.user.groups.order(:name)
+      @profiles = Current.user.profiles.order_by_name_and_labels.includes(avatar_attachment: :blob)
+      @groups = Current.user.groups.order_by_name_and_labels.includes(avatar_attachment: :blob)
       @invite_token = params[:invite_token]
 
       if request.post? && params[:default_postable_id].present?
