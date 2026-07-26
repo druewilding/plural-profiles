@@ -9,6 +9,7 @@ alice:
   uuid: abc11111-1111-1111-1111-111111111111
   name: Alice
   pronouns: she/her
+  tag_line: Always stargazing
   description: Hi, I'm Alice! I like painting and reading.
   theme: dark_forest
 
