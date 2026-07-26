@@ -2,12 +2,12 @@ class Our::SearchController < ApplicationController
   include OurSidebar
 
   GROUP_CONDITIONS = <<~SQL.squish.freeze
-    name ILIKE :term OR subtitle ILIKE :term OR description ILIKE :term
+    name ILIKE :term OR subtitle ILIKE :term OR tag_line ILIKE :term OR description ILIKE :term
     OR EXISTS (SELECT 1 FROM jsonb_array_elements_text(labels) AS label_val WHERE label_val ILIKE :term)
   SQL
 
   PROFILE_CONDITIONS = <<~SQL.squish.freeze
-    name ILIKE :term OR subtitle ILIKE :term OR description ILIKE :term OR pronouns ILIKE :term
+    name ILIKE :term OR subtitle ILIKE :term OR tag_line ILIKE :term OR description ILIKE :term OR pronouns ILIKE :term
     OR EXISTS (SELECT 1 FROM jsonb_array_elements_text(labels) AS label_val WHERE label_val ILIKE :term)
   SQL
 

@@ -7,7 +7,7 @@
   = form_with url: our_search_path, method: :get, data: { turbo_action: "advance" } do |form|
     .form-group
       = form.label :q, "Search your groups and profiles"
-      = form.text_field :q, value: @query, placeholder: "Search by name, subtitle, pronouns, labels, or description...", autofocus: true
+      = form.text_field :q, value: @query, placeholder: "Search by name, subtitle, tag line, pronouns, labels, or description...", autofocus: true
     .form-group
       = form.submit "Search"
 

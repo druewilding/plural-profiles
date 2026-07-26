@@ -45,6 +45,14 @@ class Our::SearchControllerTest < ActionDispatch::IntegrationTest
     assert_no_match "Alice", main_content
   end
 
+  test "show matches profile by tag line" do
+    sign_in_as @user
+    get our_search_path, params: { q: "stargazing" }
+    assert_response :success
+    assert_match "Alice", main_content
+    assert_no_match "Bob", main_content
+  end
+
   test "show matches profile by description" do
     sign_in_as @user
     get our_search_path, params: { q: "painting" }
