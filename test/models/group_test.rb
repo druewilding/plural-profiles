@@ -585,6 +585,18 @@ class GroupTest < ActiveSupport::TestCase
     assert_equal [ plain, labelled ], ordered.to_a
   end
 
+  test "order_by_name_and_labels sorts leading-symbol names (e.g. ~) after letters" do
+    user = users(:one)
+    # The database's locale-aware collation ignores leading punctuation by default,
+    # which would otherwise sort "~Zeta" alongside "Zeta". COLLATE "C" prevents that.
+    apple = user.groups.create!(name: "apple")
+    tilde = user.groups.create!(name: "~apple")
+    zebra = user.groups.create!(name: "Zebra")
+
+    ordered = user.groups.where(id: [ apple, tilde, zebra ].map(&:id)).order_by_name_and_labels
+    assert_equal [ apple, zebra, tilde ], ordered.to_a
+  end
+
   test "name_and_label_sort_key uses downcased name so mixed-case sorts correctly" do
     group = groups(:friends)
     group.name = "Zebra"

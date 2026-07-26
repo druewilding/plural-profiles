@@ -5,8 +5,11 @@ module HasLabels
     before_validation :normalize_labels
 
     # Order by name (case-insensitive), then unlabelled items first, then labels alphabetically.
+    # COLLATE "C" sorts by raw codepoint order rather than the database's locale-aware
+    # collation, so leading symbols (e.g. "~") sort after letters instead of being
+    # ignored — matching the in-memory ordering from #name_and_label_sort_key.
     scope :order_by_name_and_labels, -> {
-      order(Arel.sql("LOWER(name), CASE WHEN labels = '[]'::jsonb THEN 0 ELSE 1 END, LOWER(labels::text)"))
+      order(Arel.sql(%q{LOWER(name) COLLATE "C", CASE WHEN labels = '[]'::jsonb THEN 0 ELSE 1 END, LOWER(labels::text) COLLATE "C"}))
     }
   end
 
