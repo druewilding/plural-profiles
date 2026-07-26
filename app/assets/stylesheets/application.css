@@ -186,6 +186,15 @@ body {
   margin: 0.5rem 0.5rem;
 }
 
+.sidebar__search {
+  padding: 0 0.5rem;
+}
+
+.sidebar__search input[type="search"] {
+  font-size: 0.9rem;
+  padding: 0.4rem 0.6rem;
+}
+
 .form-divider {
   border: none;
   border-top: 1px solid color-mix(in srgb, var(--input-border) 40%, transparent);
@@ -771,6 +780,7 @@ input[type="email"],
 input[type="password"],
 input[type="url"],
 input[type="number"],
+input[type="search"],
 textarea,
 select {
   width: 100%;

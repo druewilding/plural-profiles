@@ -1,7 +1,6 @@
 %nav.sidebar{"aria-label" => "Your content"}
-  %ul.sidebar__list
-    %li{class: "sidebar__item sidebar__item--action #{('sidebar__item--active' if current_page?(root_path))}"}
-      = link_to "Home", root_path, class: "sidebar__link sidebar__link--action"
+  = form_with url: our_search_path, method: :get, class: "sidebar__search" do |form|
+    = form.text_field :q, type: "search", placeholder: "Search...", "aria-label": "Search your groups and profiles"
 
   %hr
 
