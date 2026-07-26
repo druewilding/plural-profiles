@@ -3928,6 +3928,10 @@ turbo-frame {
   margin-bottom: 1rem;
 }
 
+.chat-messages > :last-child {
+  margin-bottom: 0;
+}
+
 .chat-date-divider {
   display: flex;
   align-items: center;
