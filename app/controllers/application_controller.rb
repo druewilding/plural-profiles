@@ -10,6 +10,10 @@ class ApplicationController < ActionController::Base
 
   private
 
+  def require_admin
+    redirect_to root_path, alert: "Only admins can access that page." unless Current.user&.admin?
+  end
+
   # Resolves to, in priority order: the user's explicit account preference,
   # the browser-detected time zone cookie, then UTC.
   def set_time_zone(&block)
