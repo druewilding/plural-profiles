@@ -2,7 +2,7 @@
 
 %h1 Stats
 
-%h2 Profiles
+%h2 General
 .stats-grid
   .card.stats-card
     .stats-card__number= @user_count
@@ -16,15 +16,21 @@
   .card.stats-card
     .stats-card__number= @invite_code_count
     .stats-card__label Unused invite codes
-
-%h2 Avatars and themes
-.stats-grid
-  .card.stats-card
-    .stats-card__number= @avatar_count
-    .stats-card__label Avatars
   .card.stats-card
     .stats-card__number= @theme_count
     .stats-card__label Themes
+
+%h2 Avatars
+.stats-grid
+  .card.stats-card
+    .stats-card__number= @group_avatar_count
+    .stats-card__label Group avatars
+  .card.stats-card
+    .stats-card__number= @profile_avatar_count
+    .stats-card__label Profile avatars
+  .card.stats-card
+    .stats-card__number= @server_avatar_count
+    .stats-card__label Chat server avatars
 
 %h2 Chat
 .stats-grid
