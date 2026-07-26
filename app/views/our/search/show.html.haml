@@ -1,0 +1,33 @@
+- content_for(:title) { "Search — Plural Profiles" }
+
+.card
+  .card__header
+    %h1 Search
+
+  = form_with url: our_search_path, method: :get, data: { turbo_action: "advance" } do |form|
+    .form-group
+      = form.label :q, "Search your groups and profiles"
+      = form.text_field :q, value: @query, placeholder: "Search by name, subtitle, pronouns, labels, or description...", autofocus: true
+    .form-group
+      = form.submit "Search"
+
+- if @query.present?
+  - if @groups.empty? && @profiles.empty?
+    .card
+      %p No groups or profiles matched "#{@query}".
+  - else
+    - if @groups.any?
+      .card
+        .card__header
+          %h2= "Groups (#{@groups.count})"
+        .profile-grid
+          - @groups.each do |group|
+            = render "our/groups/group_card", group: group
+
+    - if @profiles.any?
+      .card
+        .card__header
+          %h2= "Profiles (#{@profiles.count})"
+        .profile-grid
+          - @profiles.each do |profile|
+            = render "our/profiles/profile_card", profile: profile

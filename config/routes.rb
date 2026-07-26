@@ -29,6 +29,7 @@ Rails.application.routes.draw do
       post :duplicate_execute
     end
   end
+  resource :our_search, path: "our/search", controller: "our/search", only: %i[show]
   resource :our_account, path: "our/account", controller: "our/account", only: %i[show] do
     patch :update_password
     patch :update_email

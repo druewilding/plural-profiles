@@ -47,6 +47,14 @@ class Our::SidebarTest < ActionDispatch::IntegrationTest
     assert_match "Friends", response.body
   end
 
+  test "sidebar renders a search box instead of a Home link" do
+    sign_in_as users(:one)
+    get our_groups_path
+    assert_response :success
+    assert_select ".sidebar__search input[type=search][placeholder=?]", "Search..."
+    assert_select ".sidebar a", text: "Home", count: 0
+  end
+
   # ── Unauthenticated — no sidebar, redirected ─────────────────────────────
 
   test "unauthenticated request to groups index is redirected" do
