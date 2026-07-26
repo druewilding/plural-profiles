@@ -5,7 +5,9 @@ class StatsController < ApplicationController
     @user_count = User.where(deactivated_at: nil).count
     @profile_count = Profile.count
     @group_count = Group.count
-    @avatar_count = ActiveStorage::Attachment.where(name: "avatar", record_type: [ "Profile", "Group" ]).count
+    @group_avatar_count = ActiveStorage::Attachment.where(name: "avatar", record_type: "Group").count
+    @profile_avatar_count = ActiveStorage::Attachment.where(name: "avatar", record_type: "Profile").count
+    @server_avatar_count = ActiveStorage::Attachment.where(name: "avatar", record_type: "Chat::Server").count
     @invite_code_count = InviteCode.where(redeemed_at: nil).count
     @theme_count = Theme.count
     @chat_server_count = Chat::Server.count
