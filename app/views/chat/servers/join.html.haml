@@ -9,8 +9,8 @@
       = hidden_field_tag :invite_token, @invite_token
 
     .form-group
-      = label_tag "default_profile_id", "Post as"
-      = render "chat/shared/profile_picker", field_name: "default_profile_id", profiles: @profiles, selected_profile: @profiles.first
+      %label{id: "default_profile_id_label"} Post as
+      = render "chat/shared/profile_picker", field_name: "default_profile_id", label_id: "default_profile_id_label", profiles: @profiles, selected_profile: @profiles.first
       %p.form-hint The profile you'll post as by default in this server. You can change this any time.
 
     .form-group

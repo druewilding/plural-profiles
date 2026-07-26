@@ -23,8 +23,8 @@
   - unless server.persisted?
     - our_profiles = Current.user.profiles.order(:name)
     .form-group
-      = label_tag "chat_server_default_profile_id", "Post as"
-      = render "chat/shared/profile_picker", field_name: "chat_server[default_profile_id]", profiles: our_profiles, selected_profile: our_profiles.first
+      %label{id: "chat_server_default_profile_id_label"} Post as
+      = render "chat/shared/profile_picker", field_name: "chat_server[default_profile_id]", label_id: "chat_server_default_profile_id_label", profiles: our_profiles, selected_profile: our_profiles.first
       %p.form-hint The profile you'll post as by default in this server. You can change this any time.
 
   .form-group
