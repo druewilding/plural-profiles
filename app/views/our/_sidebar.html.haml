@@ -1,6 +1,6 @@
 %nav.sidebar{"aria-label" => "Your content"}
   = form_with url: our_search_path, method: :get, class: "sidebar__search" do |form|
-    = form.text_field :q, type: "search", placeholder: "Search...", "aria-label": "Search your groups and profiles"
+    = form.text_field :q, type: "search", value: params[:q], placeholder: "Search...", "aria-label": "Search your groups and profiles"
 
   %hr
 
