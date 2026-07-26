@@ -10,7 +10,9 @@
     %span.profile-picker__trigger-avatar{data: {"profile-picker-target": "triggerAvatar"}}
       - if selected_profile
         = render "chat/shared/avatar", record: selected_profile, size: 22
-    %span{data: {"profile-picker-target": "triggerName"}}= selected_profile ? formatted_inline(selected_profile.name) : "Choose a profile…"
+    %span
+      %strong{data: {"profile-picker-target": "triggerName"}}= selected_profile ? formatted_inline(selected_profile.name) : "Choose a profile…"
+      %span.profile-picker__trigger-pronouns{data: {"profile-picker-target": "triggerPronouns"}, hidden: selected_profile&.pronouns.blank?}= selected_profile&.pronouns.presence && formatted_inline(selected_profile.pronouns)
   .action-dropdown__menu.profile-picker__menu{data: {controller: "profile-filter"}}
     %input.profile-picker__search{type: "text", autocomplete: "off", placeholder: "Find a profile…", "aria-label": "Filter profiles", data: {"profile-filter-target": "input", action: "input->profile-filter#apply"}}
     .profile-picker__options

@@ -4026,6 +4026,13 @@ turbo-frame {
   display: flex;
 }
 
+.profile-picker__trigger-pronouns {
+  margin-left: 0.3rem;
+  font-size: 0.78rem;
+  font-style: italic;
+  color: color-mix(in srgb, var(--text) 75%, transparent);
+}
+
 .profile-picker__trigger::-webkit-details-marker,
 .profile-picker__trigger::marker {
   display: none;

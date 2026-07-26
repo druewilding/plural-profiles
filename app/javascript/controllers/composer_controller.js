@@ -11,15 +11,19 @@ import { Controller } from "@hotwired/stimulus"
 //
 // Usage: wrap the whole `.composer` block with data: { controller: "composer" },
 // with data-composer-target="form"/"textarea" on the message form/textarea,
-// "triggerAvatar"/"triggerName" on the posting-as pill's avatar/name, and
-// "option" (plus data-prefix/data-suffix/data-name) on each profile in the
-// posting-as picker.
+// "triggerAvatar"/"triggerName"/"triggerPronouns" on the posting-as pill's
+// avatar/name/pronouns, and "option" (plus data-prefix/data-suffix/data-name)
+// on each profile in the posting-as picker.
 export default class extends Controller {
-  static targets = [ "form", "textarea", "triggerAvatar", "triggerName", "option" ]
+  static targets = [ "form", "textarea", "triggerAvatar", "triggerName", "triggerPronouns", "option" ]
 
   connect() {
     if (this.hasTriggerAvatarTarget) this.defaultAvatarHTML = this.triggerAvatarTarget.innerHTML
     if (this.hasTriggerNameTarget) this.defaultNameHTML = this.triggerNameTarget.innerHTML
+    if (this.hasTriggerPronounsTarget) {
+      this.defaultPronounsHTML = this.triggerPronounsTarget.innerHTML
+      this.defaultPronounsHidden = this.triggerPronounsTarget.hidden
+    }
   }
 
   submitOnEnter(event) {
@@ -40,9 +44,18 @@ export default class extends Controller {
       if (avatar) this.triggerAvatarTarget.replaceChildren(avatar.cloneNode(true))
       const name = match.option.querySelector(".profile-picker__option-name")
       if (name) this.triggerNameTarget.innerHTML = name.innerHTML
+      if (this.hasTriggerPronounsTarget) {
+        const pronouns = match.option.querySelector(".profile-picker__option-pronouns")
+        this.triggerPronounsTarget.innerHTML = pronouns ? pronouns.innerHTML : ""
+        this.triggerPronounsTarget.hidden = !pronouns
+      }
     } else {
       this.triggerAvatarTarget.innerHTML = this.defaultAvatarHTML
       this.triggerNameTarget.innerHTML = this.defaultNameHTML
+      if (this.hasTriggerPronounsTarget) {
+        this.triggerPronounsTarget.innerHTML = this.defaultPronounsHTML
+        this.triggerPronounsTarget.hidden = this.defaultPronounsHidden
+      }
     }
   }
 

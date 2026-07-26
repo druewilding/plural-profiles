@@ -34,6 +34,7 @@
           %span
             Posting as
             %strong{data: {"composer-target": "triggerName"}}= formatted_inline(current_profile.name)
+            %span.profile-picker__trigger-pronouns{data: {"composer-target": "triggerPronouns"}, hidden: current_profile.pronouns.blank?}= current_profile.pronouns.presence && formatted_inline(current_profile.pronouns)
         .action-dropdown__menu.profile-picker__menu{data: {controller: "profile-filter"}}
           %input.profile-picker__search{type: "text", autocomplete: "off", placeholder: "Find a profile…", "aria-label": "Filter profiles", data: {"profile-filter-target": "input", action: "input->profile-filter#apply"}}
           .profile-picker__options

@@ -6,7 +6,7 @@ import { Controller } from "@hotwired/stimulus"
 // root is the <details> itself (search filtering is a separate profile-filter
 // controller instance scoped to the inner menu).
 export default class extends Controller {
-  static targets = [ "hiddenField", "triggerAvatar", "triggerName", "option" ]
+  static targets = [ "hiddenField", "triggerAvatar", "triggerName", "triggerPronouns", "option" ]
 
   select(event) {
     const option = event.currentTarget
@@ -18,6 +18,12 @@ export default class extends Controller {
 
     const name = option.querySelector(".profile-picker__option-name")
     if (name && this.hasTriggerNameTarget) this.triggerNameTarget.innerHTML = name.innerHTML
+
+    if (this.hasTriggerPronounsTarget) {
+      const pronouns = option.querySelector(".profile-picker__option-pronouns")
+      this.triggerPronounsTarget.innerHTML = pronouns ? pronouns.innerHTML : ""
+      this.triggerPronounsTarget.hidden = !pronouns
+    }
 
     this.element.open = false
   }
