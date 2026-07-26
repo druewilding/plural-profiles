@@ -1,4 +1,6 @@
 class StatsController < ApplicationController
+  before_action :require_admin
+
   def index
     @user_count = User.where(deactivated_at: nil).count
     @profile_count = Profile.count

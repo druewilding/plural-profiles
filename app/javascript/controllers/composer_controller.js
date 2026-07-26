@@ -11,15 +11,34 @@ import { Controller } from "@hotwired/stimulus"
 //
 // Usage: wrap the whole `.composer` block with data: { controller: "composer" },
 // with data-composer-target="form"/"textarea" on the message form/textarea,
-// "triggerAvatar"/"triggerName" on the posting-as pill's avatar/name, and
-// "option" (plus data-prefix/data-suffix/data-name) on each profile in the
-// posting-as picker.
+// "triggerAvatar"/"triggerName"/"triggerPronouns" on the posting-as pill's
+// avatar/name/pronouns, and "option" (plus data-prefix/data-suffix/data-name)
+// on each profile in the posting-as picker.
 export default class extends Controller {
-  static targets = [ "form", "textarea", "triggerAvatar", "triggerName", "option" ]
+  static targets = [ "form", "textarea", "triggerAvatar", "triggerName", "triggerPronouns", "option" ]
 
-  connect() {
-    if (this.hasTriggerAvatarTarget) this.defaultAvatarHTML = this.triggerAvatarTarget.innerHTML
-    if (this.hasTriggerNameTarget) this.defaultNameHTML = this.triggerNameTarget.innerHTML
+  // Rather than caching the "default" trigger HTML once in connect(), track
+  // it via Stimulus's target lifecycle callbacks below — switching profiles
+  // via the picker turbo_stream-replaces just the trigger (see
+  // Chat::ChannelDefaultProfilesController#update), which doesn't reconnect
+  // this controller, so a one-time connect()-time cache would go stale the
+  // moment you switched profiles and then kept typing: the next keystroke
+  // with no bracket match would revert the pill to whatever profile was
+  // selected when the page first loaded, not the one you just switched to.
+  // Target[Connected] fires on every genuine node replacement (including
+  // ours) but not on the preview's in-place innerHTML mutations below, so
+  // the cache only ever reflects the real, server-confirmed default.
+  triggerAvatarTargetConnected(element) {
+    this.defaultAvatarHTML = element.innerHTML
+  }
+
+  triggerNameTargetConnected(element) {
+    this.defaultNameHTML = element.innerHTML
+  }
+
+  triggerPronounsTargetConnected(element) {
+    this.defaultPronounsHTML = element.innerHTML
+    this.defaultPronounsHidden = element.hidden
   }
 
   submitOnEnter(event) {
@@ -38,11 +57,20 @@ export default class extends Controller {
     if (match) {
       const avatar = match.option.querySelector(".avatar")
       if (avatar) this.triggerAvatarTarget.replaceChildren(avatar.cloneNode(true))
-      const name = match.option.querySelector(".composer-posting-as__option-name")
+      const name = match.option.querySelector(".profile-picker__option-name")
       if (name) this.triggerNameTarget.innerHTML = name.innerHTML
+      if (this.hasTriggerPronounsTarget) {
+        const pronouns = match.option.querySelector(".profile-picker__option-pronouns")
+        this.triggerPronounsTarget.innerHTML = pronouns ? pronouns.innerHTML : ""
+        this.triggerPronounsTarget.hidden = !pronouns
+      }
     } else {
       this.triggerAvatarTarget.innerHTML = this.defaultAvatarHTML
       this.triggerNameTarget.innerHTML = this.defaultNameHTML
+      if (this.hasTriggerPronounsTarget) {
+        this.triggerPronounsTarget.innerHTML = this.defaultPronounsHTML
+        this.triggerPronounsTarget.hidden = this.defaultPronounsHidden
+      }
     }
   }
 

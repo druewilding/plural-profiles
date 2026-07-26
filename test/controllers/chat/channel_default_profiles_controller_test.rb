@@ -40,4 +40,18 @@ class Chat::ChannelDefaultProfilesControllerTest < ActionDispatch::IntegrationTe
     patch chat_server_channel_default_profile_path(@server, @channel), params: { profile_uuid: profiles(:stray).uuid }
     assert_redirected_to join_chat_server_path(@server)
   end
+
+  test "update responds with a turbo_stream replacing just the picker, not a redirect" do
+    # A redirect here would force a full-page Turbo visit, which would wipe
+    # out anything the user had already typed into the message textarea —
+    # this must stay a targeted replace instead. See also the system test
+    # "switching the posting-as profile does not clear an in-progress message".
+    sign_in_as @owner
+    patch chat_server_channel_default_profile_path(@server, @channel), params: { profile_uuid: profiles(:bob).uuid },
+      as: :turbo_stream
+    assert_response :success
+    assert_equal Mime[:turbo_stream].to_s, response.media_type
+    assert_match %r{<turbo-stream action="replace" target="posting-as-picker">}, response.body
+    assert_match profiles(:bob).name, response.body
+  end
 end
