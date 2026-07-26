@@ -63,7 +63,7 @@ body {
 
 .site-header {
   background-color: var(--header-bg);
-  padding: 1rem 2rem;
+  padding: 0.5rem 1.25rem;
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -77,7 +77,7 @@ body {
 }
 
 .site-header .logo {
-  font-size: 1.25rem;
+  font-size: 1.05rem;
   font-weight: 700;
   color: var(--heading);
   text-decoration: none;
@@ -789,6 +789,7 @@ select {
   border: 1px solid var(--input-border);
   border-radius: 6px;
   color: var(--input-text);
+  font-family: inherit;
   font-size: 1rem;
   outline: none;
   transition: border-color 0.2s;
@@ -2576,7 +2577,7 @@ input[type="submit"].btn--small,
   }
 
   .site-header {
-    padding: 0.75rem 1rem;
+    padding: 0.5rem 1rem;
   }
 }
 
@@ -3791,16 +3792,19 @@ details.theme-section-card:not([open]) .theme-section-card__header {
 
 .chat-channel-header {
   display: flex;
-  align-items: flex-start;
+  align-items: center;
   justify-content: space-between;
   gap: 1rem;
-  padding: 1.5rem 1.5rem 1rem;
+  padding: 0.6rem 1.25rem;
   border-bottom: 1px solid var(--pane-border);
   flex-shrink: 0;
 }
 
 .chat-channel-header h1 {
   margin: 0;
+  font-size: 1.15rem;
+  min-width: 0;
+  overflow-wrap: anywhere;
 }
 
 .chat-channel-header__actions {
@@ -3811,8 +3815,29 @@ details.theme-section-card:not([open]) .theme-section-card__header {
 
 .chat-channel-header__title {
   display: flex;
-  align-items: flex-start;
+  align-items: center;
   gap: 0.5rem;
+  min-width: 0;
+  flex: 1;
+}
+
+/* Name and subtitle share one line rather than stacking — the subtitle is
+   the one that gives way (ellipsis) since the channel name is what
+   identifies the channel and should never get cut off. */
+.chat-channel-header__title-text {
+  display: flex;
+  align-items: baseline;
+  gap: 0.6rem;
+  min-width: 0;
+}
+
+.chat-channel-header__title-text .subtitle {
+  margin: 0;
+  min-width: 0;
+  flex: 1 1 auto;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
 }
 
 /* Hidden by default — only shown at the small-screen breakpoint below,
@@ -3887,6 +3912,10 @@ turbo-frame {
 .chat-message,
 .chat-date-divider {
   margin-bottom: 1rem;
+}
+
+.chat-messages > :last-child {
+  margin-bottom: 0;
 }
 
 .chat-date-divider {
@@ -3983,7 +4012,7 @@ turbo-frame {
 .composer {
   flex-shrink: 0;
   border-top: 1px solid var(--pane-border);
-  padding: 0.85rem 1.5rem 1.25rem;
+  padding: 0.5rem 1.25rem 0.75rem;
 }
 
 /* Shared "post as" searchable profile picker — used by the composer's
@@ -4208,6 +4237,17 @@ button.profile-picker__option {
 
 .composer-input-row textarea {
   flex: 1;
+  line-height: 1.4;
+  /* The shared textarea rule sets a 100px min-height sized for full-page
+     forms — way more than the composer's own rows="1" needs, and on a
+     fixed-viewport chat layout every extra pixel here is one less pixel for
+     the message history. composer_controller.js#autoGrow drives the actual
+     height as you type via an inline style; these are just the floor (one
+     line) and ceiling (six lines) it's clamped between. */
+  min-height: 2.6rem;
+  max-height: 9.6rem;
+  resize: none;
+  overflow-y: auto;
 }
 
 /* Server invites */

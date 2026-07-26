@@ -5,13 +5,13 @@
     .chat-channel-header__title
       = link_to chat_server_path(@server), class: "chat-channel-back", "aria-label": "Back to channels" do
         %span{"aria-hidden": "true"} ‹
-      %div
+      .chat-channel-header__title-text
         %h1= safe_join([ "# ", formatted_inline(@channel.name) ])
         - if @channel.subtitle.present?
           %p.subtitle= formatted_inline(@channel.subtitle)
 
     - if server_owner?
-      = link_to "Channel settings", edit_chat_server_channel_path(@server, @channel), class: "btn btn--secondary"
+      = link_to "Channel settings", edit_chat_server_channel_path(@server, @channel), class: "btn btn--secondary btn--small"
 
   = turbo_stream_from @channel
 
@@ -36,5 +36,5 @@
             %p= message
 
       .composer-input-row
-        = form.text_area :body, rows: 2, required: true, autofocus: true, placeholder: "Message ##{plain_field(@channel.name)} (Enter to send, Shift+Enter for a new line)", data: { "composer-target": "textarea", action: "keydown->composer#submitOnEnter input->composer#detectProxy" }
+        = form.text_area :body, rows: 1, required: true, autofocus: true, placeholder: "Message ##{plain_field(@channel.name)} (Enter to send, Shift+Enter for a new line)", data: { "composer-target": "textarea", action: "keydown->composer#submitOnEnter input->composer#detectProxy input->composer#autoGrow" }
         = form.submit "Send", class: "visually-hidden"
