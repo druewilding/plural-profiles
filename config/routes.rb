@@ -76,6 +76,7 @@ Rails.application.routes.draw do
         end
 
         resource :invite, only: %i[show create], controller: "server_invites"
+        resource :membership, only: %i[edit update], controller: "memberships"
 
         resources :channels, only: %i[show new create edit update], param: :uuid do
           member do
