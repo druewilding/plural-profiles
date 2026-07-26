@@ -69,9 +69,8 @@ class ChatMessagingTest < ApplicationSystemTestCase
       click_link profiles(:bob).name
     end
 
-    # The profile switch link is a Turbo PATCH that redirects back to this
-    # same channel page — wait for that round-trip to settle (fresh composer,
-    # fresh textarea) before typing, or send_keys can hit a stale element.
+    # The profile switch link is a Turbo PATCH that turbo_stream-replaces just
+    # the picker — wait for that to settle before typing.
     assert_selector ".profile-picker__trigger", text: profiles(:bob).name
 
     send_message("Switched over to Bob")
@@ -81,6 +80,21 @@ class ChatMessagingTest < ApplicationSystemTestCase
       assert_text profiles(:bob).name
       assert_no_text profiles(:alice).name
     end
+  end
+
+  test "switching the posting-as profile does not clear an in-progress message" do
+    sign_in_via_browser(@owner)
+    visit chat_url(channel_path)
+
+    fill_in placeholder: "Message ##{@channel.name} (Enter to send, Shift+Enter for a new line)", with: "Don't lose this"
+
+    within(".composer-posting-as") do
+      find(".profile-picker__trigger").click
+      click_link profiles(:bob).name
+    end
+
+    assert_selector ".profile-picker__trigger", text: profiles(:bob).name
+    assert_equal "Don't lose this", find("textarea").value
   end
 
   test "typing a profile's chat proxy brackets posts as that profile instead of the default" do
