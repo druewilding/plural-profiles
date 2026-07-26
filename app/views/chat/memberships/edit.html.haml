@@ -1,0 +1,15 @@
+- content_for(:title) { "Default post as — #{plain_field(@server.name)} — Plural Profiles" }
+
+.card
+  .card__header
+    %h2= safe_join([ "Default post as in ", formatted_inline(@server.name) ])
+
+  = form_with url: chat_server_membership_path(@server), method: :patch do |form|
+    .form-group
+      %label{id: "membership_default_postable_label"} Post as
+      = render "chat/shared/profile_picker", field_name: "default_postable", label_id: "membership_default_postable_label", profiles: @profiles, groups: @groups, selected_postable: current_membership.default_postable
+      %p.form-hint The profile or group you'll post as by default in this server. You can change this any time.
+
+    .form-group
+      = form.submit "Save"
+      = link_to "Cancel", chat_server_path(@server), class: "btn btn--secondary"

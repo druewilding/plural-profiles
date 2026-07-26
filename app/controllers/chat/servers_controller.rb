@@ -1,5 +1,7 @@
 module Chat
   class ServersController < ApplicationController
+    include Chat::FindsPostable
+
     before_action :require_membership!, only: :show
     before_action :require_owner!, only: %i[edit update]
     before_action :validate_theme_choice, only: %i[create update]
@@ -110,19 +112,6 @@ module Chat
 
     def server_params
       params.require(:chat_server).permit(:name, :subtitle, :theme_id, :avatar, :avatar_shape, :avatar_alt_text)
-    end
-
-    # Deliberately a closed case/when rather than type.constantize — the type
-    # comes straight from request params, and constantizing arbitrary user
-    # input onto a polymorphic association is a classic way to let an
-    # attacker point it at a model it was never meant to reference.
-    def find_postable(type, id)
-      return nil if id.blank?
-
-      case type
-      when "Group" then Current.user.groups.find_by(id: id)
-      else Current.user.profiles.find_by(id: id)
-      end
     end
   end
 end

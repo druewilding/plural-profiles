@@ -30,6 +30,22 @@ class Chat::ServersControllerTest < ActionDispatch::IntegrationTest
     assert_match "general", response.body
   end
 
+  test "show offers the posting identity link, not server settings, to a member who isn't the owner" do
+    sign_in_as @member
+    get chat_server_path(@server)
+    assert_response :success
+    assert_match "Default post as", response.body
+    assert_no_match "Server settings", response.body
+  end
+
+  test "show offers server settings, not a separate posting identity link, to the owner" do
+    sign_in_as @owner
+    get chat_server_path(@server)
+    assert_response :success
+    assert_match "Server settings", response.body
+    assert_no_match "Default post as", response.body
+  end
+
   test "show redirects a non-member who isn't the owner to the join flow" do
     sign_in_as @outsider
     get chat_server_path(@server)
