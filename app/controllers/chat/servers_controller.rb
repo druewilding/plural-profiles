@@ -38,6 +38,10 @@ module Chat
     def update
       @server.avatar.purge if params[:chat_server][:remove_avatar] == "1"
       if @server.update(server_params)
+        if params[:chat_server].key?(:default_postable_id)
+          default_postable = find_postable(params[:chat_server][:default_postable_type], params[:chat_server][:default_postable_id])
+          current_membership.update!(default_postable: default_postable)
+        end
         redirect_to chat_server_path(@server), notice: "Server updated."
       else
         if params.dig(:chat_server, :avatar).present?

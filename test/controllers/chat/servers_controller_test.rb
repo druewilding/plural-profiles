@@ -110,6 +110,22 @@ class Chat::ServersControllerTest < ActionDispatch::IntegrationTest
     assert_equal "Renamed Server", @server.reload.name
   end
 
+  test "update lets the owner change their default postable" do
+    sign_in_as @owner
+    patch chat_server_path(@server), params: {
+      chat_server: { name: "Owner's Server", default_postable_type: "Group", default_postable_id: groups(:friends).id }
+    }
+    assert_redirected_to chat_server_path(@server)
+    assert_equal groups(:friends), @server.memberships.find_by(user: @owner).default_postable
+  end
+
+  test "update leaves the default postable alone when the request doesn't mention it" do
+    sign_in_as @owner
+    patch chat_server_path(@server), params: { chat_server: { name: "Renamed Server" } }
+    assert_redirected_to chat_server_path(@server)
+    assert_equal profiles(:alice), @server.memberships.find_by(user: @owner).default_postable
+  end
+
   test "update rejects a theme the owner doesn't have access to" do
     sign_in_as @owner
     patch chat_server_path(@server), params: { chat_server: { theme_id: themes(:other_user_theme).id } }
