@@ -11,7 +11,7 @@
           %p.subtitle= formatted_inline(@channel.subtitle)
 
     - if server_owner?
-      = link_to "Channel settings", edit_chat_server_channel_path(@server, @channel), class: "btn btn--secondary"
+      = link_to "Channel settings", edit_chat_server_channel_path(@server, @channel), class: "btn btn--secondary btn--small"
 
   = turbo_stream_from @channel
 

@@ -789,6 +789,7 @@ select {
   border: 1px solid var(--input-border);
   border-radius: 6px;
   color: var(--input-text);
+  font-family: inherit;
   font-size: 1rem;
   outline: none;
   transition: border-color 0.2s;
@@ -3566,6 +3567,20 @@ details.theme-section-card:not([open]) .theme-section-card__header {
   height: 100dvh;
 }
 
+/* Chat is a fixed-viewport layout (see .chat-body above) where the site
+   header competes with the message history for the same vertical budget on
+   every screen, not just narrow ones — a large OS/browser font size inflates
+   the header's rem-based padding just as much as it inflates message text.
+   Trim it down here rather than in the shared .site-header rule, which other
+   (normally-scrolling) pages still use at full size. */
+.chat-body .site-header {
+  padding: 0.5rem 1.25rem;
+}
+
+.chat-body .site-header .logo {
+  font-size: 1.05rem;
+}
+
 .server-list {
   list-style: none;
   padding: 0;
@@ -3791,16 +3806,17 @@ details.theme-section-card:not([open]) .theme-section-card__header {
 
 .chat-channel-header {
   display: flex;
-  align-items: flex-start;
+  align-items: center;
   justify-content: space-between;
   gap: 1rem;
-  padding: 1.5rem 1.5rem 1rem;
+  padding: 0.6rem 1.25rem;
   border-bottom: 1px solid var(--pane-border);
   flex-shrink: 0;
 }
 
 .chat-channel-header h1 {
   margin: 0;
+  font-size: 1.15rem;
 }
 
 .chat-channel-header__actions {
@@ -3983,7 +3999,7 @@ turbo-frame {
 .composer {
   flex-shrink: 0;
   border-top: 1px solid var(--pane-border);
-  padding: 0.85rem 1.5rem 1.25rem;
+  padding: 0.5rem 1.25rem 0.75rem;
 }
 
 /* Shared "post as" searchable profile picker — used by the composer's
@@ -4208,6 +4224,11 @@ button.profile-picker__option {
 
 .composer-input-row textarea {
   flex: 1;
+  /* The shared textarea rule sets a 100px min-height sized for full-page
+     forms — way more than the composer's own rows="2" needs, and on a
+     fixed-viewport chat layout every extra pixel here is one less pixel for
+     the message history. */
+  min-height: 2.5rem;
 }
 
 /* Server invites */
