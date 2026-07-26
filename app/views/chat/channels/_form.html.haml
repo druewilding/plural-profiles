@@ -1,0 +1,21 @@
+- if channel.errors.any?
+  .error-messages
+    - channel.errors.full_messages.each do |message|
+      %p= message
+
+= form_with model: channel, url: channel.persisted? ? chat_server_channel_path(@server, channel) : chat_server_channels_path(@server), scope: :chat_channel do |form|
+  .form-group
+    = form.label :name
+    = form.text_field :name, required: true, placeholder: "e.g. general"
+
+  .form-group
+    = form.label :subtitle
+    = form.text_field :subtitle
+
+  .form-group
+    = form.label :theme_id, "Display theme"
+    = form.select :theme_id, grouped_options_for_select(grouped_theme_options(@our_themes, @shared_themes), channel.theme_id), { include_blank: "Inherit from server" }, {}
+
+  .form-group
+    = form.submit channel.persisted? ? "Update channel" : "Create channel"
+    = link_to "Cancel", channel.persisted? ? chat_server_channel_path(@server, channel) : chat_server_path(@server), class: "btn btn--secondary"

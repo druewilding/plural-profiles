@@ -39,7 +39,7 @@
           - if parent.subtitle.present?
             %span.group-list-subtitle= formatted_inline(parent.subtitle)
 
-  .timestamps
+  .metadata
     %p
       %strong Created:
       %time{datetime: @group.created_at.iso8601}= @group.created_at.strftime("%d %B %Y")

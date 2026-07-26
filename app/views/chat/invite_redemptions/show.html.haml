@@ -1,0 +1,4 @@
+- content_for(:title) { "Join #{plain_field(@server.name)} — Plural Profiles" }
+
+.card
+  = render "chat/shared/invite_card", server: @server, preview: false, invite_token: @invite.token

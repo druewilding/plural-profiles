@@ -1,0 +1,19 @@
+- content_for(:title) { plain_field(@server.name) + " — Plural Profiles" }
+
+.chat-channel-header
+  %div
+    - if @server.avatar.attached?
+      = image_tag @server.avatar.variant(resize_to_fill: [64, 64]), class: "avatar avatar--large #{avatar_shape_class(@server)}".strip, width: 64, height: 64, alt: @server.avatar_alt_text.presence || "", loading: "lazy"
+    %h1= formatted_inline(@server.name)
+    - if @server.subtitle.present?
+      %p.subtitle= formatted_inline(@server.subtitle)
+
+  - if server_owner?
+    .chat-channel-header__actions
+      = link_to "Invite people", chat_server_invite_path(@server), class: "btn btn--secondary"
+      = link_to "Server settings", edit_chat_server_path(@server), class: "btn btn--secondary"
+
+- if @channels.empty?
+  %p No channels yet.
+- else
+  %p Select a channel from the list on the left to start reading.

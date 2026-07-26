@@ -70,6 +70,12 @@ body {
   border-bottom: 1px solid var(--pane-border);
 }
 
+.site-header__brand {
+  display: flex;
+  align-items: center;
+  gap: 0.85rem;
+}
+
 .site-header .logo {
   font-size: 1.25rem;
   font-weight: 700;
@@ -85,15 +91,30 @@ body {
   height: 1.4em;
 }
 
-.site-header nav a {
+.site-header nav a,
+.site-header nav .link-button {
   color: var(--link);
   text-decoration: none;
   margin-left: 1.5rem;
   font-size: 0.9rem;
 }
 
-.site-header nav a:hover {
+.site-header nav a:hover,
+.site-header nav .link-button:hover {
   text-decoration: underline;
+  background-color: transparent;
+}
+
+.site-header__signout {
+  display: inline;
+}
+
+.link-button {
+  background: none;
+  border: none;
+  padding: 0;
+  font: inherit;
+  cursor: pointer;
 }
 
 .admin-badge {
@@ -108,6 +129,10 @@ body {
   border: 1px solid color-mix(in srgb, var(--danger-button-border) 40%, transparent);
   vertical-align: middle;
   text-transform: uppercase;
+}
+
+.site-header .action-dropdown__menu a {
+  margin-left: 0;
 }
 
 @media (forced-colors: active) {
@@ -425,6 +450,16 @@ details[open] > .form-section-summary::before {
 .sidebar-tree__leaf--active .sidebar-tree__label {
   color: var(--heading);
   font-weight: 600;
+}
+
+/* A live broadcast has no way to know whether the recipient is already
+   looking at this exact channel, so it may push an "unread" dot here even
+   while they're actively reading it live. The active row's own class is set
+   at page render time and untouched by that broadcast (it only replaces the
+   small dot element below), so hiding the dot whenever the row is active is
+   what actually suppresses the false positive. */
+.sidebar-tree__leaf--active .unread-dot {
+  display: none;
 }
 
 .sidebar-tree__row {
@@ -2157,27 +2192,34 @@ details[open] > .tree-editor__summary::before {
   }
 }
 
-/* Timestamps */
-.timestamps {
+/* Metadata */
+.profile-chat-proxy code {
+  background-color: color-mix(in srgb, var(--input-border) 15%, transparent);
+  border: 1px solid color-mix(in srgb, var(--input-border) 40%, transparent);
+  border-radius: 4px;
+  padding: 0.1rem 0.4rem;
+}
+
+.metadata {
   font-size: 0.85rem;
   border-top: 1px solid var(--input-border);
   padding-top: 1rem;
   margin-bottom: 1.5rem;
 }
 
-.timestamps p {
+.metadata p {
   margin: 0.25rem 0;
 }
 
-.timestamps strong {
+.metadata strong {
   color: var(--heading);
 }
 
-.timestamps time {
+.metadata time {
   margin-left: 0.25rem;
 }
 
-.timestamps .time-ago {
+.metadata .time-ago {
   opacity: 0.7;
 }
 
@@ -2212,6 +2254,24 @@ details[open] > .tree-editor__summary::before {
   font-size: 0.85rem;
   opacity: 0.7;
   margin-top: 0.5rem;
+}
+
+.chat-bracket-fields {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.chat-bracket-fields input {
+  width: auto;
+  flex: 1 1 0;
+  min-width: 0;
+  text-align: center;
+}
+
+.chat-bracket-fields__sample {
+  flex-shrink: 0;
+  opacity: 0.7;
 }
 
 /* Button sizes */
@@ -3286,6 +3346,8 @@ h1 .heart-inline {
 
 .action-dropdown {
   position: relative;
+  display: inline-flex;
+  align-items: center;
   flex-shrink: 0;
 }
 
@@ -3333,6 +3395,15 @@ h1 .heart-inline {
   border-radius: 8px;
   padding: 0.35rem 0;
   box-shadow: 0 4px 12px color-mix(in srgb, var(--pane-border) 25%, transparent);
+}
+
+/* The domain switcher sits at the left edge of the header now, next to the
+   logo — right: 0 (the default, for menus that hang off a right-aligned nav
+   item) would make it spill further left past its trigger. Open it flush
+   with the trigger's left edge instead. */
+.site-header__brand .action-dropdown__menu {
+  left: 0;
+  right: auto;
 }
 
 .action-dropdown__item {
@@ -3467,4 +3538,631 @@ details.theme-section-card:not([open]) .theme-section-card__header {
 .theme-section-card__empty {
   margin: 1.5rem 0 0 0;
   font-size: 0.95rem;
+}
+
+/* ---- Chat ---- */
+
+/* The shared `body` rule only sets min-height: 100vh, which lets the whole
+   page grow past the viewport for tall content — fine for ordinary pages,
+   but it means .chat-shell's flex:1 never gets a definite height to fill,
+   so its own overflow:auto areas (the message history) never actually
+   engage and the composer at the bottom ends up pushed off-screen instead.
+   Pin chat pages to exactly the viewport height so the flex chain resolves
+   properly and only the message history scrolls. */
+.chat-body {
+  height: 100vh;
+  height: 100dvh;
+}
+
+.server-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+}
+
+.server-list__link {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  padding: 0.5rem 0.75rem;
+  border-radius: 6px;
+  color: var(--text);
+  text-decoration: none;
+}
+
+.server-list__link:hover {
+  background-color: color-mix(in srgb, var(--text) 8%, transparent);
+}
+
+.server-list__link .avatar {
+  width: 32px;
+  height: 32px;
+  min-width: 32px;
+  min-height: 32px;
+}
+
+.chat-shell {
+  flex: 1;
+  min-height: 0;
+  display: flex;
+}
+
+.server-rail {
+  width: 72px;
+  flex-shrink: 0;
+  background-color: var(--pane-border);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.7rem;
+  padding: 0.85rem 0;
+  overflow-y: auto;
+}
+
+.server-rail__icon {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 42px;
+  height: 42px;
+  flex-shrink: 0;
+  border-radius: 25%;
+  color: var(--text);
+  text-decoration: none;
+  border: 2px solid transparent;
+}
+
+/* Kept in sync with the avatar's own shape modifier (avatar_shape_class),
+   so the ring below always hugs the same outline as the image inside it —
+   a mismatched fixed radius here made the ring look broken on square
+   avatars. */
+.server-rail__icon--circle {
+  border-radius: 50%;
+}
+
+.server-rail__icon--square {
+  border-radius: 0;
+}
+
+.server-rail__icon .avatar {
+  width: 42px;
+  height: 42px;
+  min-width: 42px;
+  min-height: 42px;
+}
+
+.server-rail__icon:hover {
+  border-color: color-mix(in srgb, var(--text) 40%, transparent);
+}
+
+.server-rail__icon--active {
+  border-color: transparent;
+  box-shadow: 0 0 0 2px var(--pane-border), 0 0 0 4px var(--heading);
+}
+
+.server-rail__icon--add {
+  border: 1px dashed color-mix(in srgb, var(--text) 40%, transparent);
+  color: var(--link);
+  font-size: 1.3rem;
+  text-decoration: none;
+}
+
+.unread-dot {
+  display: inline-block;
+  align-self: center;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background-color: var(--primary-button-text);
+  flex-shrink: 0;
+}
+
+.unread-dot--rail {
+  position: absolute;
+  top: 0;
+  right: 0;
+  border: 2px solid var(--pane-border);
+}
+
+@media (forced-colors: active) {
+  /* Background colors are the first thing forced-colors mode flattens away,
+     so without an explicit border the rail is indistinguishable from the
+     panes either side of it. Same story for the active-server ring and the
+     unread dots below — box-shadow is dropped outright in forced-colors
+     mode, and background-color fills get replaced with the page background
+     (Canvas), unless the color is an explicit system keyword. */
+  .server-rail {
+    border-right: 1px solid CanvasText;
+  }
+
+  .server-rail__icon--active {
+    outline: 2px solid CanvasText;
+    outline-offset: 2px;
+  }
+
+  .unread-dot {
+    background-color: CanvasText;
+  }
+
+  .unread-dot--rail {
+    border-color: Canvas;
+  }
+}
+
+.channel-pane {
+  width: 200px;
+  flex-shrink: 0;
+  background-color: var(--pane-bg);
+  border-right: 1px solid var(--pane-border);
+  padding: 1rem 0.75rem;
+  overflow-y: auto;
+}
+
+/* The channel list reuses the group/profile sidebar's tree-guide-line
+   markup for visual consistency, but a channel list has no actual
+   hierarchy to show — the connector lines just imply a nesting that isn't
+   there, so drop them here while keeping the rest of the leaf styling. */
+.channel-pane .sidebar-tree__children > li::before,
+.channel-pane .sidebar-tree__children > .sidebar-tree__leaf::after {
+  display: none;
+}
+
+/* The shared --st-indent left-padding exists to make room for the
+   tree-guide line — with that line hidden above, it's just dead space. */
+.channel-pane .sidebar-tree__children {
+  padding-left: 0;
+}
+
+.channel-pane__server-name {
+  display: block;
+  font-weight: 700;
+  color: var(--heading);
+  text-decoration: none;
+  margin-bottom: 0.75rem;
+}
+
+.channel-pane__server-name:hover {
+  text-decoration: underline;
+}
+
+.channel-pane__add-channel {
+  display: block;
+  margin-top: 0.6rem;
+  padding-left: 1.1rem;
+  font-size: 0.85rem;
+  color: var(--link);
+  text-decoration: none;
+}
+
+.channel-pane__add-channel:hover {
+  text-decoration: underline;
+}
+
+.chat-main {
+  flex: 1;
+  min-width: 0;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  padding: 1.5rem;
+  overflow-y: auto;
+  /* Same background every .card uses elsewhere in the app. Without this,
+     the pane falls through to the bare page background — which, depending
+     on the active theme, can end up matching --spoiler exactly (spoilers
+     are styled background === border === --spoiler), making spoiler text
+     completely invisible instead of an obviously-clickable redacted box. */
+  background-color: var(--pane-bg);
+}
+
+/* .chat-channel (channel#show) owns its own padding per-section so the
+   composer can sit flush against the bottom of the pane — cancel .chat-main's
+   padding only when it's present, leaving plain pages (server list/settings
+   etc.) with their normal padding. */
+.chat-main:has(.chat-channel) {
+  padding: 0;
+  overflow-y: hidden;
+}
+
+/* Wraps the header, the scrollable history, and the composer for a single
+   channel — a plain flex column so the composer can stay pinned to the
+   bottom (flex-shrink: 0) while only the history area scrolls. */
+.chat-channel {
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+.chat-channel-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 1.5rem 1.5rem 1rem;
+  border-bottom: 1px solid var(--pane-border);
+  flex-shrink: 0;
+}
+
+.chat-channel-header h1 {
+  margin: 0;
+}
+
+.chat-channel-header__actions {
+  display: flex;
+  gap: 0.75rem;
+  flex-shrink: 0;
+}
+
+.chat-channel-header__title {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.5rem;
+}
+
+/* Hidden by default — only shown at the small-screen breakpoint below,
+   where the server rail and channel list collapse away and this is the
+   only way back to them. */
+.chat-channel-back {
+  display: none;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  flex-shrink: 0;
+  border-radius: 6px;
+  color: var(--text);
+  text-decoration: none;
+  font-size: 1.5rem;
+  line-height: 1;
+}
+
+.chat-channel-back:hover {
+  background-color: color-mix(in srgb, var(--text) 10%, transparent);
+}
+
+/* Mobile (600px and below): collapse to a single pane at a time, matching
+   Discord's small-screen behaviour. Reading a specific channel's messages
+   (.chat-shell--channel-open, set by the layout whenever @in_channel_chat is
+   true) hides the server rail and channel list entirely and shows the back
+   arrow above to return to them; everywhere else in chat is unaffected. */
+@media (max-width: 600px) {
+  .chat-shell--channel-open .server-rail,
+  .chat-shell--channel-open .channel-pane {
+    display: none;
+  }
+
+  .chat-channel-back {
+    display: flex;
+  }
+}
+
+.chat-messages-scroll {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  padding: 1rem 1.5rem;
+}
+
+/* turbo-frame has no default display value browsers agree on. `display:
+   contents` would make it transparent to layout, but Turbo's loading="lazy"
+   detects scroll visibility with an IntersectionObserver on the frame
+   element itself — an element with `display: contents` generates no box at
+   all, so it can never intersect the viewport and the lazy load silently
+   never fires. Use a plain block instead, and give messages/dividers their
+   own margin (below) rather than relying on the parent's flex `gap`, so
+   spacing still looks right regardless of the frame wrapping some of them. */
+turbo-frame {
+  display: block;
+}
+
+/* An unloaded lazy turbo-frame is empty, so as a plain block it collapses to
+   ~0 height — an easy target to scroll straight past without it ever truly
+   crossing into the viewport for the IntersectionObserver driving
+   loading="lazy" to catch. Give it a reliable minimum height to scroll onto. */
+#older-messages:not([complete]) {
+  min-height: 40px;
+}
+
+.chat-messages {
+  display: flex;
+  flex-direction: column;
+}
+
+.chat-message,
+.chat-date-divider {
+  margin-bottom: 1rem;
+}
+
+.chat-date-divider {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding-top: 1.5rem;
+  color: color-mix(in srgb, var(--text) 65%, transparent);
+  font-size: 0.76rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.chat-date-divider::before,
+.chat-date-divider::after {
+  content: "";
+  flex: 1;
+  /* Same muted, translucent tone as the sidebar tree-guide lines, rather
+     than the harder --pane-border — and a border (not a background bar) so
+     the same CanvasText override used for tree-guide lines elsewhere in
+     forced-colors mode applies here too. */
+  border-top: 1px solid var(--tree-guide);
+}
+
+@media (forced-colors: active) {
+  .chat-date-divider::before,
+  .chat-date-divider::after {
+    border-color: CanvasText;
+  }
+}
+
+.chat-message {
+  display: flex;
+  gap: 0.65rem;
+}
+
+.chat-message__avatar .avatar {
+  width: 34px;
+  height: 34px;
+  min-width: 34px;
+  min-height: 34px;
+}
+
+.chat-message__content {
+  flex: 1;
+  min-width: 0;
+}
+
+.chat-message__who {
+  display: flex;
+  align-items: baseline;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+}
+
+.chat-message__name-link {
+  color: inherit;
+  text-decoration: none;
+}
+
+.chat-message__name-link:hover .chat-message__name {
+  text-decoration: underline;
+}
+
+.chat-message__name {
+  font-weight: 700;
+  font-size: 0.9rem;
+  color: var(--heading);
+}
+
+.chat-message__name--deleted {
+  font-style: italic;
+  font-weight: 500;
+  font-size: 0.9rem;
+  color: color-mix(in srgb, var(--text) 65%, transparent);
+}
+
+.chat-message__pronouns,
+.chat-message__time {
+  font-size: 0.76rem;
+  color: color-mix(in srgb, var(--text) 65%, transparent);
+}
+
+.chat-message__pronouns {
+  font-style: italic;
+}
+
+.chat-message__body {
+  font-size: 0.92rem;
+  margin-top: 0.15rem;
+}
+
+.composer {
+  flex-shrink: 0;
+  border-top: 1px solid var(--pane-border);
+  padding: 0.85rem 1.5rem 1.25rem;
+}
+
+.composer-posting-as {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  background-color: color-mix(in srgb, var(--pane-bg) 85%, var(--page-bg) 15%);
+  border: 1px solid color-mix(in srgb, var(--text) 35%, transparent);
+  border-radius: 7px;
+  padding: 0.3rem 0.6rem 0.3rem 0.4rem;
+  font-size: 0.82rem;
+  margin-bottom: 0.55rem;
+}
+
+/* .avatar--placeholder carries its own min-width/min-height (see the base
+   rule) to stay visible at its default 64px size elsewhere — here it needs
+   overriding too, or the placeholder ignores the width/height below and
+   renders oversized next to profiles that do have a real avatar image. */
+.composer-posting-as .avatar {
+  width: 22px;
+  height: 22px;
+  min-width: 22px;
+  min-height: 22px;
+}
+
+.composer-posting-as__option .avatar {
+  width: 20px;
+  height: 20px;
+  min-width: 20px;
+  min-height: 20px;
+}
+
+.composer-posting-as__trigger {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  cursor: pointer;
+  list-style: none;
+}
+
+/* Without this, the wrapping span is a block box around an inline <img>,
+   which leaves a few px of baseline whitespace below the image — inflating
+   the span taller than the 22px avatar and pushing it toward the top of the
+   trigger row instead of centering it. */
+.composer-posting-as__trigger-avatar {
+  display: flex;
+}
+
+.composer-posting-as__trigger::-webkit-details-marker,
+.composer-posting-as__trigger::marker {
+  display: none;
+}
+
+/* Opens upward from the composer at the bottom of the pane, rather than the
+   default action-dropdown position (below/right), which would put the menu
+   past the viewport edge here. */
+.composer-posting-as .action-dropdown__menu {
+  left: 0;
+  right: auto;
+  top: auto;
+  bottom: calc(100% + 4px);
+}
+
+.composer-posting-as__menu {
+  width: max-content;
+  min-width: 260px;
+  max-width: 340px;
+  padding: 0.4rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+}
+
+.composer-posting-as__search {
+  width: 100%;
+  padding: 0.4rem 0.6rem;
+  border-radius: 5px;
+  border: 1px solid var(--pane-border);
+  background-color: var(--page-bg);
+  color: var(--text);
+  font-size: 0.85rem;
+}
+
+.composer-posting-as__options {
+  max-height: 260px;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 0.1rem;
+}
+
+.composer-posting-as__option {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.5rem;
+  white-space: normal;
+}
+
+.composer-posting-as__option .avatar {
+  margin-top: 0.1rem;
+}
+
+.composer-posting-as__option--current {
+  background-color: color-mix(in srgb, var(--text) 10%, transparent);
+}
+
+.composer-posting-as__option-info {
+  min-width: 0;
+  flex: 1;
+}
+
+.composer-posting-as__option-name-row {
+  display: flex;
+  align-items: baseline;
+  gap: 0.4rem;
+  flex-wrap: wrap;
+}
+
+.composer-posting-as__option-name {
+  font-weight: 500;
+}
+
+.composer-posting-as__option-pronouns {
+  font-size: 0.78rem;
+  font-style: italic;
+  color: color-mix(in srgb, var(--text) 75%, transparent);
+}
+
+.composer-posting-as__option-subtitle {
+  display: block;
+  font-size: 0.78rem;
+  color: color-mix(in srgb, var(--text) 75%, transparent);
+}
+
+.composer-posting-as__empty {
+  padding: 0.5rem 0.75rem;
+  margin: 0;
+  font-size: 0.85rem;
+  color: color-mix(in srgb, var(--text) 65%, transparent);
+}
+
+.composer-posting-as__option .avatar {
+  width: 18px;
+  height: 18px;
+}
+
+.composer-input-row {
+  display: flex;
+  gap: 0.6rem;
+  align-items: flex-end;
+}
+
+.composer-input-row textarea {
+  flex: 1;
+}
+
+/* Server invites */
+.invite-generator {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.invite-generator__regenerate {
+  margin-top: 1rem;
+}
+
+.invite-card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  gap: 0.5rem;
+  padding: 1rem 0;
+}
+
+.invite-card .avatar {
+  margin-bottom: 0.25rem;
+}
+
+.invite-card__title {
+  margin: 0;
+}
+
+.invite-card__count {
+  margin: 0;
+  font-size: 0.85rem;
+  color: color-mix(in srgb, var(--text) 65%, transparent);
+}
+
+.invite-card__accept-preview {
+  pointer-events: none;
+  opacity: 0.85;
 }

@@ -5,6 +5,7 @@ class Our::ProfilesController < ApplicationController
   before_action :resume_session, only: :show
   before_action :set_profile, only: %i[ show edit update destroy regenerate_uuid ]
   before_action :set_groups, only: %i[ new create edit update ]
+  before_action :set_return_to, only: %i[new create]
   before_action :validate_theme_choice, only: %i[create update]
 
   def index
@@ -31,7 +32,7 @@ class Our::ProfilesController < ApplicationController
     @profile = Current.user.profiles.build(profile_params)
 
     if @profile.save
-      redirect_to our_profile_path(@profile), notice: "Profile created."
+      redirect_to @return_to || our_profile_path(@profile), notice: "Profile created."
     else
       load_theme_options
       render :new, status: :unprocessable_entity
@@ -76,6 +77,11 @@ class Our::ProfilesController < ApplicationController
     @groups = Current.user.groups.order_by_name_and_labels
   end
 
+  def set_return_to
+    value = params[:return_to].to_s
+    @return_to = value if value.start_with?("/") && !value.start_with?("//")
+  end
+
   def load_theme_options
     @personal_themes = Current.user.themes.order(:name)
     @shared_themes = Theme.shared.order(:name)
@@ -96,7 +102,7 @@ class Our::ProfilesController < ApplicationController
   end
 
   def profile_params
-    params.require(:profile).permit(:name, :pronouns, :subtitle, :tag_line, :description, :avatar, :avatar_alt_text, :avatar_shape, :labels_text, :theme_id, created_at_parts: [ :month, :day, :year, :hour, :minute ], group_ids: [], heart_emojis: []).tap do |p|
+    params.require(:profile).permit(:name, :pronouns, :subtitle, :tag_line, :description, :chat_bracket_before, :chat_bracket_after, :avatar, :avatar_alt_text, :avatar_shape, :labels_text, :theme_id, created_at_parts: [ :month, :day, :year, :hour, :minute ], group_ids: [], heart_emojis: []).tap do |p|
       p[:heart_emojis] = p[:heart_emojis].reject(&:blank?) if p.key?(:heart_emojis)
       created_at = parse_created_at_parts(p.delete(:created_at_parts))
       if created_at && (@profile&.created_at.nil? || created_at != @profile.created_at.strftime("%Y-%m-%dT%H:%M"))

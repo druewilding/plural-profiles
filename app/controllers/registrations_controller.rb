@@ -1,5 +1,6 @@
 class RegistrationsController < ApplicationController
   allow_unauthenticated_access only: %i[ new create ]
+  before_action :redirect_to_main_domain, only: :new
   before_action :check_signups_enabled
 
   def new
@@ -61,6 +62,14 @@ class RegistrationsController < ApplicationController
     return if ENV.fetch("SIGNUPS_ENABLED", "true") == "true"
 
     render :closed, status: :ok
+  end
+
+  # Signing up should be encouraged on the main domain, not the chat.
+  # subdomain — bounce straight there before rendering the registration form.
+  def redirect_to_main_domain
+    return unless request.subdomain == "chat"
+
+    redirect_to new_registration_url(host: helpers.main_site_host), allow_other_host: true
   end
 
   def registration_params

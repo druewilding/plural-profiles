@@ -55,15 +55,22 @@ Rails.application.configure do
   # Use memory store for caching (no separate cache database needed).
   config.cache_store = :memory_store
 
-  # Use async adapter for Active Job (no separate queue database needed).
-  config.active_job.queue_adapter = :async
+  # Use Solid Queue for Active Job, backed by the primary database (single-database setup).
+  config.active_job.queue_adapter = :solid_queue
 
   # Ignore bad email addresses and do not raise email delivery errors.
   # Set this to true and configure the email server for immediate delivery to raise delivery errors.
   # config.action_mailer.raise_delivery_errors = false
 
   # Set host to be used by links generated in mailer templates.
-  config.action_mailer.default_url_options = { host: ENV.fetch("APP_HOST", "plural-profiles.scalingo.io") }
+  config.action_mailer.default_url_options = { host: ENV.fetch("APP_HOST", "plural-profiles.osc-fr1.scalingo.io") }
+
+  # Same problem as mailers, but for rendering outside a request in general (e.g. Turbo
+  # Stream broadcasts triggered from a model callback) — without this, URL helpers used
+  # during a broadcast (including Active Storage avatar image URLs) fall back to Rails'
+  # placeholder host instead of the real one.
+  Rails.application.routes.default_url_options[:host] = ENV.fetch("APP_HOST", "plural-profiles.osc-fr1.scalingo.io")
+  Rails.application.routes.default_url_options[:protocol] = "https"
 
   # Outgoing email via Brevo SMTP.
   config.action_mailer.smtp_settings = {
@@ -89,6 +96,7 @@ Rails.application.configure do
   config.hosts = [
     ENV.fetch("APP_HOST", "plural-profiles.osc-fr1.scalingo.io"),
     "www.#{ENV.fetch('APP_HOST', 'plural-profiles.osc-fr1.scalingo.io')}",
+    "chat.#{ENV.fetch('APP_HOST', 'plural-profiles.osc-fr1.scalingo.io')}",
     "plural-profiles.osc-fr1.scalingo.io"
   ]
 

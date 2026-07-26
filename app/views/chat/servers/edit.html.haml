@@ -1,0 +1,7 @@
+- content_for(:title) { "Edit #{@server.name} — Plural Profiles" }
+
+.card
+  .card__header
+    %h2 Server settings
+
+  = render "form", server: @server

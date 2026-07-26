@@ -62,6 +62,33 @@ Rails.application.routes.draw do
     end
   end
 
+  constraints subdomain: "chat" do
+    scope module: "chat", as: "chat" do
+      root "servers#index"
+
+      get "invite/:token", to: "invite_redemptions#show", as: :invite_redemption
+
+      resources :servers, only: %i[index show new create edit update], param: :uuid do
+        member do
+          get :join
+          post :join
+        end
+
+        resource :invite, only: %i[show create], controller: "server_invites"
+
+        resources :channels, only: %i[show new create edit update], param: :uuid do
+          member do
+            patch :mark_read
+          end
+          resources :messages, only: %i[index create]
+          resource :default_profile, only: :update, controller: "channel_default_profiles"
+        end
+      end
+    end
+  end
+
+  mount ActionCable.server => "/cable"
+
   # Reveal health status on /up that returns 200 if the app boots with no exceptions, otherwise 500.
   # Can be used by load balancers and uptime monitors to verify that the app is live.
   get "up" => "rails/health#show", as: :rails_health_check

@@ -1,7 +1,7 @@
 module ThemeHelper
   def active_theme_style
     override = authenticated? && Current.user&.override_themes?
-    public_theme = @group_theme || @profile_theme
+    public_theme = @channel_theme || @server_theme || @group_theme || @profile_theme
 
     # Logged-in user with an active theme
     if authenticated? && Current.user&.active_theme

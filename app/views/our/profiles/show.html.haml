@@ -51,7 +51,11 @@
           - if group.subtitle.present?
             %span.group-list-subtitle= formatted_inline(group.subtitle)
 
-  .timestamps
+  .metadata
+    - if @profile.chat_bracket_before.present? || @profile.chat_bracket_after.present?
+      %p.profile-chat-proxy
+        %strong Chat proxy brackets:
+        %code= [ @profile.chat_bracket_before, "message", @profile.chat_bracket_after ].compact_blank.join(" ")
     %p
       %strong Created:
       %time{datetime: @profile.created_at.iso8601}= @profile.created_at.strftime("%d %B %Y")

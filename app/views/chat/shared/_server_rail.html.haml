@@ -1,0 +1,11 @@
+.server-rail
+  - Current.user.chat_servers.order(:name).each do |server|
+    = link_to chat_server_path(server), class: "server-rail__icon #{avatar_shape_class(server, prefix: 'server-rail__icon')} #{'server-rail__icon--active' if @server == server}".strip, title: server.name do
+      - if server.avatar.attached?
+        = image_tag server.avatar.variant(resize_to_fill: [42, 42]), class: "avatar #{avatar_shape_class(server)}".strip, width: 42, height: 42, alt: "", loading: "lazy"
+      - else
+        .avatar.avatar--placeholder
+          = render "shared/plural_pride_logo"
+      = render "chat/shared/server_dot", server: server, unread: unread_server_ids.include?(server.id)
+  = link_to new_chat_server_path, class: "server-rail__icon server-rail__icon--add", title: "Create a server" do
+    +
