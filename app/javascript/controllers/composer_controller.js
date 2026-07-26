@@ -17,13 +17,28 @@ import { Controller } from "@hotwired/stimulus"
 export default class extends Controller {
   static targets = [ "form", "textarea", "triggerAvatar", "triggerName", "triggerPronouns", "option" ]
 
-  connect() {
-    if (this.hasTriggerAvatarTarget) this.defaultAvatarHTML = this.triggerAvatarTarget.innerHTML
-    if (this.hasTriggerNameTarget) this.defaultNameHTML = this.triggerNameTarget.innerHTML
-    if (this.hasTriggerPronounsTarget) {
-      this.defaultPronounsHTML = this.triggerPronounsTarget.innerHTML
-      this.defaultPronounsHidden = this.triggerPronounsTarget.hidden
-    }
+  // Rather than caching the "default" trigger HTML once in connect(), track
+  // it via Stimulus's target lifecycle callbacks below — switching profiles
+  // via the picker turbo_stream-replaces just the trigger (see
+  // Chat::ChannelDefaultProfilesController#update), which doesn't reconnect
+  // this controller, so a one-time connect()-time cache would go stale the
+  // moment you switched profiles and then kept typing: the next keystroke
+  // with no bracket match would revert the pill to whatever profile was
+  // selected when the page first loaded, not the one you just switched to.
+  // Target[Connected] fires on every genuine node replacement (including
+  // ours) but not on the preview's in-place innerHTML mutations below, so
+  // the cache only ever reflects the real, server-confirmed default.
+  triggerAvatarTargetConnected(element) {
+    this.defaultAvatarHTML = element.innerHTML
+  }
+
+  triggerNameTargetConnected(element) {
+    this.defaultNameHTML = element.innerHTML
+  }
+
+  triggerPronounsTargetConnected(element) {
+    this.defaultPronounsHTML = element.innerHTML
+    this.defaultPronounsHidden = element.hidden
   }
 
   submitOnEnter(event) {
