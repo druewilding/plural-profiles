@@ -49,6 +49,15 @@ class ChatOnboardingTest < ApplicationSystemTestCase
     assert_text "Channel created."
     assert_text "No messages yet. Say hello!"
 
+    # Posts as the owner, using the default postable chosen on the server
+    # creation form — regression coverage for a bug where that form's picker
+    # (nested under "chat_server[...]") silently failed to set
+    # default_postable_type/_id, leaving the owner unable to post at all.
+    fill_in placeholder: "Message #general (Enter to send, Shift+Enter for a new line)", with: "Welcome to the club!"
+    find("textarea").native.send_keys(:enter)
+    assert_text "Welcome to the club!"
+    assert_text profiles(:alice).name
+
     within(".channel-pane") { click_link "Book Club" } # back to the server page, which has the invite link
     click_link "Invite people"
     invite_url = find("#invite-share-url").value

@@ -5,15 +5,25 @@
 - #       label_id: "chat_server_default_postable_label",
 - #       profiles: Current.user.profiles.order(:name), groups: Current.user.groups.order(:name),
 - #       selected_postable: profiles.first
-- # Fills "#{field_name}_type" and "#{field_name}_id" — pair with a plain
-- # %label{id: label_id} (no `for`) rather than label_tag, since the trigger
-- # is a <summary>, not a labelable form control, so a `for` pointing at it
-- # (or at the hidden fields) would silently do nothing.
+- # Fills a "_type" and "_id" field derived from field_name — pair with a
+- # plain %label{id: label_id} (no `for`) rather than label_tag, since the
+- # trigger is a <summary>, not a labelable form control, so a `for` pointing
+- # at it (or at the hidden fields) would silently do nothing.
 - selected_postable ||= nil
 - groups ||= []
+- # A bracketed Rails param name (e.g. "chat_server[default_postable]") needs
+- # the suffix inserted BEFORE the closing bracket ("chat_server[default_postable_type]") —
+- # appending it after the bracket instead (a bug this once shipped with)
+- # produces "chat_server[default_postable]_type", which Rack parses as
+- # params[:chat_server][:default_postable][:_type], not the flat
+- # params[:chat_server][:default_postable_type] the controller reads. A
+- # bare field_name (e.g. "default_postable", used by the join form) has no
+- # bracket to worry about, so plain concatenation is correct for it as-is.
+- type_field_name = field_name.end_with?("]") ? field_name.sub(/\]\z/, "_type]") : "#{field_name}_type"
+- id_field_name = field_name.end_with?("]") ? field_name.sub(/\]\z/, "_id]") : "#{field_name}_id"
 %details.action-dropdown.profile-picker{data: {controller: "dropdown profile-picker"}}
-  = hidden_field_tag "#{field_name}_type", selected_postable&.class&.name, data: {"profile-picker-target": "hiddenTypeField"}
-  = hidden_field_tag "#{field_name}_id", selected_postable&.id, data: {"profile-picker-target": "hiddenField"}
+  = hidden_field_tag type_field_name, selected_postable&.class&.name, data: {"profile-picker-target": "hiddenTypeField"}
+  = hidden_field_tag id_field_name, selected_postable&.id, data: {"profile-picker-target": "hiddenField"}
   %summary.profile-picker__trigger{"aria-labelledby": label_id}
     %span.profile-picker__trigger-avatar{data: {"profile-picker-target": "triggerAvatar"}}
       - if selected_postable
