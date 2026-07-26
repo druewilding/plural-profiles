@@ -20,13 +20,22 @@ class ChatOnboardingTest < ApplicationSystemTestCase
     "http://chat.lvh.me:#{@port}#{path}"
   end
 
+  # The "Post as" field is a searchable profile-picker (same component as the
+  # composer's identity switcher), not a plain <select> — open it, filter down
+  # to the target profile, and click it.
+  def choose_post_as_profile(name)
+    find(".profile-picker__trigger").click
+    fill_in placeholder: "Find a profile…", with: name
+    click_button name
+  end
+
   test "create a server, add a channel, invite a friend, and they join and post" do
     sign_in_via_browser(@owner)
     visit chat_url
     click_link "New server"
 
     fill_in "Name", with: "Book Club"
-    select profiles(:alice).name, from: "chat_server[default_profile_id]"
+    choose_post_as_profile(profiles(:alice).name)
     click_button "Create server"
 
     assert_text "Server created."
@@ -54,7 +63,7 @@ class ChatOnboardingTest < ApplicationSystemTestCase
     click_link "Accept invite"
 
     assert_text "Join Book Club"
-    select profiles(:carol).name, from: "default_profile_id"
+    choose_post_as_profile(profiles(:carol).name)
     click_button "Join server"
 
     assert_text "Joined Book Club."
@@ -76,7 +85,7 @@ class ChatOnboardingTest < ApplicationSystemTestCase
     sign_in_via_browser(other_user)
     visit chat_url("/invite/#{invite.token}")
     click_link "Accept invite"
-    select profiles(:stray).name, from: "default_profile_id"
+    choose_post_as_profile(profiles(:stray).name)
     click_button "Join server"
     assert_text "Joined Solo Server."
 

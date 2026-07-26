@@ -65,14 +65,13 @@ class ChatMessagingTest < ApplicationSystemTestCase
     assert_text profiles(:alice).name
 
     within(".composer-posting-as") do
-      find(".composer-posting-as__trigger").click
+      find(".profile-picker__trigger").click
       click_link profiles(:bob).name
     end
 
-    # The profile switch link is a Turbo PATCH that redirects back to this
-    # same channel page — wait for that round-trip to settle (fresh composer,
-    # fresh textarea) before typing, or send_keys can hit a stale element.
-    assert_selector ".composer-posting-as__trigger", text: profiles(:bob).name
+    # The profile switch link is a Turbo PATCH that turbo_stream-replaces just
+    # the picker — wait for that to settle before typing.
+    assert_selector ".profile-picker__trigger", text: profiles(:bob).name
 
     send_message("Switched over to Bob")
 
@@ -81,6 +80,46 @@ class ChatMessagingTest < ApplicationSystemTestCase
       assert_text profiles(:bob).name
       assert_no_text profiles(:alice).name
     end
+  end
+
+  test "switching the posting-as profile does not clear an in-progress message" do
+    sign_in_via_browser(@owner)
+    visit chat_url(channel_path)
+
+    fill_in placeholder: "Message ##{@channel.name} (Enter to send, Shift+Enter for a new line)", with: "Don't lose this"
+
+    within(".composer-posting-as") do
+      find(".profile-picker__trigger").click
+      click_link profiles(:bob).name
+    end
+
+    assert_selector ".profile-picker__trigger", text: profiles(:bob).name
+    assert_equal "Don't lose this", find("textarea").value
+  end
+
+  test "switching the posting-as profile sticks after further typing with no proxy bracket match" do
+    # Regression: the picker turbo_stream-replaces just the trigger, which
+    # doesn't reconnect the composer controller — a stale connect()-time
+    # cache of the "default" pill previously meant the very next keystroke
+    # (finding no bracket match) reverted the pill back to whichever profile
+    # was selected when the page first loaded, undoing the switch visually
+    # even though the stored default really had changed.
+    sign_in_via_browser(@owner)
+    visit chat_url(channel_path)
+
+    assert_text "Posting as"
+    assert_selector ".profile-picker__trigger", text: profiles(:alice).name
+
+    within(".composer-posting-as") do
+      find(".profile-picker__trigger").click
+      click_link profiles(:bob).name
+    end
+    assert_selector ".profile-picker__trigger", text: profiles(:bob).name
+
+    fill_in placeholder: "Message ##{@channel.name} (Enter to send, Shift+Enter for a new line)", with: "just carrying on typing"
+
+    assert_selector ".profile-picker__trigger", text: profiles(:bob).name
+    assert_no_selector ".profile-picker__trigger", text: profiles(:alice).name
   end
 
   test "typing a profile's chat proxy brackets posts as that profile instead of the default" do
@@ -109,8 +148,8 @@ class ChatMessagingTest < ApplicationSystemTestCase
     # The live "Posting as" preview (composer_controller.js#matchProxy) should
     # NOT have switched — case-sensitive brackets can identify two different
     # profiles ("bob:" vs "BOB:"), so a case mismatch is simply no match.
-    assert_selector ".composer-posting-as__trigger", text: profiles(:alice).name
-    assert_no_selector ".composer-posting-as__trigger", text: profiles(:bob).name
+    assert_selector ".profile-picker__trigger", text: profiles(:alice).name
+    assert_no_selector ".profile-picker__trigger", text: profiles(:bob).name
 
     find("textarea").native.send_keys(:enter)
 

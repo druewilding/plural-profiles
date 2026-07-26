@@ -3974,7 +3974,13 @@ turbo-frame {
   padding: 0.85rem 1.5rem 1.25rem;
 }
 
-.composer-posting-as {
+/* Shared "post as" searchable profile picker — used by the composer's
+   identity switcher and by any plain form field that needs to choose a
+   profile (server creation, joining a server). Selection-context specifics
+   (immediate PATCH vs. a hidden form field, upward vs. downward opening)
+   live in profile_picker_controller.js / composer_controller.js and the
+   .composer-posting-as modifier below, not here. */
+.profile-picker {
   display: inline-flex;
   align-items: center;
   gap: 0.4rem;
@@ -3983,28 +3989,28 @@ turbo-frame {
   border-radius: 7px;
   padding: 0.3rem 0.6rem 0.3rem 0.4rem;
   font-size: 0.82rem;
-  margin-bottom: 0.55rem;
 }
 
 /* .avatar--placeholder carries its own min-width/min-height (see the base
    rule) to stay visible at its default 64px size elsewhere — here it needs
    overriding too, or the placeholder ignores the width/height below and
    renders oversized next to profiles that do have a real avatar image. */
-.composer-posting-as .avatar {
+.profile-picker .avatar {
   width: 22px;
   height: 22px;
   min-width: 22px;
   min-height: 22px;
 }
 
-.composer-posting-as__option .avatar {
+.profile-picker__option .avatar {
   width: 20px;
   height: 20px;
   min-width: 20px;
   min-height: 20px;
+  margin-top: 0.1rem;
 }
 
-.composer-posting-as__trigger {
+.profile-picker__trigger {
   display: inline-flex;
   align-items: center;
   gap: 0.4rem;
@@ -4016,26 +4022,43 @@ turbo-frame {
    which leaves a few px of baseline whitespace below the image — inflating
    the span taller than the 22px avatar and pushing it toward the top of the
    trigger row instead of centering it. */
-.composer-posting-as__trigger-avatar {
+.profile-picker__trigger-avatar {
   display: flex;
 }
 
-.composer-posting-as__trigger::-webkit-details-marker,
-.composer-posting-as__trigger::marker {
+.profile-picker__trigger-pronouns {
+  margin-left: 0.3rem;
+  font-size: 0.78rem;
+  font-style: italic;
+  color: color-mix(in srgb, var(--text) 75%, transparent);
+}
+
+.profile-picker__trigger::-webkit-details-marker,
+.profile-picker__trigger::marker {
   display: none;
 }
 
-/* Opens upward from the composer at the bottom of the pane, rather than the
-   default action-dropdown position (below/right), which would put the menu
-   past the viewport edge here. */
-.composer-posting-as .action-dropdown__menu {
+/* The default .action-dropdown__menu anchors to its trigger's right edge and
+   grows leftward, which overflows off-screen whenever the trigger sits near
+   the left edge of a narrower container (a form dialog, the composer at the
+   bottom of the pane) — anchor left and grow rightward instead. */
+.profile-picker .action-dropdown__menu {
   left: 0;
   right: auto;
+}
+
+/* The composer's picker additionally opens upward, since it sits at the very
+   bottom of the pane and there's no room to open downward. */
+.composer-posting-as {
+  margin-bottom: 0.55rem;
+}
+
+.composer-posting-as .action-dropdown__menu {
   top: auto;
   bottom: calc(100% + 4px);
 }
 
-.composer-posting-as__menu {
+.profile-picker__menu {
   width: max-content;
   min-width: 260px;
   max-width: 340px;
@@ -4045,7 +4068,7 @@ turbo-frame {
   gap: 0.35rem;
 }
 
-.composer-posting-as__search {
+.profile-picker__search {
   width: 100%;
   padding: 0.4rem 0.6rem;
   border-radius: 5px;
@@ -4055,7 +4078,7 @@ turbo-frame {
   font-size: 0.85rem;
 }
 
-.composer-posting-as__options {
+.profile-picker__options {
   max-height: 260px;
   overflow-y: auto;
   display: flex;
@@ -4063,59 +4086,88 @@ turbo-frame {
   gap: 0.1rem;
 }
 
-.composer-posting-as__option {
+.profile-picker__option {
   display: flex;
   align-items: flex-start;
   gap: 0.5rem;
   white-space: normal;
+  outline: none;
 }
 
-.composer-posting-as__option .avatar {
-  margin-top: 0.1rem;
+/* Explicit ring rather than relying on the browser's native default — a
+   <button> and an <a> (the composer uses a link, the plain-form pickers use
+   a button) don't reliably render the same default focus indicator. Outline
+   only appears on focus (rather than an always-on "transparent" placeholder
+   that flips color) because forced-colors mode refuses to treat a transparent
+   outline as invisible — any non-"none" outline-style gets forced to a
+   visible system color regardless of focus state, which would otherwise put
+   a box around every option, focused or not. */
+.profile-picker__option:focus-visible {
+  outline: 2px solid var(--link);
+  outline-offset: -2px;
 }
 
-.composer-posting-as__option--current {
+@media (forced-colors: active) {
+  .profile-picker__option:focus-visible {
+    outline-color: CanvasText;
+  }
+}
+
+/* The composer's picker uses a link (it fires an immediate PATCH); the
+   plain-form "post as" pickers use a <button> instead (there's nothing to
+   navigate to, just a hidden field to fill in) — reset the UA button chrome
+   without touching the font-size/color already set above for both.
+   appearance: none keeps the button under our own styling (background,
+   border, outline) in forced-colors mode too — without it, some browsers
+   fall back to native widget rendering for real <button> elements there and
+   ignore the authored focus ring entirely. */
+button.profile-picker__option {
+  width: 100%;
+  text-align: left;
+  background: none;
+  border: none;
+  appearance: none;
+  font-family: inherit;
+  cursor: pointer;
+}
+
+.profile-picker__option--current {
   background-color: color-mix(in srgb, var(--text) 10%, transparent);
 }
 
-.composer-posting-as__option-info {
+.profile-picker__option-info {
   min-width: 0;
   flex: 1;
 }
 
-.composer-posting-as__option-name-row {
+.profile-picker__option-name-row {
   display: flex;
   align-items: baseline;
   gap: 0.4rem;
   flex-wrap: wrap;
 }
 
-.composer-posting-as__option-name {
+.profile-picker__option-name {
   font-weight: 500;
 }
 
-.composer-posting-as__option-pronouns {
+.profile-picker__option-pronouns {
   font-size: 0.78rem;
   font-style: italic;
   color: color-mix(in srgb, var(--text) 75%, transparent);
 }
 
-.composer-posting-as__option-subtitle {
+.profile-picker__option-subtitle {
   display: block;
   font-size: 0.78rem;
   color: color-mix(in srgb, var(--text) 75%, transparent);
 }
 
-.composer-posting-as__empty {
+.profile-picker__empty {
   padding: 0.5rem 0.75rem;
   margin: 0;
   font-size: 0.85rem;
   color: color-mix(in srgb, var(--text) 65%, transparent);
-}
-
-.composer-posting-as__option .avatar {
-  width: 18px;
-  height: 18px;
 }
 
 .composer-input-row {

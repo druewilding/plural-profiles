@@ -21,9 +21,10 @@
     %p.form-hint Members of this server will see this theme, unless a channel overrides it. Leave blank for the site default.
 
   - unless server.persisted?
+    - our_profiles = Current.user.profiles.order(:name)
     .form-group
-      = label_tag "chat_server_default_profile_id", "Post as"
-      = select_tag "chat_server[default_profile_id]", options_for_select(Current.user.profiles.order(:name).map { |p| [ p.name, p.id ] })
+      %label{id: "chat_server_default_profile_id_label"} Post as
+      = render "chat/shared/profile_picker", field_name: "chat_server[default_profile_id]", label_id: "chat_server_default_profile_id_label", profiles: our_profiles, selected_profile: our_profiles.first
       %p.form-hint The profile you'll post as by default in this server. You can change this any time.
 
   .form-group
