@@ -65,14 +65,14 @@ class ChatMessagingTest < ApplicationSystemTestCase
     assert_text profiles(:alice).name
 
     within(".composer-posting-as") do
-      find(".composer-posting-as__trigger").click
+      find(".profile-picker__trigger").click
       click_link profiles(:bob).name
     end
 
     # The profile switch link is a Turbo PATCH that redirects back to this
     # same channel page — wait for that round-trip to settle (fresh composer,
     # fresh textarea) before typing, or send_keys can hit a stale element.
-    assert_selector ".composer-posting-as__trigger", text: profiles(:bob).name
+    assert_selector ".profile-picker__trigger", text: profiles(:bob).name
 
     send_message("Switched over to Bob")
 
@@ -109,8 +109,8 @@ class ChatMessagingTest < ApplicationSystemTestCase
     # The live "Posting as" preview (composer_controller.js#matchProxy) should
     # NOT have switched — case-sensitive brackets can identify two different
     # profiles ("bob:" vs "BOB:"), so a case mismatch is simply no match.
-    assert_selector ".composer-posting-as__trigger", text: profiles(:alice).name
-    assert_no_selector ".composer-posting-as__trigger", text: profiles(:bob).name
+    assert_selector ".profile-picker__trigger", text: profiles(:alice).name
+    assert_no_selector ".profile-picker__trigger", text: profiles(:bob).name
 
     find("textarea").native.send_keys(:enter)
 

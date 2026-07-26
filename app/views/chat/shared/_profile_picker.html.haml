@@ -1,0 +1,33 @@
+- # Searchable "post as" profile picker for a plain form field — same look
+- # and search behavior as the composer's identity switcher, but fills in a
+- # hidden field instead of firing an immediate PATCH. Usage:
+- #   = render "chat/shared/profile_picker", field_name: "chat_server[default_profile_id]",
+- #       profiles: Current.user.profiles.order(:name), selected_profile: profiles.first
+- selected_profile ||= nil
+%details.action-dropdown.profile-picker{data: {controller: "dropdown profile-picker"}}
+  = hidden_field_tag field_name, selected_profile&.id, data: {"profile-picker-target": "hiddenField"}
+  %summary.profile-picker__trigger
+    %span.profile-picker__trigger-avatar{data: {"profile-picker-target": "triggerAvatar"}}
+      - if selected_profile
+        = render "chat/shared/avatar", record: selected_profile, size: 22
+    %span{data: {"profile-picker-target": "triggerName"}}= selected_profile ? formatted_inline(selected_profile.name) : "Choose a profile…"
+  .action-dropdown__menu.profile-picker__menu{data: {controller: "profile-filter"}}
+    %input.profile-picker__search{type: "text", autocomplete: "off", placeholder: "Find a profile…", "aria-label": "Filter profiles", data: {"profile-filter-target": "input", action: "input->profile-filter#apply"}}
+    .profile-picker__options
+      - profiles.each do |profile|
+        - search_text = plain_field([profile.name, profile.pronouns, profile.subtitle, profile.labels.join(" ")].compact.join(" ")).downcase
+        - option_class = "action-dropdown__item profile-picker__option#{' profile-picker__option--current' if profile == selected_profile}"
+        %button{type: "button", class: option_class, data: {"profile-filter-target": "option", "profile-picker-target": "option", action: "click->profile-picker#select", "profile-id": profile.id, search: search_text}}
+          = render "chat/shared/avatar", record: profile, size: 20
+          .profile-picker__option-info
+            .profile-picker__option-name-row
+              %span.profile-picker__option-name= formatted_inline(profile.name)
+              - if profile.pronouns.present?
+                %span.profile-picker__option-pronouns= formatted_inline(profile.pronouns)
+            - if profile.subtitle.present?
+              %span.profile-picker__option-subtitle= formatted_inline(profile.subtitle)
+            - if profile.labels.any?
+              .label-badges
+                - profile.labels.each do |label|
+                  %span.label-badge.label-badge--sidebar= label
+      %p.profile-picker__empty{data: {"profile-filter-target": "empty"}, hidden: true} No profiles match your search.

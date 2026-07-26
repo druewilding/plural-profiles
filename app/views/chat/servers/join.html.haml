@@ -10,7 +10,7 @@
 
     .form-group
       = label_tag "default_profile_id", "Post as"
-      = select_tag "default_profile_id", options_for_select(@profiles.map { |p| [ p.name, p.id ] })
+      = render "chat/shared/profile_picker", field_name: "default_profile_id", profiles: @profiles, selected_profile: @profiles.first
       %p.form-hint The profile you'll post as by default in this server. You can change this any time.
 
     .form-group

@@ -38,7 +38,7 @@ export default class extends Controller {
     if (match) {
       const avatar = match.option.querySelector(".avatar")
       if (avatar) this.triggerAvatarTarget.replaceChildren(avatar.cloneNode(true))
-      const name = match.option.querySelector(".composer-posting-as__option-name")
+      const name = match.option.querySelector(".profile-picker__option-name")
       if (name) this.triggerNameTarget.innerHTML = name.innerHTML
     } else {
       this.triggerAvatarTarget.innerHTML = this.defaultAvatarHTML
