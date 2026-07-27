@@ -21,7 +21,7 @@ class User < ApplicationRecord
   USERNAME_FORMAT = /\A[a-z0-9](?:[a-z0-9]|[_-](?=[a-z0-9]))*[a-z0-9]?\z/
   RESERVED_USERNAMES = %w[
     admin api help support system health status dashboard settings
-    null undefined root www mail ftp
+    null undefined root www mail ftp noreply
     account accounts login logout signup
     register password reset verify
     profile profiles group groups stats
