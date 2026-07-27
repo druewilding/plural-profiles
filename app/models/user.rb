@@ -24,7 +24,7 @@ class User < ApplicationRecord
     null undefined root www mail ftp noreply
     account accounts login logout signup
     register password reset verify
-    profile profiles group groups stats
+    plural profile profiles group groups stats chat
     about our contact terms privacy security
     theme themes docs documentation
   ].uniq.freeze
