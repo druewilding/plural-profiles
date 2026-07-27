@@ -7,7 +7,7 @@
 %details#posting-as-picker.action-dropdown.profile-picker.composer-posting-as{data: {controller: "dropdown"}}
   %summary.profile-picker__trigger
     %span.profile-picker__trigger-avatar{data: {"composer-target": "triggerAvatar"}}
-      = render "chat/shared/avatar", record: current_postable, size: 22
+      = render "chat/shared/avatar", record: current_postable, size: 22, shape: "circle"
     %span
       Posting as
       %strong{data: {"composer-target": "triggerName"}}= formatted_inline(current_postable.name)

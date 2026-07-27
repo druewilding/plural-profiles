@@ -27,7 +27,7 @@
   %summary.profile-picker__trigger{"aria-labelledby": label_id}
     %span.profile-picker__trigger-avatar{data: {"profile-picker-target": "triggerAvatar"}}
       - if selected_postable
-        = render "chat/shared/avatar", record: selected_postable, size: 22
+        = render "chat/shared/avatar", record: selected_postable, size: 22, shape: "circle"
     %span
       %strong{data: {"profile-picker-target": "triggerName"}}= selected_postable ? formatted_inline(selected_postable.name) : "Choose a profile or group…"
       - selected_pronouns = selected_postable.respond_to?(:pronouns) ? selected_postable.pronouns : nil

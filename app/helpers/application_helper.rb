@@ -99,8 +99,8 @@ module ApplicationHelper
     end
   end
 
-  def avatar_shape_class(record, prefix: "avatar")
-    case record.avatar_shape
+  def avatar_shape_class(record, prefix: "avatar", shape: record.avatar_shape)
+    case shape
     when "circle" then "#{prefix}--circle"
     when "square" then "#{prefix}--square"
     else ""
