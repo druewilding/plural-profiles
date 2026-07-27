@@ -1,5 +1,13 @@
+- # `shape` is an explicit override (e.g. "circle", forced by chat callers) —
+- # keep track of whether one was actually passed before defaulting it below,
+- # since the placeholder branch should only pick up a shape when a caller
+- # deliberately overrides it (chat postables), not for every record's own
+- # avatar_shape (servers keep their placeholder unshaped, matching every
+- # other placeholder render in the app).
+- shape_override = local_assigns[:shape]
+- shape = shape_override || record.avatar_shape
 - if record.avatar.attached?
-  = image_tag record.avatar.variant(resize_to_fill: [size, size]), class: "avatar #{avatar_shape_class(record)}".strip, width: size, height: size, alt: "", loading: "lazy"
+  = image_tag record.avatar.variant(resize_to_fill: [size, size]), class: "avatar #{avatar_shape_class(record, shape: shape)}".strip, width: size, height: size, alt: "", loading: "lazy"
 - else
-  .avatar.avatar--placeholder
+  .avatar{class: "avatar--placeholder #{'avatar--circle' if shape_override == 'circle'}".strip}
     = render "shared/plural_pride_logo"

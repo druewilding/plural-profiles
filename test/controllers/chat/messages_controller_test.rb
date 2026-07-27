@@ -90,4 +90,17 @@ class Chat::MessagesControllerTest < ActionDispatch::IntegrationTest
     get chat_server_channel_messages_path(@server, @channel, before_id: 0, before_created_at: Time.current.iso8601(6))
     assert_redirected_to join_chat_server_path(@server)
   end
+
+  test "message avatars always render circle in chat, regardless of the postable's own avatar_shape" do
+    profiles(:alice).update!(avatar_shape: "square")
+    profiles(:alice).avatar.attach(io: File.open(file_fixture("avatar.png")), filename: "avatar.png", content_type: "image/png")
+    @channel.messages.create!(user: @owner, postable: profiles(:alice), body: "hello")
+
+    sign_in_as @owner
+    get chat_server_channel_messages_path(@server, @channel, before_id: 0, before_created_at: Time.current.iso8601(6))
+
+    assert_response :success
+    assert_match "avatar--circle", response.body
+    assert_no_match "avatar--square", response.body
+  end
 end

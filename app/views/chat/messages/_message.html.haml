@@ -1,9 +1,9 @@
 .chat-message{id: dom_id(message)}
   .chat-message__avatar
     - if message.postable&.avatar&.attached?
-      = image_tag message.postable.avatar.variant(resize_to_fill: [34, 34]), class: "avatar #{avatar_shape_class(message.postable)}".strip, width: 34, height: 34, alt: "", loading: "lazy"
+      = image_tag message.postable.avatar.variant(resize_to_fill: [34, 34]), class: "avatar #{avatar_shape_class(message.postable, shape: "circle")}".strip, width: 34, height: 34, alt: "", loading: "lazy"
     - else
-      .avatar.avatar--placeholder
+      .avatar.avatar--placeholder.avatar--circle
         = render "shared/plural_pride_logo"
 
   .chat-message__content
