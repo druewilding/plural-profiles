@@ -31,6 +31,11 @@ class User < ApplicationRecord
     theme themes docs documentation
     cable up
     anonymous guest user users everyone here test deleted
+    blog journal activity activities feed timeline notifications notes calendar
+    front fronting member members alter alters
+    search faq feedback report
+    media uploads avatar avatars
+    billing pricing
   ].uniq.freeze
 
   validates :email_address, presence: true, uniqueness: true, format: { with: URI::MailTo::EMAIL_REGEXP }
