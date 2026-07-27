@@ -21,12 +21,16 @@ class User < ApplicationRecord
   USERNAME_FORMAT = /\A[a-z0-9](?:[a-z0-9]|[_-](?=[a-z0-9]))*[a-z0-9]?\z/
   RESERVED_USERNAMES = %w[
     admin api help support system health status dashboard settings
-    null undefined root www mail ftp noreply
+    null undefined root www mail ftp noreply no-reply donotreply
+    postmaster webmaster abuse hostmaster mailer-daemon
     account accounts login logout signup
     register password reset verify
     plural profile profiles group groups stats chat
+    server servers channel channels invite
     about our contact terms privacy security
     theme themes docs documentation
+    cable up
+    anonymous guest user users everyone here test deleted
   ].uniq.freeze
 
   validates :email_address, presence: true, uniqueness: true, format: { with: URI::MailTo::EMAIL_REGEXP }
