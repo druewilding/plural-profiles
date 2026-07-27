@@ -41,11 +41,12 @@ env:
   secret:
     - RAILS_MASTER_KEY
   clear:
-    # Run the Solid Queue Supervisor inside the web server's Puma process to do jobs.
-    # When you start using multiple servers, you should split out job processing to a dedicated machine.
+    # Toggles whether the Solid Queue Supervisor runs inside the web server's Puma
+    # process (only valid for a single-server setup — once you're running multiple
+    # servers, job processing should split out to its own dedicated machine instead).
     # Not used in production: this app deploys to Scalingo (see the Procfile's dedicated
     # `worker: bundle exec bin/jobs` process), not via this Kamal config.
-    SOLID_QUEUE_IN_PUMA: false
+    SOLID_QUEUE_IN_PUMA: "false"
 
     # Set number of processes dedicated to Solid Queue (default: 1)
     # JOB_CONCURRENCY: 3
