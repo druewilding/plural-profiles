@@ -35,6 +35,8 @@ class User < ApplicationRecord
     front fronting member members alter alters
     search faq feedback report
     media uploads avatar avatars
+    mod mods moderator moderators staff team official verified owner
+    info sales press legal marketing hr jobs careers
     billing pricing
   ].uniq.freeze
 
