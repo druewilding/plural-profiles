@@ -2,6 +2,8 @@
 
 A web app for pluralfolk to create and share multiple profiles. Each account can have any number of profiles (with a name, pronouns, description, and avatar) and organise them into groups. Profiles and groups get unique shareable URLs, so you can give someone a link to a specific profile or a group of profiles without exposing anything else about your account.
 
+Beyond profiles and groups, Plural Profiles also has a real-time chat system: invite-only servers with channels, Tupperbox-style message proxying (post as whichever profile or group you like), unread indicators, and live updates over Action Cable.
+
 ## Features
 
 ### Profiles & groups
@@ -16,6 +18,7 @@ A web app for pluralfolk to create and share multiple profiles. Each account can
 - **Heart emojis** — profiles can display custom heart emojis (≈45 hearts like `aqua_heart`, `void_heart`, `dewdrop_heart`), and `:heart_name:` shortcodes in descriptions are rendered as inline images
 - **Description formatting** — descriptions support basic HTML (`<b>`, `<i>`, `<u>`, `<s>`, `<details>`, `<summary>`) and `||spoiler||` syntax for togglable hidden text
 - **Created-at backdating** — profiles and groups can have their creation date set to a past date
+- **General search** — find your own profiles and groups by name, subtitle, tag line, description, pronouns, or labels
 
 ### Sharing & privacy
 
@@ -24,10 +27,24 @@ A web app for pluralfolk to create and share multiple profiles. Each account can
 - **Privacy-conscious sharing** — visitors can only see what they're linked to; there's no way to browse from one profile to discover other profiles or groups
 - **Interactive group explorer** — shared group pages feature a tree sidebar that lazy-loads content panels via AJAX, with a flat no-JS fallback for progressive enhancement
 
+### Chat
+
+Served from its own subdomain (`chat.` — see [Getting started](#getting-started)) and built on Action Cable for live updates.
+
+- **Servers & channels** — create invite-only servers, each with any number of named channels. Servers and channels can each have their own avatar and theme
+- **Invite links** — a server owner generates a single shareable, single-use-until-regenerated invite link; joining requires an unredeemed invite and picking a profile or group to post as
+- **Roles** — members are either the server `owner` (can create/edit channels, edit server settings, manage invites) or a plain `member`
+- **Message proxying ("Tupperbox-style")** — profiles and groups can be assigned proxy brackets (e.g. a `guy:` prefix or `{ }` wrapper); starting a message with a matching bracket posts it as that profile or group instead of your default, with the bracket stripped from the sent message
+- **Per-server and per-channel "post as" defaults** — members choose a default profile or group to post as for a whole server, and can override it per-channel
+- **Live message delivery** — new messages are broadcast to everyone viewing the channel over Action Cable, with no page refresh needed
+- **Unread indicators** — sidebar dots on both the channel list and the server rail light up live as new messages arrive, and clear once a channel is actually opened (not just prefetched by Turbo)
+- **Scroll-back history** — older messages lazy-load a page at a time as you scroll up, using keyset (cursor-based) pagination so history stays correct even if messages were backfilled out of id order
+- **Rate limiting** — message sending is capped at 60 per minute per user to curb accidental floods
+
 ### Themes
 
 - **Custom themes** — each account can create themes with a full set of colour overrides (page, pane, buttons, inputs, flash messages) plus an optional background image
-- **Theme application** — individual profiles and groups can each have their own theme, or the account's active theme applies site-wide
+- **Theme application** — individual profiles, groups, chat servers, and chat channels can each have their own theme, or the account's active theme applies site-wide
 - **Shared themes** — admins can share themes so all users can browse and duplicate them
 - **Site default theme** — one shared theme can be designated as the site default (applied when no other theme is active)
 - **Theme import/export** — themes can be exported as JSON and imported by pasting JSON or legacy CSS `:root {}` blocks
@@ -51,7 +68,9 @@ A web app for pluralfolk to create and share multiple profiles. Each account can
 - **Puma** web server
 - **HAML** templates (via `haml-rails`)
 - **Propshaft** asset pipeline
-- **Importmap** + **Hotwire** (Turbo & Stimulus)
+- **Importmap** + **Hotwire** (Turbo, Stimulus & Turbo Streams over Action Cable)
+- **Solid Queue** — database-backed Active Job backend for background jobs (e.g. mailer delivery), no Redis required
+- **Solid Cable** — Postgres-backed Action Cable adapter for chat's live updates, works across multiple containers, no Redis required
 - **Active Storage** for file uploads (local dev, S3 in production)
 - **BCrypt** for password hashing
 
@@ -74,8 +93,18 @@ Group   → has_many InclusionOverrides (path-scoped per-item hidden state)
 
 Profile → copied_from (Profile, optional — tracks duplication lineage)
 Group   → copied_from (Group, optional — tracks duplication lineage)
+Profile, Group → chat_bracket_before / chat_bracket_after (optional message-proxy brackets, unique per user across both)
 
 InviteCode — belongs to the generating User; records redeemed_by (User) and redeemed_at once used
+
+Chat::Server (name, subtitle, avatar, uuid, theme)
+ ├── belongs_to owner (User)
+ ├── has_many Chat::Memberships (role: owner/member, default_postable) → has_many members (User) through memberships
+ ├── has_many Chat::Channels (name, subtitle, uuid, theme)
+ │     ├── has_many Chat::Messages (body, user, postable, created_at)
+ │     ├── has_many Chat::ChannelDefaultPostables (per-user default postable for this channel)
+ │     └── has_many Chat::ChannelReads (per-user last_read_at, drives unread dots)
+ └── has_many Chat::ServerInvites (token, created_by, redeemed_by, redeemed_at)
 ```
 
 The `GroupGroup` join table connects parent and child groups with no additional columns — it is a simple edge in the group tree.
@@ -88,6 +117,8 @@ The `InclusionOverride` table stores per-item hidden state scoped to a root grou
 - `target_id` — ID of the hidden group or profile
 
 Unique constraint on `(group_id, path, target_type, target_id)` ensures each item can only be hidden once per path per root. Because `path` is an ordered array, the same item can be hidden along one traversal path but visible along another — even when the same `group_group` edge is involved (diamond pattern).
+
+`Chat::Message#postable` is a polymorphic association to whichever `Profile` or `Group` the message was sent as. On create, `Chat::ProxyResolver` checks the message body against the sending user's profiles/groups that have `chat_bracket_before`/`chat_bracket_after` set (matching the longest/most specific bracket pair first) and strips the bracket from the stored body; otherwise it falls back to the user's default postable for that channel, then their server-wide default. Messages are paginated with a composite `(created_at, id)` keyset cursor rather than `id <` alone, so scroll-back history stays correctly ordered even if rows are backfilled with an out-of-sequence `created_at`.
 
 The `Theme` table stores per-user colour schemes with ≈30 CSS custom property overrides (grouped into base, buttons, forms, flash), optional background image (Active Storage), layout properties (`background_repeat`, `background_size`, `background_position`, `background_attachment`), tags, credit/attribution, and sharing flags.
 
@@ -135,6 +166,8 @@ bin/rails server
 ```
 
 The app will be available at [http://localhost:3000](http://localhost:3000).
+
+Chat lives on its own subdomain, routed by `constraints subdomain: "chat"`. In development, `config.hosts` allows `.lvh.me` — a public DNS entry that always resolves to `127.0.0.1` — so chat is reachable at [http://chat.lvh.me:3000](http://chat.lvh.me:3000) with no `/etc/hosts` edit needed.
 
 ### Running tests
 
@@ -286,10 +319,31 @@ Then re-run the check to confirm everything is clean before committing the updat
 | `/our/groups`                  | Manage your groups (auth required)               |
 | `/our/groups/:id/duplicate`    | Duplicate a group tree (multi-step wizard)       |
 | `/our/themes`                  | Manage and browse themes (auth required)         |
+| `/our/search`                  | Search your own profiles and groups              |
 | `/profiles/:uuid`              | Shared profile page                              |
 | `/groups/:uuid`                | Shared group page (interactive tree explorer)    |
 | `/groups/:uuid/profiles/:uuid` | Shared profile viewed within a group             |
-| `/stats`                       | Shared aggregate stats page                      |
+| `/stats`                       | Shared aggregate stats page (admin only)         |
+
+Chat is routed on its own subdomain (`chat.` — see [Getting started](#getting-started)), so paths below are relative to `chat.<host>`:
+
+| Path                                          | Description                                          |
+| ---------------------------------------------- | ----------------------------------------------------- |
+| `/`                                            | List of servers you belong to                        |
+| `/servers/new`                                 | Create a server                                       |
+| `/servers/:uuid`                               | Server view — channel sidebar + active channel        |
+| `/servers/:uuid/edit`                          | Edit server settings (owner only)                     |
+| `/servers/:uuid/join`                          | Join via invite link (prompts to create a profile first if you have none) |
+| `/servers/:uuid/invite`                        | View/regenerate the server's invite link (owner only) |
+| `/invite/:token`                               | Redeem an invite link                                 |
+| `/servers/:uuid/membership/edit`               | Change your default "post as" for this server         |
+| `/servers/:server_uuid/channels/new`           | Create a channel (owner only)                         |
+| `/servers/:server_uuid/channels/:uuid`         | Channel view (messages + composer)                    |
+| `/servers/:server_uuid/channels/:uuid/edit`    | Edit channel settings (owner only)                    |
+| `PATCH .../channels/:uuid/mark_read`           | Mark a channel as read (clears its unread dot)         |
+| `POST .../channels/:channel_uuid/messages`     | Post a message (rate-limited to 60/minute)             |
+| `PATCH .../channels/:channel_uuid/default_postable` | Change your default "post as" for this channel   |
+| `/cable`                                       | Action Cable WebSocket endpoint                        |
 
 ## Project structure
 
@@ -301,22 +355,49 @@ app/
 │   │   ├── profiles_controller.rb      # CRUD for the signed-in user's profiles
 │   │   ├── groups_controller.rb        # CRUD + manage members + duplication wizard
 │   │   ├── invite_codes_controller.rb  # Invite code generation and deletion
-│   │   └── themes_controller.rb        # Theme CRUD, activate, share, import/export
+│   │   ├── themes_controller.rb        # Theme CRUD, activate, share, import/export
+│   │   └── search_controller.rb        # Search the user's own profiles and groups
+│   ├── chat/
+│   │   ├── application_controller.rb            # Shared before_actions: membership/owner checks, unread lookups
+│   │   ├── servers_controller.rb                # Server CRUD, join flow
+│   │   ├── channels_controller.rb               # Channel CRUD, mark-as-read
+│   │   ├── messages_controller.rb               # Post messages, lazy-loaded scroll-back pages
+│   │   ├── memberships_controller.rb            # Per-server default "post as"
+│   │   ├── channel_default_postables_controller.rb  # Per-channel default "post as"
+│   │   ├── server_invites_controller.rb         # View/regenerate a server's invite link
+│   │   └── invite_redemptions_controller.rb     # Redeem an invite link
 │   ├── profiles_controller.rb          # Shared profile page
 │   ├── groups_controller.rb            # Shared group page + panel (AJAX tree content)
 │   ├── group_profiles_controller.rb    # Shared profile-within-group page + panel
-│   ├── stats_controller.rb            # Shared stats page
+│   ├── stats_controller.rb             # Shared stats page (admin only)
 │   ├── registrations_controller.rb     # Sign up (validates invite code)
 │   └── email_verifications_controller.rb
+├── channels/
+│   └── application_cable/
+│       └── connection.rb   # Identifies the Action Cable connection from the signed-in session cookie
+├── jobs/
+│   └── application_job.rb  # Base class; mailer delivery runs through Solid Queue in production
 ├── models/
 │   ├── user.rb
-│   ├── profile.rb           # includes HasAvatar, HasLabels
-│   ├── group.rb             # includes HasAvatar, HasLabels; recursive CTE methods
+│   ├── profile.rb           # includes HasAvatar, HasLabels, ChatProxyable
+│   ├── group.rb             # includes HasAvatar, HasLabels, ChatProxyable; recursive CTE methods
 │   ├── group_group.rb
 │   ├── group_profile.rb
 │   ├── inclusion_override.rb
 │   ├── invite_code.rb
-│   └── theme.rb             # colour properties, background image, sharing, tags
+│   ├── theme.rb             # colour properties, background image, sharing, tags
+│   ├── concerns/
+│   │   └── chat_proxyable.rb  # Shared by Profile/Group: proxy brackets + cross-model uniqueness
+│   ├── chat_record.rb       # Abstract base class for all Chat:: models
+│   └── chat/
+│       ├── server.rb                    # includes HasAvatar
+│       ├── channel.rb
+│       ├── membership.rb                # role (owner/member) + per-server default postable
+│       ├── message.rb                   # keyset pagination, live broadcast, unread-dot broadcast
+│       ├── channel_default_postable.rb  # per-channel default postable override
+│       ├── channel_read.rb              # per-user last_read_at; drives unread dots
+│       ├── server_invite.rb             # single-use invite token
+│       └── proxy_resolver.rb            # Matches a message body against Tupperbox-style brackets
 ├── javascript/controllers/
 │   ├── clipboard_controller.js          # Copy-to-clipboard with feedback
 │   ├── details_persist_controller.js    # Persist <details> open/closed in localStorage
@@ -325,13 +406,24 @@ app/
 │   ├── spoiler_controller.js            # Toggle ||spoiler|| text visibility
 │   ├── theme_designer_controller.js     # Live theme preview, colour sync, JSON export
 │   ├── theme_import_controller.js       # Import JSON or CSS :root {} blocks
-│   ├── tree_controller.js              # Shared group tree explorer with lazy-loaded panels
-│   └── visibility_toggle_controller.js  # Async toggle for inclusion overrides
+│   ├── tree_controller.js               # Shared group tree explorer with lazy-loaded panels
+│   ├── visibility_toggle_controller.js  # Async toggle for inclusion overrides
+│   ├── profile_filter_controller.js     # Client-side filtering for profile/group pickers
+│   ├── profile_picker_controller.js     # Profile/group picker widget (default postable, etc.)
+│   ├── composer_controller.js           # Chat message composer: send-on-Enter, live proxy-bracket preview
+│   ├── chat_scroll_controller.js        # Chat pane: stick-to-bottom on new messages, preserve position on scroll-back load
+│   ├── channel_read_controller.js       # Marks a channel read on genuine visits (not link-hover prefetch)
+│   ├── dropdown_controller.js           # Generic dropdown menu toggle
+│   ├── sidebar_tree_controls_controller.js  # Expand/collapse controls for the "our" sidebar tree
+│   ├── avatar_editor_controller.js      # Avatar upload preview + shape/crop controls
+│   └── timezone_controller.js           # Detects and submits the browser's time zone
 ├── views/
 │   ├── our/profiles/    # Profile management views (HAML)
 │   ├── our/groups/      # Group management + duplication wizard views (HAML)
 │   ├── our/themes/      # Theme management + designer views (HAML)
 │   ├── our/account/     # Account settings views (HAML)
+│   ├── our/search/      # Search results view
+│   ├── chat/            # Servers, channels, messages, memberships, invites (HAML)
 │   ├── profiles/        # Shared profile view
 │   ├── groups/          # Shared group view + tree explorer
 │   └── group_profiles/  # Shared profile-in-group view
@@ -383,6 +475,8 @@ scalingo --app plural-profiles env-set \
 
 If you don't set up S3 yet, avatars will use local disk storage (which is **ephemeral** on Scalingo — files are lost on redeploy).
 
+Chat is served from `chat.<APP_HOST>` and is already permitted in `config.hosts` for that host — no extra environment variable is needed, just make sure DNS for the `chat` subdomain points at the app (Scalingo issues a wildcard-friendly SSL cert per custom domain, or the subdomain works automatically on the default `*.osc-fr1.scalingo.io` domain).
+
 ### Deploy
 
 ```sh
@@ -391,13 +485,26 @@ git push scalingo main
 
 The `Procfile` runs `db:migrate` automatically after each deploy via the post-deployment hook.
 
+### Scale the worker
+
+Background jobs (Solid Queue, e.g. mailer delivery) run in a separate `worker` process rather than in the web dyno, so it needs to be scaled up at least once:
+
+```sh
+scalingo --app plural-profiles scale worker:1:S
+```
+
+Action Cable's live chat updates run through Solid Cable, which reads/writes its own Postgres tables — no Redis addon is needed for either background jobs or WebSocket broadcasting.
+
 ### Configuration files
 
-| File          | Purpose                                                |
-| ------------- | ------------------------------------------------------ |
-| `Procfile`    | Defines the web process and post-deploy migration hook |
-| `.buildpacks` | Uses APT + Ruby buildpacks (APT installs libvips)      |
-| `Aptfile`     | Lists APT packages to install (`libvips-dev`)          |
+| File               | Purpose                                                             |
+| ------------------ | -------------------------------------------------------------------- |
+| `Procfile`         | Defines the `web` process, the `worker` process (Solid Queue), and the post-deploy migration hook |
+| `.buildpacks`      | Uses APT + Ruby buildpacks (APT installs libvips)                     |
+| `Aptfile`          | Lists APT packages to install (`libvips-dev`)                         |
+| `config/queue.yml` | Solid Queue dispatcher/worker settings (queues, threads, polling)     |
+| `config/cable.yml` | Action Cable adapter — `solid_cable` in production, `async` in dev    |
+| `config/recurring.yml` | Scheduled Solid Queue tasks (e.g. hourly cleanup of finished jobs) |
 
 ## Licence
 
