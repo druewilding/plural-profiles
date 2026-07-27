@@ -626,6 +626,18 @@ class ApplicationHelperTest < ActionView::TestCase
     assert_includes result, 'width="100"'
   end
 
+  # -- avatar_shape_class --
+
+  test "avatar_shape_class uses the record's own shape by default" do
+    record = Struct.new(:avatar_shape).new("square")
+    assert_equal "avatar--square", avatar_shape_class(record)
+  end
+
+  test "avatar_shape_class shape: override wins over the record's own shape" do
+    record = Struct.new(:avatar_shape).new("square")
+    assert_equal "avatar--circle", avatar_shape_class(record, shape: "circle")
+  end
+
   test "full floating image with text works as intended" do
     text = '<p><img src="x.jpg" alt="photo" style="float:left; width:100px;height:100px; padding:10px;">Some text alongside</p>'
     result = formatted_description(text)
