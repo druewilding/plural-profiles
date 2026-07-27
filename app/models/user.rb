@@ -25,8 +25,8 @@ class User < ApplicationRecord
     postmaster webmaster abuse hostmaster mailer-daemon
     account accounts login logout signup
     register password reset verify
-    plural profile profiles group groups stats chat
-    server servers channel channels invite
+    plural profile profiles group groups stats
+    chat server servers channel channels invite
     about our contact terms privacy security
     theme themes docs documentation
     cable up
