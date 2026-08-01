@@ -186,6 +186,12 @@ class Our::GroupsController < ApplicationController
   end
 
   # -- Duplication wizard --------------------------------------------------
+  # Wizard state (labels, conflicts, resolutions) is kept server-side in the
+  # duplication_wizards table, not in the session cookie. The session only
+  # holds a small id — the full state can grow large enough (many conflicting
+  # sub-groups/profiles) to bump into the ~4KB cookie session limit, and a
+  # silently-dropped or oversized cookie would bounce the user back to step 1
+  # with no visible error.
 
   # Step 1: Show label input form
   def duplicate
@@ -206,42 +212,51 @@ class Our::GroupsController < ApplicationController
     group_conflicts = conflicts.select { |c| c[:original_type] == "Group" }
     profile_conflicts = conflicts.select { |c| c[:original_type] == "Profile" }
 
-    session[:duplication_wizard] = {
-      "source_group_id" => @group.id,
-      "labels" => labels,
-      "group_conflicts" => group_conflicts.map { |c| c.transform_keys(&:to_s) },
-      "profile_conflicts" => profile_conflicts.map { |c| c.transform_keys(&:to_s) },
-      "resolutions" => {},
-      "profile_resolutions" => {},
-      "current_conflict_index" => 0,
-      "phase" => "groups"
-    }
+    # Retrying step 1 (e.g. tweaking labels) shouldn't leave the previous
+    # attempt's row behind — clear it before starting a fresh one.
+    Current.user.duplication_wizards.where(id: session[:duplication_wizard_id]).delete_all
+
+    wizard_record = Current.user.duplication_wizards.create!(
+      group: @group,
+      state: {
+        "labels" => labels,
+        "group_conflicts" => group_conflicts.map { |c| c.transform_keys(&:to_s) },
+        "profile_conflicts" => profile_conflicts.map { |c| c.transform_keys(&:to_s) },
+        "resolutions" => {},
+        "profile_resolutions" => {},
+        "current_conflict_index" => 0,
+        "phase" => "groups"
+      }
+    )
+    session[:duplication_wizard_id] = wizard_record.id
 
     if group_conflicts.any?
       redirect_to duplicate_resolve_our_group_path(@group)
     else
-      advance_to_profile_conflicts_or_confirm(session[:duplication_wizard])
+      advance_to_profile_conflicts_or_confirm(wizard_record)
     end
   end
 
   # Step 2: Show one conflict at a time (group or profile)
   def duplicate_resolve
-    wizard = session[:duplication_wizard]
-    unless wizard && wizard["source_group_id"] == @group.id
+    wizard_record = load_wizard_record
+    unless wizard_record
       redirect_to duplicate_our_group_path(@group), alert: "Please start the duplication process again."
       return
     end
 
-    load_conflict_view_vars(wizard)
+    load_conflict_view_vars(wizard_record.state)
   end
 
   # Process one conflict resolution and advance
   def duplicate_resolve_post
-    wizard = session[:duplication_wizard]
-    unless wizard && wizard["source_group_id"] == @group.id
+    wizard_record = load_wizard_record
+    unless wizard_record
       redirect_to duplicate_our_group_path(@group), alert: "Please start the duplication process again."
       return
     end
+
+    wizard = wizard_record.state
 
     unless %w[reuse copy].include?(params[:resolution])
       load_conflict_view_vars(wizard)
@@ -253,19 +268,20 @@ class Our::GroupsController < ApplicationController
     phase = wizard["phase"] || "groups"
 
     if phase == "groups"
-      resolve_group_conflict(wizard)
+      resolve_group_conflict(wizard_record, wizard)
     else
-      resolve_profile_conflict(wizard)
+      resolve_profile_conflict(wizard_record, wizard)
     end
   end
 
   # Step 3: Show confirmation summary
   def duplicate_confirm
-    wizard = session[:duplication_wizard]
-    unless wizard && wizard["source_group_id"] == @group.id
+    wizard_record = load_wizard_record
+    unless wizard_record
       redirect_to duplicate_our_group_path(@group), alert: "Please start the duplication process again."
       return
     end
+    wizard = wizard_record.state
 
     @labels = wizard["labels"]
     @resolutions = wizard["resolutions"]
@@ -308,11 +324,12 @@ class Our::GroupsController < ApplicationController
 
   # Execute the duplication
   def duplicate_execute
-    wizard = session[:duplication_wizard]
-    unless wizard && wizard["source_group_id"] == @group.id
+    wizard_record = load_wizard_record
+    unless wizard_record
       redirect_to duplicate_our_group_path(@group), alert: "Please start the duplication process again."
       return
     end
+    wizard = wizard_record.state
 
     labels = wizard["labels"]
     resolutions = wizard["resolutions"]
@@ -321,7 +338,8 @@ class Our::GroupsController < ApplicationController
     new_group = @group.deep_duplicate(
       new_labels: labels, resolutions: resolutions, profile_resolutions: profile_resolutions
     )
-    session.delete(:duplication_wizard)
+    wizard_record.destroy
+    session.delete(:duplication_wizard_id)
     redirect_to our_group_path(new_group), notice: "Group duplicated with all sub-groups and profiles."
   end
 
@@ -333,7 +351,15 @@ class Our::GroupsController < ApplicationController
 
   # -- Duplication wizard helpers ------------------------------------------
 
-  def resolve_group_conflict(wizard)
+  # Looks up the wizard record referenced by the session, scoped to both the
+  # current user and the group in the URL, so it can never be used to resume
+  # someone else's (or a different group's) wizard.
+  def load_wizard_record
+    return nil unless session[:duplication_wizard_id]
+    Current.user.duplication_wizards.find_by(id: session[:duplication_wizard_id], group_id: @group.id)
+  end
+
+  def resolve_group_conflict(wizard_record, wizard)
     index = wizard["current_conflict_index"]
     conflict = wizard["group_conflicts"][index]
 
@@ -360,16 +386,16 @@ class Our::GroupsController < ApplicationController
 
     if next_index
       wizard["current_conflict_index"] = next_index
-      session[:duplication_wizard] = wizard
+      wizard_record.update!(state: wizard)
       redirect_to duplicate_resolve_our_group_path(@group)
     else
       # All group conflicts resolved — advance to profile conflicts or confirm
-      session[:duplication_wizard] = wizard
-      advance_to_profile_conflicts_or_confirm(wizard)
+      wizard_record.update!(state: wizard)
+      advance_to_profile_conflicts_or_confirm(wizard_record)
     end
   end
 
-  def resolve_profile_conflict(wizard)
+  def resolve_profile_conflict(wizard_record, wizard)
     index = wizard["current_profile_conflict_index"]
     active = wizard["active_profile_conflicts"]
     conflict = active[index]
@@ -381,10 +407,10 @@ class Our::GroupsController < ApplicationController
     next_index = index + 1
     if next_index < active.length
       wizard["current_profile_conflict_index"] = next_index
-      session[:duplication_wizard] = wizard
+      wizard_record.update!(state: wizard)
       redirect_to duplicate_resolve_our_group_path(@group)
     else
-      session[:duplication_wizard] = wizard
+      wizard_record.update!(state: wizard)
       redirect_to duplicate_confirm_our_group_path(@group)
     end
   end
@@ -392,7 +418,8 @@ class Our::GroupsController < ApplicationController
   # After all group conflicts are resolved, compute which profile conflicts
   # are still relevant (the profile appears in at least one freshly-copied group)
   # and either start the profile conflict phase or go to confirm.
-  def advance_to_profile_conflicts_or_confirm(wizard)
+  def advance_to_profile_conflicts_or_confirm(wizard_record)
+    wizard = wizard_record.state
     profile_conflicts = wizard["profile_conflicts"] || []
 
     if profile_conflicts.any?
@@ -419,13 +446,13 @@ class Our::GroupsController < ApplicationController
         wizard["phase"] = "profiles"
         wizard["active_profile_conflicts"] = relevant
         wizard["current_profile_conflict_index"] = 0
-        session[:duplication_wizard] = wizard
+        wizard_record.update!(state: wizard)
         redirect_to duplicate_resolve_our_group_path(@group)
         return
       end
     end
 
-    session[:duplication_wizard] = wizard
+    wizard_record.update!(state: wizard)
     redirect_to duplicate_confirm_our_group_path(@group)
   end
 

@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_07_26_150033) do
+ActiveRecord::Schema[8.1].define(version: 2026_08_01_100000) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -129,6 +129,16 @@ ActiveRecord::Schema[8.1].define(version: 2026_07_26_150033) do
     t.index ["owner_id"], name: "index_chat_servers_on_owner_id"
     t.index ["theme_id"], name: "index_chat_servers_on_theme_id"
     t.index ["uuid"], name: "index_chat_servers_on_uuid", unique: true
+  end
+
+  create_table "duplication_wizards", force: :cascade do |t|
+    t.datetime "created_at", null: false
+    t.bigint "group_id", null: false
+    t.jsonb "state", default: {}, null: false
+    t.datetime "updated_at", null: false
+    t.bigint "user_id", null: false
+    t.index ["group_id"], name: "index_duplication_wizards_on_group_id"
+    t.index ["user_id"], name: "index_duplication_wizards_on_user_id"
   end
 
   create_table "group_groups", force: :cascade do |t|
@@ -421,6 +431,8 @@ ActiveRecord::Schema[8.1].define(version: 2026_07_26_150033) do
   add_foreign_key "chat_server_invites", "users", column: "redeemed_by_id"
   add_foreign_key "chat_servers", "themes", on_delete: :nullify
   add_foreign_key "chat_servers", "users", column: "owner_id"
+  add_foreign_key "duplication_wizards", "groups"
+  add_foreign_key "duplication_wizards", "users"
   add_foreign_key "group_groups", "groups", column: "child_group_id"
   add_foreign_key "group_groups", "groups", column: "parent_group_id"
   add_foreign_key "group_profiles", "groups"
