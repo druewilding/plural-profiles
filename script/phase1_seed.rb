@@ -186,7 +186,7 @@ ActiveRecord::Base.transaction do
   # ── Chat server ───────────────────────────────────────────────────────────
 
   server = user.owned_chat_servers.create!(name: "The Warren", subtitle: "A quiet place to check in.")
-  server.memberships.create!(user: user, role: "owner", default_profile: grove)
+  server.memberships.create!(user: user, role: "owner", default_postable: grove)
 
   general  = server.channels.create!(name: "general",   subtitle: "Say hello.")
   checkins = server.channels.create!(name: "check-ins", subtitle: "How's everyone doing?")
@@ -202,18 +202,18 @@ ActiveRecord::Base.transaction do
   # brackets instead (and strips them from the stored body), same as a real
   # user typing them in the composer.
 
-  general.messages.create!(user: user, profile: grove, body: "Hey everyone, welcome to The Warren!", created_at: 3.days.ago)
+  general.messages.create!(user: user, postable: grove, body: "Hey everyone, welcome to The Warren!", created_at: 3.days.ago)
   general.messages.create!(user: user, body: "stray: just wandered in, hi all", created_at: 2.days.ago)
   general.messages.create!(user: user, body: "{waves from the doorway}", created_at: 1.day.ago)
-  general.messages.create!(user: user, profile: shadow, body: "Good to see this place coming together.", created_at: 5.hours.ago)
-  general.messages.create!(user: user, profile: grove, body: "Anyone free to chat later?", created_at: 20.minutes.ago)
+  general.messages.create!(user: user, postable: shadow, body: "Good to see this place coming together.", created_at: 5.hours.ago)
+  general.messages.create!(user: user, postable: grove, body: "Anyone free to chat later?", created_at: 20.minutes.ago)
 
-  checkins.messages.create!(user: user, profile: mirage, body: "Feeling pretty good today, thanks for asking.", created_at: 1.day.ago)
+  checkins.messages.create!(user: user, postable: mirage, body: "Feeling pretty good today, thanks for asking.", created_at: 1.day.ago)
   checkins.messages.create!(user: user, body: "doing okay, just tired~drift", created_at: 6.hours.ago)
-  checkins.messages.create!(user: user, profile: ripple, body: "Same as always — steady.", created_at: 45.minutes.ago)
+  checkins.messages.create!(user: user, postable: ripple, body: "Same as always — steady.", created_at: 45.minutes.ago)
 
-  spoilers.messages.create!(user: user, profile: spark, body: "||Big reveal coming up in the movie||[The Odyssey]", created_at: 2.days.ago)
-  spoilers.messages.create!(user: user, profile: grove, body: "||Oh wow, i can't wait to see how that plays out||", created_at: 3.hours.ago)
+  spoilers.messages.create!(user: user, postable: spark, body: "||Big reveal coming up in the movie||[The Odyssey]", created_at: 2.days.ago)
+  spoilers.messages.create!(user: user, postable: grove, body: "||Oh wow, i can't wait to see how that plays out||", created_at: 3.hours.ago)
 
   puts "Created 10 example chat messages."
 end
