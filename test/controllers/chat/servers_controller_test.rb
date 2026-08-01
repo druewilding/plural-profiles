@@ -57,12 +57,14 @@ class Chat::ServersControllerTest < ActionDispatch::IntegrationTest
     sign_in_as @owner
     assert_difference [ "Chat::Server.count", "Chat::Membership.count" ], 1 do
       post chat_servers_path, params: {
-        chat_server: { name: "New Server", description: "A place to chat", default_postable_type: "Profile", default_postable_id: profiles(:bob).id }
+        chat_server: { name: "New Server", subtitle: "A cozy corner", description: "A place to chat", default_postable_type: "Profile", default_postable_id: profiles(:bob).id }
       }
     end
 
     server = Chat::Server.order(:created_at).last
     assert_redirected_to chat_server_path(server)
+    assert_equal "A cozy corner", server.subtitle
+    assert_equal "A place to chat", server.description
     membership = server.memberships.find_by(user: @owner)
     assert_equal "owner", membership.role
     assert_equal profiles(:bob), membership.default_postable
@@ -124,6 +126,17 @@ class Chat::ServersControllerTest < ActionDispatch::IntegrationTest
     patch chat_server_path(@server), params: { chat_server: { name: "Renamed Server" } }
     assert_redirected_to chat_server_path(@server)
     assert_equal "Renamed Server", @server.reload.name
+  end
+
+  test "update lets the owner change the subtitle and description" do
+    sign_in_as @owner
+    patch chat_server_path(@server), params: {
+      chat_server: { name: "Owner's Server", subtitle: "New subtitle", description: "New description" }
+    }
+    assert_redirected_to chat_server_path(@server)
+    @server.reload
+    assert_equal "New subtitle", @server.subtitle
+    assert_equal "New description", @server.description
   end
 
   test "update lets the owner change their default postable" do

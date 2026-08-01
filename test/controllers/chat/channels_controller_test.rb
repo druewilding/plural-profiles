@@ -65,9 +65,12 @@ class Chat::ChannelsControllerTest < ActionDispatch::IntegrationTest
   test "create adds a channel when the owner submits a valid name" do
     sign_in_as @owner
     assert_difference "Chat::Channel.count", 1 do
-      post chat_server_channels_path(@server), params: { chat_channel: { name: "off-topic" } }
+      post chat_server_channels_path(@server), params: { chat_channel: { name: "off-topic", subtitle: "Anything goes", description: "Off-topic chatter" } }
     end
-    assert_redirected_to chat_server_channel_path(@server, Chat::Channel.order(:created_at).last)
+    channel = Chat::Channel.order(:created_at).last
+    assert_redirected_to chat_server_channel_path(@server, channel)
+    assert_equal "Anything goes", channel.subtitle
+    assert_equal "Off-topic chatter", channel.description
   end
 
   test "create is blocked for a non-owner member" do
@@ -100,6 +103,14 @@ class Chat::ChannelsControllerTest < ActionDispatch::IntegrationTest
     patch chat_server_channel_path(@server, @channel), params: { chat_channel: { name: "renamed" } }
     assert_redirected_to chat_server_channel_path(@server, @channel.reload)
     assert_equal "renamed", @channel.name
+  end
+
+  test "update lets the owner change the subtitle and description" do
+    sign_in_as @owner
+    patch chat_server_channel_path(@server, @channel), params: { chat_channel: { name: "general", subtitle: "New subtitle", description: "New description" } }
+    assert_redirected_to chat_server_channel_path(@server, @channel.reload)
+    assert_equal "New subtitle", @channel.subtitle
+    assert_equal "New description", @channel.description
   end
 
   test "update is blocked for a non-owner" do
