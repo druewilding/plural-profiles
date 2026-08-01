@@ -3597,6 +3597,44 @@ details.theme-section-card:not([open]) .theme-section-card__header {
   min-height: 32px;
 }
 
+.server-list__text {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  flex: 1 1 auto;
+}
+
+.server-list__title-row {
+  display: flex;
+  align-items: baseline;
+  gap: 0.6rem;
+  min-width: 0;
+}
+
+.server-list__name {
+  font-weight: 600;
+  flex-shrink: 0;
+  overflow-wrap: anywhere;
+}
+
+.server-list__description {
+  font-size: 0.85rem;
+  color: color-mix(in srgb, var(--text) 80%, transparent);
+  min-width: 0;
+  flex: 1 1 auto;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+.server-list__subtitle {
+  font-size: 0.85rem;
+  color: color-mix(in srgb, var(--text) 80%, transparent);
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
 .chat-shell {
   flex: 1;
   min-height: 0;
@@ -3795,7 +3833,7 @@ details.theme-section-card:not([open]) .theme-section-card__header {
   align-items: center;
   justify-content: space-between;
   gap: 1rem;
-  padding: 0.6rem 1.25rem;
+  padding: 0.6rem 1.25rem 0.9rem;
   border-bottom: 1px solid var(--pane-border);
   flex-shrink: 0;
 }
@@ -3803,7 +3841,7 @@ details.theme-section-card:not([open]) .theme-section-card__header {
 .chat-channel-header h1 {
   margin: 0;
   font-size: 1.15rem;
-  min-width: 0;
+  flex-shrink: 0;
   overflow-wrap: anywhere;
 }
 
@@ -3821,9 +3859,17 @@ details.theme-section-card:not([open]) .theme-section-card__header {
   flex: 1;
 }
 
-/* Name and subtitle share one line rather than stacking — the subtitle is
+.chat-channel-header__title-column {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  flex: 1;
+}
+
+/* Name and description share one line rather than stacking — the description is
    the one that gives way (ellipsis) since the channel name is what
-   identifies the channel and should never get cut off. */
+   identifies the channel and should never get cut off. The subtitle, if
+   present, runs on its own line underneath. */
 .chat-channel-header__title-text {
   display: flex;
   align-items: baseline;
@@ -3831,13 +3877,17 @@ details.theme-section-card:not([open]) .theme-section-card__header {
   min-width: 0;
 }
 
-.chat-channel-header__title-text .subtitle {
+.chat-channel-header__title-text .description {
   margin: 0;
   min-width: 0;
   flex: 1 1 auto;
   overflow: hidden;
   white-space: nowrap;
   text-overflow: ellipsis;
+}
+
+.chat-channel-header__title-column .subtitle {
+  margin: 0.15rem 0 0;
 }
 
 /* Hidden by default — only shown at the small-screen breakpoint below,

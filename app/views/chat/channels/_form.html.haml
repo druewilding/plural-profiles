@@ -13,6 +13,10 @@
     = form.text_field :subtitle
 
   .form-group
+    = form.label :description
+    = form.text_field :description
+
+  .form-group
     = form.label :theme_id, "Display theme"
     = form.select :theme_id, grouped_options_for_select(grouped_theme_options(@our_themes, @shared_themes), channel.theme_id), { include_blank: "Inherit from server" }, {}
 

@@ -11,6 +11,12 @@
         %li.server-list__item
           = link_to chat_server_path(server), class: "server-list__link" do
             = render "chat/shared/avatar", record: server, size: 32
-            = formatted_inline(server.name)
+            .server-list__text
+              .server-list__title-row
+                %span.server-list__name= formatted_inline(server.name)
+                - if server.description.present?
+                  %span.server-list__description= formatted_inline(server.description)
+              - if server.subtitle.present?
+                %span.server-list__subtitle= formatted_inline(server.subtitle)
   - else
     %p You haven't joined any chat servers yet.

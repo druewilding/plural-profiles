@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_08_01_100000) do
+ActiveRecord::Schema[8.1].define(version: 2026_08_01_132921) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -64,6 +64,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_08_01_100000) do
 
   create_table "chat_channels", force: :cascade do |t|
     t.datetime "created_at", null: false
+    t.string "description"
     t.string "name", null: false
     t.bigint "server_id", null: false
     t.string "subtitle"
@@ -120,6 +121,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_08_01_100000) do
     t.string "avatar_alt_text"
     t.string "avatar_shape", default: "rounded", null: false
     t.datetime "created_at", null: false
+    t.string "description"
     t.string "name", null: false
     t.bigint "owner_id", null: false
     t.string "subtitle"

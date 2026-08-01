@@ -5,8 +5,11 @@
     .chat-channel-header__title
       = link_to chat_server_path(@server), class: "chat-channel-back", "aria-label": "Back to channels" do
         %span{"aria-hidden": "true"} ‹
-      .chat-channel-header__title-text
-        %h1= safe_join([ "# ", formatted_inline(@channel.name) ])
+      .chat-channel-header__title-column
+        .chat-channel-header__title-text
+          %h1= safe_join([ "# ", formatted_inline(@channel.name) ])
+          - if @channel.description.present?
+            %p.description= formatted_inline(@channel.description)
         - if @channel.subtitle.present?
           %p.subtitle= formatted_inline(@channel.subtitle)
 

@@ -35,18 +35,26 @@ class ChatOnboardingTest < ApplicationSystemTestCase
     click_link "New server"
 
     fill_in "Name", with: "Book Club"
+    fill_in "Subtitle", with: "For readers of all kinds"
+    fill_in "Description", with: "A cozy corner to talk about what we're reading"
     choose_post_as_profile(profiles(:alice).name)
     click_button "Create server"
 
     assert_text "Server created."
     assert_text "Book Club"
+    assert_text "For readers of all kinds"
+    assert_text "A cozy corner to talk about what we're reading"
     assert_text "No channels yet."
 
     click_link "+ Add channel"
     fill_in "Name", with: "general"
+    fill_in "Subtitle", with: "Say hello here"
+    fill_in "Description", with: "The main hangout"
     click_button "Create channel"
 
     assert_text "Channel created."
+    assert_text "Say hello here"
+    assert_text "The main hangout"
     assert_text "No messages yet. Say hello!"
 
     # Posts as the owner, using the default postable chosen on the server
