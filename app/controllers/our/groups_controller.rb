@@ -212,6 +212,10 @@ class Our::GroupsController < ApplicationController
     group_conflicts = conflicts.select { |c| c[:original_type] == "Group" }
     profile_conflicts = conflicts.select { |c| c[:original_type] == "Profile" }
 
+    # Retrying step 1 (e.g. tweaking labels) shouldn't leave the previous
+    # attempt's row behind — clear it before starting a fresh one.
+    Current.user.duplication_wizards.where(id: session[:duplication_wizard_id]).delete_all
+
     wizard_record = Current.user.duplication_wizards.create!(
       group: @group,
       state: {
