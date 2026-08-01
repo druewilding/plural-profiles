@@ -3831,7 +3831,7 @@ details.theme-section-card:not([open]) .theme-section-card__header {
   align-items: center;
   justify-content: space-between;
   gap: 1rem;
-  padding: 0.6rem 1.25rem;
+  padding: 0.6rem 1.25rem 0.9rem;
   border-bottom: 1px solid var(--pane-border);
   flex-shrink: 0;
 }
