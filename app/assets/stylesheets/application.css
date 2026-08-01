@@ -3613,6 +3613,7 @@ details.theme-section-card:not([open]) .theme-section-card__header {
 
 .server-list__name {
   font-weight: 600;
+  flex-shrink: 0;
 }
 
 .server-list__description {
@@ -3839,7 +3840,7 @@ details.theme-section-card:not([open]) .theme-section-card__header {
 .chat-channel-header h1 {
   margin: 0;
   font-size: 1.15rem;
-  min-width: 0;
+  flex-shrink: 0;
   overflow-wrap: anywhere;
 }
 
