@@ -1,8 +1,8 @@
-# Plan: Chat Mini-Profiles / Privacy (rough)
+# Plan: Chat Mini-Profiles / Privacy
 
 ## Status
 
-Rough sketch only — captures direction from a user conversation. Not ready to implement; this is the least-settled of the three related chat-settings plans. Revisit before building.
+Drilled through edge cases; direction is settled on the questions below. Still needs an implementation pass (new endpoint, Stimulus/Turbo Frame plumbing, migration, form/view changes) before it's built.
 
 ## Background
 
@@ -13,24 +13,29 @@ The motivating case: someone's full profile page might be "an enormous sprawling
 ## Direction agreed so far
 
 - **One mini-profile per Profile/Group, not per-server.** Explicitly rejected: a different mini-profile per server they're in. A single shared lightweight alternate view, reused everywhere in chat regardless of which server.
-- **Two separable concerns:**
-  1. A visibility switch: does clicking this name in chat open the full profile page, or the mini-profile instead?
-  2. The mini-profile's own content: something smaller than the full profile, but with room for at least one thing the full profile card doesn't already show.
-- **Likely content shape**: reuse what `_profile_card`/`_group_card` already render (avatar, name, pronouns, subtitle, labels) as the base, since that's already the app's "smaller than full page" pattern — plus a new free-text field for the "important things they need people who see them in chat to know" that isn't just profile-card data. Not yet decided whether this is a wholly separate set of fields or an overlay on top of the card fields.
-- **New UI pattern required**: nothing today fetches profile content on demand (no popover/hover-card, no Turbo Frame endpoint for this) — clicking a name always does a full page navigation. A mini-profile likely means an on-demand popover or modal, fetched via a new endpoint, rather than a full page load. This is new infrastructure, not an extension of an existing pattern — flagged as the biggest unknown of the three related plans.
-- **Formatting confirmed**: the free-text field supports the same hearts/spoilers formatting already used elsewhere (`formatted_inline`/`formatted_description`), same as every other user-authored text field in the app.
-- **Groups confirmed**: a Group's chat mini-profile/privacy works identically to a Profile's, consistent with `Group` already paralleling `Profile` in every other chat-relevant concern (`ChatProxyable`, `HasAvatar`).
+- **Clicking a name/avatar in chat always opens the mini-profile popover now.** This supersedes the earlier "full profile vs. mini-profile" framing — there is no mode where a click still does a full-page navigation. The popover is the universal click target for names/avatars on chat messages.
+  - **Scoped to messages only.** The "posting as" identity picker in the composer keeps its current full-page-link behavior; this work doesn't touch it.
+- **Content shown in the popover**: name, subtitle, pronouns, hearts (`heart_emojis`), tagline, plus a new **mini-profile description** field — rich text with the same hearts/spoilers formatting as the full `description` field (ActionText), no length cap.
+  - If the mini-profile description is blank, its section is omitted entirely from the popover (no heading, no placeholder).
+- **Avatar inside the popover uses the profile's own configured avatar shape** (as seen on the full profile page), not the forced-circle rule used for message avatars.
+- **Link at the bottom of the popover, gated by a new opt-in boolean** (default `false` — off unless the owner turns it on):
+  - Owner viewing their own postable: always shows **"Edit profile"** / **"Edit group"** (links to `edit_our_profile_path`/`edit_our_group_path`), regardless of the boolean — the boolean only affects what other viewers see.
+  - Other viewers, boolean **on**: shows **"View full profile"**, opens in a new tab, links to the public `profile_path`/`group_path` (uuid).
+  - Other viewers, boolean **off**: no link at all — the rest of the popover (name/subtitle/pronouns/hearts/tagline/description) still shows.
+  - "Other viewers" in this app always means another logged-in plural-profiles user — there is no anonymous/logged-out viewer concept anywhere in the app today (confirmed: public share pages still require auth).
+- **Ownership check reuses existing logic**: `postable.user_id == Current.user&.id`, same as `chat_postable_url` today. No multi-owner/group-membership complexity — Groups and Profiles are both strictly single-owner (`belongs_to :user`).
+- **Deleted/missing postable**: if the profile/group a message references no longer exists (or is otherwise inaccessible), the name/avatar renders as a disabled, non-clickable element (e.g. plain "[deleted]"-style label) instead of a popover trigger.
+- **Editing surface**: a new **"Chat settings"** section in the profile/group edit form, grouping the existing "chat proxy brackets" field together with the new mini-profile description field and the opt-in visibility boolean. Today brackets are a lone inline `.form-group`; this introduces the fieldset grouping for the first time.
+- **Loading**: fetched on demand when the popover opens (lazy), not preloaded per-message — avoids extra payload/queries on chats with hundreds of messages. Implemented as a **Turbo Frame**, matching Rails/Hotwire conventions already used elsewhere in the app, rather than a Stimulus-driven JSON fetch. This is new infrastructure — no on-demand-fetch UI pattern exists anywhere in the app today (the `<dialog>` and `<details>/<summary>` patterns in use are both statically rendered, no lazy content).
+- **Groups confirmed**: a Group's chat mini-profile/privacy works identically to a Profile's, consistent with `Group` already paralleling `Profile` in every other chat-relevant concern (`ChatProxyable`, `HasAvatar`). Same single-owner (`user_id`) check for the Edit-vs-View branch.
 
-## Open questions
+## Remaining open questions (not yet decided)
 
-- **Visibility flag values** — just "full profile" vs. "mini-profile," or a third option (no click-through at all, name is inert text)?
-- **Exact mini-profile fields** — reuse profile-card fields as-is plus one free-text field, or a fully custom smaller field set independent of the card?
-- **Scope of the visibility switch** — profile-level (applies everywhere in chat, across all servers), or could a server ever require full profiles regardless of a member's preference? Leaning profile-level only, consistent with "one mini-profile, not per-server," but not explicitly settled.
-- **Avatar shape inside the mini-profile popover** — should follow whatever `plan-chat-avatar-shapes.md` resolves for chat rendering generally (forced circle, or the effective per-profile shape), rather than inventing a separate rule.
-- **Editing surface** — likely wants to be reachable from wherever `plan-chat-commands.md`'s command set and/or a broader in-chat settings surface lives, rather than only from the full profile edit page. Not designed yet.
+- **Exact endpoint/route shape** for the Turbo Frame fetch (e.g. nested under messages vs. a standalone `mini_profile`/`mini_group` resource keyed by postable id).
+- **Command surface**: `plan-chat-commands.md` floats a possible `pp!`-family command for toggling visibility or editing the description without leaving chat. Not designed — this plan currently assumes editing only happens via the form.
+- **Server-level override**: could a server ever require full profiles regardless of a member's per-profile setting? Not raised as a requirement; leaning "no, profile-level only, always," consistent with "one mini-profile, not per-server," but not explicitly asked/settled.
 
 ## Depends on / relates to
 
 - `plan-chat-servers.md` — `chat_postable_url`, message rendering, postable resolution.
-- `plan-chat-avatar-shapes.md` — avatar rendering inside the mini-profile popover.
-- `plan-chat-commands.md` — possible command(s) for toggling visibility / editing mini-profile content.
+- `plan-chat-commands.md` — possible future command(s) for toggling visibility / editing mini-profile content (out of scope for this pass).
