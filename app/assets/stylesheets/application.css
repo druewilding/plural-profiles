@@ -3614,6 +3614,7 @@ details.theme-section-card:not([open]) .theme-section-card__header {
 .server-list__name {
   font-weight: 600;
   flex-shrink: 0;
+  overflow-wrap: anywhere;
 }
 
 .server-list__description {
