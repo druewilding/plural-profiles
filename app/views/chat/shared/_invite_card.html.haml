@@ -2,7 +2,7 @@
   = render "chat/shared/avatar", record: server, size: 64
   %h2.invite-card__title= safe_join([ "Join ", formatted_inline(server.name), "?" ])
   - if server.subtitle.present?
-    %p.subtitle= formatted_inline(server.subtitle)
+    %p.invite-card__subtitle= formatted_inline(server.subtitle)
   - if server.description.present?
     %p.invite-card__description= formatted_inline(server.description)
   - if preview

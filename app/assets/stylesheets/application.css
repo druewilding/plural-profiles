@@ -4330,16 +4330,19 @@ button.profile-picker__option {
   margin-bottom: 0.25rem;
 }
 
-.invite-card .subtitle {
-  margin: 0;
-}
-
 .invite-card__title {
   margin: 0;
 }
 
+.invite-card__subtitle,
 .invite-card__description {
   margin: 0;
+  font-size: 0.85rem;
+  color: color-mix(in srgb, var(--text) 80%, transparent);
+}
+
+.invite-card__description {
+  margin-bottom: 0.75rem;
 }
 
 .invite-card__accept-preview {
