@@ -3597,6 +3597,27 @@ details.theme-section-card:not([open]) .theme-section-card__header {
   min-height: 32px;
 }
 
+.server-list__text {
+  display: flex;
+  align-items: baseline;
+  gap: 0.4rem;
+  min-width: 0;
+}
+
+.server-list__name {
+  font-weight: 600;
+}
+
+.server-list__description {
+  font-size: 0.85rem;
+  color: color-mix(in srgb, var(--text) 80%, transparent);
+  min-width: 0;
+  flex: 1 1 auto;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
 .chat-shell {
   flex: 1;
   min-height: 0;
