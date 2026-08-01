@@ -4060,6 +4060,12 @@ turbo-frame {
   font-style: italic;
 }
 
+.chat-message__subtitle {
+  display: block;
+  font-size: 0.78rem;
+  color: color-mix(in srgb, var(--text) 75%, transparent);
+}
+
 .chat-message__body {
   font-size: 0.92rem;
   margin-top: 0.15rem;

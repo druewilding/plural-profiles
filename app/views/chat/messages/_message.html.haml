@@ -17,4 +17,7 @@
         %span.chat-message__name.chat-message__name--deleted= "#{message.postable_name} (deleted)"
       %time.chat-message__time{datetime: message.created_at.iso8601}= message.created_at.strftime("%H:%M")
 
+    - if message.postable&.subtitle&.present?
+      %span.chat-message__subtitle= formatted_inline(message.postable.subtitle)
+
     .chat-message__body{style: "white-space: pre-wrap"}= formatted_inline(message.body)
