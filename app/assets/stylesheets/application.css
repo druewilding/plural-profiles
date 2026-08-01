@@ -3801,21 +3801,27 @@ details.theme-section-card:not([open]) .theme-section-card__header {
   flex-direction: column;
   padding: 1.5rem;
   overflow-y: auto;
-  /* Same background every .card uses elsewhere in the app. Without this,
-     the pane falls through to the bare page background — which, depending
-     on the active theme, can end up matching --spoiler exactly (spoilers
-     are styled background === border === --spoiler), making spoiler text
-     completely invisible instead of an obviously-clickable redacted box. */
-  background-color: var(--pane-bg);
+  /* Left transparent (rather than --pane-bg) so plain pages — server list,
+     server/channel settings, invite page — show the themed page background
+     (colour and background-image) behind their .card content, same as every
+     other themed page in the app. */
 }
 
 /* .chat-channel (channel#show) owns its own padding per-section so the
    composer can sit flush against the bottom of the pane — cancel .chat-main's
    padding only when it's present, leaving plain pages (server list/settings
-   etc.) with their normal padding. */
+   etc.) with their normal padding.
+
+   It also restores the solid pane background that .chat-main otherwise
+   leaves transparent: without it, the message pane falls through to the
+   bare page background — which, depending on the active theme, can end up
+   matching --spoiler exactly (spoilers are styled background === border ===
+   --spoiler), making spoiler text completely invisible instead of an
+   obviously-clickable redacted box. */
 .chat-main:has(.chat-channel) {
   padding: 0;
   overflow-y: hidden;
+  background-color: var(--pane-bg);
 }
 
 /* Wraps the header, the scrollable history, and the composer for a single
