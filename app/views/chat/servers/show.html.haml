@@ -1,12 +1,13 @@
 - content_for(:title) { plain_field(@server.name) + " — Plural Profiles" }
 
 .chat-channel-header
-  %div
+  .chat-channel-header__title
     - if @server.avatar.attached?
       = image_tag @server.avatar.variant(resize_to_fill: [64, 64]), class: "avatar avatar--large #{avatar_shape_class(@server)}".strip, width: 64, height: 64, alt: @server.avatar_alt_text.presence || "", loading: "lazy"
-    %h1= formatted_inline(@server.name)
-    - if @server.description.present?
-      %p.subtitle= formatted_inline(@server.description)
+    .chat-channel-header__title-text
+      %h1= formatted_inline(@server.name)
+      - if @server.description.present?
+        %p.subtitle= formatted_inline(@server.description)
 
   - if server_owner?
     .chat-channel-header__actions
