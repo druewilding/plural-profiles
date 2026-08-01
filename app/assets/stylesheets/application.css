@@ -3607,7 +3607,7 @@ details.theme-section-card:not([open]) .theme-section-card__header {
 .server-list__title-row {
   display: flex;
   align-items: baseline;
-  gap: 0.4rem;
+  gap: 0.6rem;
   min-width: 0;
 }
 
