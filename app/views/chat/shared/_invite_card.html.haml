@@ -1,7 +1,10 @@
 .invite-card
   = render "chat/shared/avatar", record: server, size: 64
   %h2.invite-card__title= safe_join([ "Join ", formatted_inline(server.name), "?" ])
-  %p.invite-card__count= pluralize(server.members.count, "member")
+  - if server.subtitle.present?
+    %p.invite-card__subtitle= formatted_inline(server.subtitle)
+  - if server.description.present?
+    %p.invite-card__description= formatted_inline(server.description)
   - if preview
     %span.btn.btn--primary.invite-card__accept-preview Accept invite
   - else
