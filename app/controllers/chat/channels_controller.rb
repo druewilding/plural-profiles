@@ -76,7 +76,7 @@ module Chat
     end
 
     def channel_params
-      params.require(:chat_channel).permit(:name, :description, :theme_id)
+      params.require(:chat_channel).permit(:name, :subtitle, :description, :theme_id)
     end
 
     # Keeps the reader's own sidebar in sync live too — without this, the
