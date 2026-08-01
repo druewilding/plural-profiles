@@ -103,4 +103,37 @@ class Chat::MessagesControllerTest < ActionDispatch::IntegrationTest
     assert_match "avatar--circle", response.body
     assert_no_match "avatar--square", response.body
   end
+
+  test "a message shows the posting profile's subtitle under its name" do
+    profiles(:alice).update!(subtitle: "The Original")
+    @channel.messages.create!(user: @owner, postable: profiles(:alice), body: "hello")
+
+    sign_in_as @owner
+    get chat_server_channel_messages_path(@server, @channel, before_id: 0, before_created_at: Time.current.iso8601(6))
+
+    assert_response :success
+    assert_select ".chat-message__subtitle", text: "The Original"
+  end
+
+  test "a message shows the posting group's subtitle under its name" do
+    groups(:friends).update!(subtitle: "A Close Circle")
+    @channel.messages.create!(user: @owner, postable: groups(:friends), body: "hello")
+
+    sign_in_as @owner
+    get chat_server_channel_messages_path(@server, @channel, before_id: 0, before_created_at: Time.current.iso8601(6))
+
+    assert_response :success
+    assert_select ".chat-message__subtitle", text: "A Close Circle"
+  end
+
+  test "a message from a postable without a subtitle renders no subtitle element" do
+    profiles(:alice).update!(subtitle: nil)
+    @channel.messages.create!(user: @owner, postable: profiles(:alice), body: "hello")
+
+    sign_in_as @owner
+    get chat_server_channel_messages_path(@server, @channel, before_id: 0, before_created_at: Time.current.iso8601(6))
+
+    assert_response :success
+    assert_select ".chat-message__subtitle", count: 0
+  end
 end
