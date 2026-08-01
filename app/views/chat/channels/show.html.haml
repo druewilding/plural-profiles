@@ -7,8 +7,8 @@
         %span{"aria-hidden": "true"} ‹
       .chat-channel-header__title-text
         %h1= safe_join([ "# ", formatted_inline(@channel.name) ])
-        - if @channel.subtitle.present?
-          %p.subtitle= formatted_inline(@channel.subtitle)
+        - if @channel.description.present?
+          %p.subtitle= formatted_inline(@channel.description)
 
     - if server_owner?
       = link_to "Channel settings", edit_chat_server_channel_path(@server, @channel), class: "btn btn--secondary btn--small"

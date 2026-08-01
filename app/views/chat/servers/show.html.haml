@@ -5,8 +5,8 @@
     - if @server.avatar.attached?
       = image_tag @server.avatar.variant(resize_to_fill: [64, 64]), class: "avatar avatar--large #{avatar_shape_class(@server)}".strip, width: 64, height: 64, alt: @server.avatar_alt_text.presence || "", loading: "lazy"
     %h1= formatted_inline(@server.name)
-    - if @server.subtitle.present?
-      %p.subtitle= formatted_inline(@server.subtitle)
+    - if @server.description.present?
+      %p.subtitle= formatted_inline(@server.description)
 
   - if server_owner?
     .chat-channel-header__actions

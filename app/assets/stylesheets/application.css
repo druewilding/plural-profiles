@@ -3821,7 +3821,7 @@ details.theme-section-card:not([open]) .theme-section-card__header {
   flex: 1;
 }
 
-/* Name and subtitle share one line rather than stacking — the subtitle is
+/* Name and description share one line rather than stacking — the description is
    the one that gives way (ellipsis) since the channel name is what
    identifies the channel and should never get cut off. */
 .chat-channel-header__title-text {

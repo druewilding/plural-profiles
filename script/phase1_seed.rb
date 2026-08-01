@@ -185,12 +185,12 @@ ActiveRecord::Base.transaction do
 
   # ── Chat server ───────────────────────────────────────────────────────────
 
-  server = user.owned_chat_servers.create!(name: "The Warren", subtitle: "A quiet place to check in.")
+  server = user.owned_chat_servers.create!(name: "The Warren", description: "A quiet place to check in.")
   server.memberships.create!(user: user, role: "owner", default_postable: grove)
 
-  general  = server.channels.create!(name: "general",   subtitle: "Say hello.")
-  checkins = server.channels.create!(name: "check-ins", subtitle: "How's everyone doing?")
-  spoilers = server.channels.create!(name: "spoilers",   subtitle: "Wrap anything sensitive in ||spoiler tags||.")
+  general  = server.channels.create!(name: "general",   description: "Say hello.")
+  checkins = server.channels.create!(name: "check-ins", description: "How's everyone doing?")
+  spoilers = server.channels.create!(name: "spoilers",   description: "Wrap anything sensitive in ||spoiler tags||.")
 
   puts "Created chat server \"The Warren\" with #{[ general, checkins, spoilers ].size} channels."
 

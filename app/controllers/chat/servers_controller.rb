@@ -111,7 +111,7 @@ module Chat
     end
 
     def server_params
-      params.require(:chat_server).permit(:name, :subtitle, :theme_id, :avatar, :avatar_shape, :avatar_alt_text)
+      params.require(:chat_server).permit(:name, :description, :theme_id, :avatar, :avatar_shape, :avatar_alt_text)
     end
   end
 end

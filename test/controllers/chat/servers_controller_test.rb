@@ -57,7 +57,7 @@ class Chat::ServersControllerTest < ActionDispatch::IntegrationTest
     sign_in_as @owner
     assert_difference [ "Chat::Server.count", "Chat::Membership.count" ], 1 do
       post chat_servers_path, params: {
-        chat_server: { name: "New Server", subtitle: "A place to chat", default_postable_type: "Profile", default_postable_id: profiles(:bob).id }
+        chat_server: { name: "New Server", description: "A place to chat", default_postable_type: "Profile", default_postable_id: profiles(:bob).id }
       }
     end
 
