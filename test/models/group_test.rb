@@ -913,6 +913,26 @@ class GroupTest < ActiveSupport::TestCase
     end
   end
 
+  test "deep_duplicate clears chat brackets on copied groups and profiles" do
+    echo = groups(:echo_shard)
+    groups(:rogue_pack).update!(chat_bracket_before: "rogue:")
+    profiles(:stray).update!(chat_bracket_before: "stray:")
+
+    new_root = echo.deep_duplicate(new_labels: [ "chat" ])
+
+    rogue_copy = Group.where(copied_from: groups(:rogue_pack)).where("labels @> ?", [ "chat" ].to_json).first
+    stray_copy = Profile.where(copied_from: profiles(:stray)).where("labels @> ?", [ "chat" ].to_json).first
+
+    assert_not_nil new_root
+    assert_not_nil rogue_copy
+    assert_not_nil stray_copy
+    assert_nil rogue_copy.chat_bracket_before
+    assert_nil stray_copy.chat_bracket_before
+    # Originals keep their brackets
+    assert_equal "rogue:", groups(:rogue_pack).reload.chat_bracket_before
+    assert_equal "stray:", profiles(:stray).reload.chat_bracket_before
+  end
+
   test "deep_duplicate copies have the specified labels" do
     echo = groups(:echo_shard)
     echo.deep_duplicate(new_labels: [ "blue", "safe" ])

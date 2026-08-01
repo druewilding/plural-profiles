@@ -7,6 +7,7 @@ class Group < ApplicationRecord
   belongs_to :theme, optional: true
   belongs_to :copied_from, class_name: "Group", optional: true
   has_many :copies, class_name: "Group", foreign_key: :copied_from_id, dependent: :nullify
+  has_many :duplication_wizards, dependent: :destroy
   has_many :group_profiles, dependent: :destroy
   has_many :profiles, -> { order(:name) }, through: :group_profiles
 
@@ -157,6 +158,8 @@ class Group < ApplicationRecord
       new_profile.uuid = PluralProfilesUuid.generate
       new_profile.labels = new_labels
       new_profile.copied_from = original_profile
+      new_profile.chat_bracket_before = nil
+      new_profile.chat_bracket_after = nil
       profile_map[original_profile.id] = new_profile
     end
 
@@ -695,6 +698,8 @@ class Group < ApplicationRecord
       new_group.uuid = PluralProfilesUuid.generate
       new_group.labels = new_labels
       new_group.copied_from = original
+      new_group.chat_bracket_before = nil
+      new_group.chat_bracket_after = nil
       group_map[parent_id] = new_group
     end
 
