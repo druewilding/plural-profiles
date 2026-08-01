@@ -4334,10 +4334,8 @@ button.profile-picker__option {
   margin: 0;
 }
 
-.invite-card__count {
+.invite-card__description {
   margin: 0;
-  font-size: 0.85rem;
-  color: color-mix(in srgb, var(--text) 65%, transparent);
 }
 
 .invite-card__accept-preview {
