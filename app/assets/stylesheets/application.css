@@ -4330,6 +4330,10 @@ button.profile-picker__option {
   margin-bottom: 0.25rem;
 }
 
+.invite-card .subtitle {
+  margin: 0;
+}
+
 .invite-card__title {
   margin: 0;
 }
