@@ -366,3 +366,7 @@ No backfill — every existing profile/group starts with every override column b
 - `plan-chat-servers.md` — `chat_postable_url`, message rendering, postable resolution.
 - `plan-chat-commands.md` — possible future command(s) for toggling visibility / editing mini-profile content (out of scope for this pass).
 - `plan-avatar-editor-popup.md` — the existing avatar editor dialog/Stimulus controller this plan needs to parameterize for a second, independent avatar.
+
+## Mockup
+
+[Edit chat settings — mockup](https://claude.ai/code/artifact/d36411ea-1c13-4479-9ff7-2b13a8ca0406) — interactive mockup of the settings page: per-field inherit/override toggles (name/subtitle/pronouns/hearts/tagline/description), avatar upload with fallback, and a live preview of both the chat message row and the popover. Static colors for now — the real implementation should follow the app's theme.
