@@ -12,6 +12,10 @@
 
 .preview-block
   .preview-block__body
+    = render "chat/mini_profiles/mini_profile", postable: postable, own: true
+
+.preview-block
+  .preview-block__body
     .chat-message
       .chat-message__avatar
         - avatar = chat_avatar_for(postable)
@@ -29,7 +33,3 @@
         - if postable.chat_subtitle.present?
           %span.chat-message__subtitle= formatted_inline(postable.chat_subtitle)
         .chat-message__body morning! anyone around for the thing at 6?
-
-.preview-block
-  .preview-block__body
-    = render "chat/mini_profiles/mini_profile", postable: postable, own: true
