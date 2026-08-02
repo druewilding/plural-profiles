@@ -59,5 +59,11 @@
       - if local_assigns[:preview]
         = link_to full_page_label, "#", data: {action: "click->chat-identity-form#preventDefault"}
       - else
-        - url = postable.is_a?(Group) ? group_path(postable.uuid) : profile_path(postable.uuid)
+        -# A plain profile_path/group_path is host-relative, which resolves
+        -# against whatever host the popover itself was fetched from — the
+        -# chat subdomain, for the real popover. The full-page views aren't
+        -# chat-namespaced routes, so the link needs an explicit main-site
+        -# host to land on the right domain rather than chat.example.com.
+        - url_options = {host: main_site_host, port: request.port, protocol: request.protocol}
+        - url = postable.is_a?(Group) ? group_url(postable.uuid, **url_options) : profile_url(postable.uuid, **url_options)
         = link_to full_page_label, url, target: "_blank", rel: "noopener"

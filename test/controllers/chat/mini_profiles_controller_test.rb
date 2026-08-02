@@ -36,6 +36,23 @@ class Chat::MiniProfilesControllerTest < ActionDispatch::IntegrationTest
     assert_match profile_path(@profile.uuid), response.body
   end
 
+  test "the view-full-page link points at the main domain, not the chat subdomain the popover was fetched from" do
+    # A bare profile_path/group_path is host-relative — it would resolve
+    # against chat.example.com (wherever the popover itself was fetched
+    # from) rather than the main site, since the full-page views aren't
+    # chat-namespaced routes. A plain substring match on profile_path's
+    # output wouldn't have caught that (a relative path is a substring of
+    # the correct absolute one too) — this checks the actual href.
+    @profile.update!(mini_profile_link_enabled: true)
+    sign_in_as @other
+    get chat_mini_profile_path("Profile", @profile.uuid)
+    assert_response :success
+
+    link = Nokogiri::HTML::DocumentFragment.parse(response.body).css("a").find { |a| a.text == "View full profile page" }
+    assert link, "expected a <a>View full profile page</a> link in the response"
+    assert_equal "http://example.com/profiles/#{@profile.uuid}", link["href"]
+  end
+
   test "show renders the view-full-page link for the owner too, when mini_profile_link_enabled is on" do
     @profile.update!(mini_profile_link_enabled: true)
     sign_in_as @owner
