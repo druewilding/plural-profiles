@@ -155,6 +155,24 @@ class Our::ChatIdentitiesControllerTest < ActionDispatch::IntegrationTest
     assert @profile.avatar.attached?
   end
 
+  test "update with mini_profile_avatar_mode true (Follow profile) purges an existing mini_profile_avatar" do
+    sign_in_as @user
+    @profile.mini_profile_avatar.attach(
+      io: File.open(file_fixture("avatar.png")), filename: "avatar.png", content_type: "image/png"
+    )
+    @profile.avatar.attach(
+      io: File.open(file_fixture("avatar.png")), filename: "avatar.png", content_type: "image/png"
+    )
+
+    patch our_chat_identity_path("Profile", @profile.uuid), params: {
+      chat_identity: { mini_profile_avatar_mode: "true" }
+    }
+
+    @profile.reload
+    assert_not @profile.mini_profile_avatar.attached?
+    assert @profile.avatar.attached?
+  end
+
   # -- preview --
 
   test "preview renders the mini-profile partial reflecting unsaved form values" do

@@ -40,7 +40,12 @@ export default class extends Controller {
   }
 
   focusOverrideField(card) {
-    const field = card?.querySelector(".chat-identity-field__override input:not([type='hidden']), .chat-identity-field__override textarea")
+    if (!card) return
+    // The avatar card's override block is the avatar-editor dialog, which
+    // manages its own open/focus state (via its own trigger button) — auto-
+    // focusing into it here would reach into a dialog that isn't open yet.
+    const fields = card.querySelectorAll(".chat-identity-field__override input:not([type='hidden']), .chat-identity-field__override textarea")
+    const field = [...fields].find(el => !el.closest(".avatar-editor"))
     field?.focus()
   }
 

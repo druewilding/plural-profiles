@@ -20,6 +20,15 @@
 -#                        here specifically. Purely cosmetic: doesn't affect
 -#                        the "Add"/"Edit" button copy or whether "Remove"
 -#                        shows, which are always about `attribute` itself.
+-#   label              — (optional, default "avatar") human name used in the
+-#                        dialog title ("Add #{label}"/"Edit #{label}") and
+-#                        the alt-text field's label ("#{label} description").
+-#   trigger_label      — (optional) fixed text for the outer trigger button,
+-#                        overriding the default "Add avatar"/"Edit avatar"
+-#                        distinction — used where the surrounding UI (e.g. a
+-#                        "Follow profile"/"Set for chat" toggle) already
+-#                        communicates add-vs-edit, so the button can just
+-#                        say what it does ("Set chat avatar").
 -#
 -# Must be rendered inside a form_with block. The <dialog> is a child of the
 -# form element so all its inputs submit with the main form. Multiple
@@ -31,6 +40,8 @@
 - attachment = record.public_send(attribute)
 - shape_attribute = "#{attribute}_shape"
 - alt_text_attribute = "#{attribute}_alt_text"
+- label = local_assigns[:label] || "avatar"
+- trigger_label = local_assigns[:trigger_label]
 
 - if attachment.attached?
   - displayed_attachment = attachment
@@ -61,17 +72,19 @@
         = render "shared/plural_pride_logo"
 
     %button.btn.btn--secondary{type: "button", data: {action: "click->avatar-editor#open"}}
-      - if attachment.attached?
-        Edit avatar
+      - if trigger_label
+        = trigger_label
+      - elsif attachment.attached?
+        = "Edit #{label}"
       - else
-        Add avatar
+        = "Add #{label}"
 
   %dialog.avatar-editor-dialog{open: true, data: {"avatar-editor-target": "dialog"}}
     %h2.avatar-editor-dialog__title
       - if attachment.attached?
-        Edit avatar
+        = "Edit #{label}"
       - else
-        Add avatar
+        = "Add #{label}"
 
     .avatar-editor-dialog__preview
       - if displayed
@@ -109,7 +122,7 @@
             = shape.capitalize
 
     .form-group
-      = form.label alt_text_attribute, "Avatar description"
+      = form.label alt_text_attribute, "#{label.capitalize} description"
       = form.text_field alt_text_attribute,
                         placeholder: "Describe the image for screen readers",
                         data: {"avatar-editor-target": "altTextField"}

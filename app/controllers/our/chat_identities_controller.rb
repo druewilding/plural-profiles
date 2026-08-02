@@ -11,7 +11,9 @@ class Our::ChatIdentitiesController < ApplicationController
   end
 
   def update
-    @postable.mini_profile_avatar.purge if params[:chat_identity][:remove_mini_profile_avatar] == "1"
+    if params[:chat_identity][:remove_mini_profile_avatar] == "1" || params[:chat_identity][:mini_profile_avatar_mode] == "true"
+      @postable.mini_profile_avatar.purge
+    end
     if @postable.update(chat_identity_params)
       redirect_to edit_our_chat_identity_path(@postable.class.name, @postable.uuid), notice: "Chat settings updated."
     else

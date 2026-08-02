@@ -22,14 +22,33 @@
   .chat-identity-form-col
     = form_with model: @postable, scope: :chat_identity, url: our_chat_identity_path(@postable.class.name, @postable.uuid), method: :patch, data: {"chat-identity-form-target": "form", action: "change->chat-identity-form#change input->chat-identity-form#schedulePreview"} do |form|
 
-      .card
-        %h3 Chat avatar
-        %p.form-hint Uses your main avatar until you upload one just for chat.
-        = render "shared/avatar_editor_dialog", record: @postable, form: form, param_prefix: "chat_identity",
-            attribute: "mini_profile_avatar",
-            fallback_attachment: chat_avatar_for(@postable),
-            fallback_shape: chat_avatar_shape_for(@postable),
-            fallback_alt_text: chat_avatar_alt_text_for(@postable)
+      - avatar_title_id = "chat-identity-field-avatar-title"
+      .card.chat-identity-field{role: "group", "aria-labelledby": avatar_title_id}
+        .chat-identity-field__head
+          %h3{id: avatar_title_id} Chat avatar
+          .chat-identity-toggle
+            %label.chat-identity-toggle__option
+              = form.radio_button :mini_profile_avatar_mode, true, checked: !@postable.mini_profile_avatar.attached?, class: "chat-identity-toggle__input"
+              %span.chat-identity-toggle__option-label Follow profile
+            %label.chat-identity-toggle__option
+              = form.radio_button :mini_profile_avatar_mode, false, checked: @postable.mini_profile_avatar.attached?, class: "chat-identity-toggle__input"
+              %span.chat-identity-toggle__option-label Set for chat
+
+        .chat-identity-field__inherited
+          - if @postable.avatar.attached?
+            = image_tag @postable.avatar.variant(resize_to_fill: [64, 64]), class: "avatar #{avatar_shape_class(@postable)}".strip, width: 64, height: 64, alt: @postable.avatar_alt_text.presence || "", loading: "lazy"
+          - else
+            .avatar.avatar--placeholder
+              = render "shared/plural_pride_logo"
+
+        .chat-identity-field__override
+          = render "shared/avatar_editor_dialog", record: @postable, form: form, param_prefix: "chat_identity",
+              attribute: "mini_profile_avatar",
+              label: "chat avatar",
+              trigger_label: "Set chat avatar",
+              fallback_attachment: chat_avatar_for(@postable),
+              fallback_shape: chat_avatar_shape_for(@postable),
+              fallback_alt_text: chat_avatar_alt_text_for(@postable)
 
       = render "field_toggle", form: form, field: :name, label: "Name",
           hint: "A message needs a name to post under, so this can't be blank.",
