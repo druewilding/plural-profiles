@@ -4648,6 +4648,10 @@ button.profile-picker__option {
   overflow-y: auto;
   padding: 1.25rem;
   background-color: var(--pane-bg);
+  /* The [popover] UA stylesheet also defaults color to CanvasText — without
+     overriding it here too, anything inside that doesn't set its own color
+     (e.g. .profile-description) inherits that instead of the theme. */
+  color: var(--text);
   border: 1px solid var(--pane-border);
   border-radius: 10px;
   box-shadow: 0 8px 24px color-mix(in srgb, var(--pane-border) 60%, transparent);
