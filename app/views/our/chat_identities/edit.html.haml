@@ -20,9 +20,9 @@
     - @postable.errors.full_messages.each do |message|
       %p= message
 
-.chat-identity-layout
+.chat-identity-layout{data: {controller: "chat-identity-form", "chat-identity-form-preview-url-value": preview_our_chat_identity_path(@postable.class.name, @postable.uuid)}}
   .chat-identity-form-col
-    = form_with model: @postable, scope: :chat_identity, url: our_chat_identity_path(@postable.class.name, @postable.uuid), method: :patch, data: {controller: "chat-identity-form", "chat-identity-form-preview-url-value": preview_our_chat_identity_path(@postable.class.name, @postable.uuid), action: "change->chat-identity-form#change input->chat-identity-form#schedulePreview"} do |form|
+    = form_with model: @postable, scope: :chat_identity, url: our_chat_identity_path(@postable.class.name, @postable.uuid), method: :patch, data: {"chat-identity-form-target": "form", action: "change->chat-identity-form#change input->chat-identity-form#schedulePreview"} do |form|
 
       .card
         %h3 Chat proxy brackets

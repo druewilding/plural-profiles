@@ -3,7 +3,7 @@ import { Controller } from "@hotwired/stimulus"
 const PREVIEW_DEBOUNCE_MS = 400
 
 export default class extends Controller {
-  static targets = ["preview"]
+  static targets = ["preview", "form"]
   static values = { previewUrl: String }
 
   connect() {
@@ -42,8 +42,14 @@ export default class extends Controller {
   }
 
   async updatePreview() {
-    const formData = new FormData(this.element)
+    const formData = new FormData(this.formTarget)
     formData.delete("chat_identity[mini_profile_avatar]")
+    // The form's own method is PATCH (spoofed via a hidden `_method` field,
+    // since browsers can't submit PATCH natively). Left in place, Rack's
+    // method-override middleware rewrites this fetch's real POST into a
+    // PATCH before routing sees it — and only POST matches the preview
+    // route — so it must be stripped here.
+    formData.delete("_method")
 
     const response = await fetch(this.previewUrlValue, {
       method: "POST",
