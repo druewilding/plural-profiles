@@ -20,7 +20,7 @@
 
 .chat-identity-layout{data: {controller: "chat-identity-form", "chat-identity-form-preview-url-value": preview_our_chat_identity_path(@postable.class.name, @postable.uuid)}}
   .chat-identity-form-col
-    = form_with model: @postable, scope: :chat_identity, url: our_chat_identity_path(@postable.class.name, @postable.uuid), method: :patch, data: {"chat-identity-form-target": "form", action: "change->chat-identity-form#change input->chat-identity-form#schedulePreview"} do |form|
+    = form_with model: @postable, scope: :chat_identity, url: our_chat_identity_path(@postable.class.name, @postable.uuid), method: :patch, data: {"chat-identity-form-target": "form", action: "change->chat-identity-form#change input->chat-identity-form#schedulePreview avatar-editor:changed->chat-identity-form#avatarChanged"} do |form|
 
       - avatar_title_id = "chat-identity-field-avatar-title"
       .card.chat-identity-field{role: "group", "aria-labelledby": avatar_title_id}

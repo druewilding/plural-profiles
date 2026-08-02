@@ -26,6 +26,44 @@ export default class extends Controller {
     this.schedulePreview()
   }
 
+  // The avatar file itself is never sent to the preview endpoint (see
+  // updatePreview) — a picked-but-unsaved file can't be reflected by a
+  // server round-trip without either re-uploading it on every keystroke or
+  // actually attaching it early (has_one_attached persists immediately,
+  // even without a record save). So this patches the already-rendered
+  // preview images directly from the object URL the avatar-editor dialog
+  // already created for its own local preview, no server involved.
+  avatarChanged(event) {
+    const { src, shape } = event.detail
+    this.pendingAvatar = src ? { src, shape } : null
+    this.applyPendingAvatar()
+    this.schedulePreview()
+  }
+
+  applyPendingAvatar() {
+    if (!this.pendingAvatar || !this.hasPreviewTarget) return
+    const { src, shape } = this.pendingAvatar
+
+    const messageSlot = this.previewTarget.querySelector(".chat-message__avatar")
+    if (messageSlot) this.setAvatarImage(messageSlot, src, "circle", 34)
+
+    const popoverSlot = this.previewTarget.querySelector(".mini-profile__header")
+    if (popoverSlot) this.setAvatarImage(popoverSlot, src, shape, 64, "avatar--large")
+  }
+
+  setAvatarImage(slot, src, shape, size, extraClass) {
+    const existing = slot.querySelector(".avatar")
+    const img = document.createElement("img")
+    img.src = src
+    img.width = size
+    img.height = size
+    img.alt = ""
+    img.className = ["avatar", extraClass, shape === "circle" ? "avatar--circle" : shape === "square" ? "avatar--square" : null]
+      .filter(Boolean).join(" ")
+    if (existing) existing.replaceWith(img)
+    else slot.prepend(img)
+  }
+
   syncCard(card) {
     if (!card) return
 
@@ -75,5 +113,6 @@ export default class extends Controller {
 
     if (!response.ok) return
     this.previewTarget.innerHTML = await response.text()
+    this.applyPendingAvatar()
   }
 }
