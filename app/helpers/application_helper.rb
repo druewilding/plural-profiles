@@ -138,9 +138,15 @@ module ApplicationHelper
     postable.mini_profile_avatar_inherited? ? postable.avatar_shape : postable.mini_profile_avatar_shape
   end
 
-  # The id shared between a message's placeholder turbo-frame (set as its
-  # src's target) and the real <turbo-frame> the mini-profile popover route
-  # renders — Turbo matches the two by id to swap the fetched content in.
+  # The default id for a postable's mini-profile turbo-frame. Only actually
+  # unique per postable, not per message — when the same postable has
+  # multiple messages in a channel, each one's own placeholder frame needs a
+  # further per-message discriminator (see _message.html.haml) so the page
+  # never has two elements sharing an id, and passes it to the popover route
+  # as a frame_id param so the response's turbo-frame echoes the same id
+  # back (Chat::MiniProfilesController#show falls back to this method's
+  # output when that param is absent, e.g. someone hitting the route
+  # directly).
   def mini_profile_frame_id(postable)
     "mini_profile_#{postable.class.name}_#{postable.uuid}"
   end

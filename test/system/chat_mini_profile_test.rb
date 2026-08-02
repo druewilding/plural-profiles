@@ -156,6 +156,32 @@ class ChatMiniProfileTest < ApplicationSystemTestCase
     end
   end
 
+  test "each message from the same postable gets its own independent popover, not a shared/confused one" do
+    # mini_profile_frame_id(postable) alone repeats across every message
+    # from the same postable — without a per-message discriminator, the
+    # page would end up with two <turbo-frame popover> elements sharing an
+    # id, which is invalid HTML and risks Turbo updating/matching the wrong
+    # one (flagged in code review; verified here rather than only trusted).
+    @channel.messages.create!(user: @owner, postable: profiles(:alice), body: "first message")
+    @channel.messages.create!(user: @owner, postable: profiles(:alice), body: "second message")
+
+    sign_in_via_browser(@viewer)
+    visit chat_url(channel_path)
+
+    frame_ids = all(".mini-profile-popover", visible: :all).map { |el| el["id"] }
+    assert_equal frame_ids.uniq.length, frame_ids.length, "expected every message's popover frame to have a distinct id, got #{frame_ids}"
+
+    open_popover_for("second message")
+    within(".mini-profile-popover") { assert_text "Alice" }
+
+    # The first message's own frame must still be untouched — empty and
+    # unopened — not accidentally populated or opened by the second one's fetch.
+    within(".chat-message", text: "first message") do
+      assert_no_selector ".mini-profile-popover:popover-open"
+      assert_selector ".mini-profile-popover:not([src])", visible: :all
+    end
+  end
+
   test "an overridden chat avatar shape shows in the popover, but the message row still forces circle" do
     profiles(:alice).avatar.attach(
       io: File.open(file_fixture("avatar.png")), filename: "avatar.png", content_type: "image/png"

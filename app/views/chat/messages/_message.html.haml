@@ -1,5 +1,13 @@
 - postable = message.postable
-.chat-message{id: dom_id(message), data: postable ? {controller: "mini-profile-popover", "mini-profile-popover-url-value": chat_mini_profile_path(postable.class.name, postable.uuid)} : {}}
+-# mini_profile_frame_id(postable) alone is only unique per postable, not
+-# per message — the same postable can post more than once in a channel, so
+-# this needs a per-message discriminator too, or the page would end up
+-# with two elements sharing an id (invalid HTML, and not something to rely
+-# on Turbo's frame-matching tolerating). Passed through to the popover
+-# route as frame_id so the response echoes the same id back — see
+-# chat/mini_profiles/show.html.haml.
+- frame_id = postable && "#{mini_profile_frame_id(postable)}_#{message.id}"
+.chat-message{id: dom_id(message), data: postable ? {controller: "mini-profile-popover", "mini-profile-popover-url-value": chat_mini_profile_path(postable.class.name, postable.uuid, frame_id: frame_id)} : {}}
   .chat-message__avatar
     - if postable
       %button.chat-message__avatar-trigger{type: "button", "aria-label": "Open mini-profile for #{plain_field(postable.chat_name)}", data: {action: "click->mini-profile-popover#open"}}
@@ -30,4 +38,4 @@
     .chat-message__body{style: "white-space: pre-wrap"}= formatted_inline(message.body)
 
   - if postable
-    %turbo-frame.mini-profile-popover{id: mini_profile_frame_id(postable), popover: "auto", data: {"mini-profile-popover-target": "frame panel", action: "turbo:frame-load->mini-profile-popover#reposition"}}
+    %turbo-frame.mini-profile-popover{id: frame_id, popover: "auto", data: {"mini-profile-popover-target": "frame panel", action: "turbo:frame-load->mini-profile-popover#reposition"}}

@@ -79,6 +79,24 @@ class Chat::MiniProfilesControllerTest < ActionDispatch::IntegrationTest
     assert_no_match @profile.pronouns, response.body
   end
 
+  test "show echoes a frame_id param back into the turbo-frame's id, for when the same postable posts more than once in a channel" do
+    # mini_profile_frame_id(postable) alone is only unique per postable, not
+    # per message — a caller (the message partial) that needs a page-unique
+    # id passes it explicitly, and the response must echo the exact same id
+    # back or Turbo can't match the fetched content to the requesting frame.
+    sign_in_as @owner
+    get chat_mini_profile_path("Profile", @profile.uuid, frame_id: "mini_profile_Profile_#{@profile.uuid}_12345")
+    assert_response :success
+    assert_match %r{<turbo-frame[^>]*id="mini_profile_Profile_#{@profile.uuid}_12345"}, response.body
+  end
+
+  test "show falls back to the plain postable-based frame id when no frame_id param is given" do
+    sign_in_as @owner
+    get chat_mini_profile_path("Profile", @profile.uuid)
+    assert_response :success
+    assert_match %r{<turbo-frame[^>]*id="mini_profile_Profile_#{@profile.uuid}"}, response.body
+  end
+
   test "show 404s for an unknown uuid" do
     sign_in_as @owner
     get chat_mini_profile_path("Profile", "00000000-0000-0000-0000-000000000000")
