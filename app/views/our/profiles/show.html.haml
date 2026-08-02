@@ -67,6 +67,7 @@
 
   .profile-actions
     = link_to "Edit", edit_our_profile_path(@profile), class: "btn btn--secondary"
+    = link_to "Edit chat settings", edit_our_chat_identity_path(@profile.class.name, @profile.uuid), class: "btn btn--secondary"
     = link_to "Delete", our_profile_path(@profile), data: { turbo_method: :delete, turbo_confirm: "Are you sure?" }, class: "btn btn--danger"
 
 .card
