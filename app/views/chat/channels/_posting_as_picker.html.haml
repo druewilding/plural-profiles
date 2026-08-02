@@ -3,14 +3,14 @@
 - # can turbo_stream-replace just this node after switching who's posting,
 - # instead of redirecting (which would force a full-page Turbo visit and wipe
 - # out whatever the user had typed into the message textarea below it).
-- current_pronouns = current_postable.respond_to?(:pronouns) ? current_postable.pronouns : nil
+- current_pronouns = current_postable.respond_to?(:chat_pronouns) ? current_postable.chat_pronouns : nil
 %details#posting-as-picker.action-dropdown.profile-picker.composer-posting-as{data: {controller: "dropdown"}}
   %summary.profile-picker__trigger
     %span.profile-picker__trigger-avatar{data: {"composer-target": "triggerAvatar"}}
       = render "chat/shared/avatar", record: current_postable, size: 22, shape: "circle"
     %span
       Posting as
-      %strong{data: {"composer-target": "triggerName"}}= formatted_inline(current_postable.name)
+      %strong{data: {"composer-target": "triggerName"}}= formatted_inline(current_postable.chat_name)
       %span.profile-picker__trigger-pronouns{data: {"composer-target": "triggerPronouns"}, hidden: current_pronouns.blank?}= current_pronouns.presence && formatted_inline(current_pronouns)
   .action-dropdown__menu.profile-picker__menu{data: {controller: "profile-filter"}}
     %input.profile-picker__search{type: "text", autocomplete: "off", placeholder: "Find a profile or group…", "aria-label": "Filter profiles and groups", data: {"profile-filter-target": "input", action: "input->profile-filter#apply"}}

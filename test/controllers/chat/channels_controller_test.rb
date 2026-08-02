@@ -32,6 +32,23 @@ class Chat::ChannelsControllerTest < ActionDispatch::IntegrationTest
     assert_match chat_mini_profile_path("Profile", profiles(:carol).uuid), response.body
   end
 
+  test "show's posting-as picker shows the resolved chat identity, not the real one" do
+    profiles(:alice).update!(
+      mini_profile_name_inherited: false, mini_profile_name: "ChatAlice",
+      mini_profile_pronouns_inherited: false, mini_profile_pronouns: "ey/em"
+    )
+    sign_in_as @owner
+    get chat_server_channel_path(@server, @channel)
+    assert_response :success
+
+    assert_match "ChatAlice", response.body
+    assert_no_match ">Alice<", response.body
+    assert_match "ey/em", response.body
+    # search_text (the data-search attribute the filter reads) indexes both
+    # the real and chat forms, so searching either finds the option.
+    assert_match(/data-search="[^"]*\balice\b[^"]*chatalice/, response.body)
+  end
+
   test "show is blocked for a non-member" do
     sign_in_as @outsider
     get chat_server_channel_path(@server, @channel)

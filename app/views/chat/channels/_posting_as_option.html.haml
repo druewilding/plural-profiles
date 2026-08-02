@@ -5,14 +5,21 @@
 - # section). postable is a Profile or a Group; both respond to name/subtitle/
 - # labels/chat_bracket_before/chat_bracket_after/uuid, but only Profile has
 - # pronouns.
-- pronouns = postable.respond_to?(:pronouns) ? postable.pronouns : nil
-- search_text = plain_field([postable.name, pronouns, postable.subtitle, postable.labels.join(" ")].compact.join(" ")).downcase
+- #
+- # Name/pronouns shown here (and cloned into the trigger pill by
+- # composer_controller.js#detectProxy/select) are the resolved chat
+- # identity, not the real one — "no surprises: what you see is what you're
+- # going to share" (see plan-chat-mini-profiles.md). search_text indexes
+- # both the real and chat forms, since the owner might remember either.
+- pronouns = postable.respond_to?(:chat_pronouns) ? postable.chat_pronouns : nil
+- real_pronouns = postable.respond_to?(:pronouns) ? postable.pronouns : nil
+- search_text = plain_field([postable.name, postable.chat_name, pronouns, real_pronouns, postable.subtitle, postable.labels.join(" ")].compact.join(" ")).downcase
 - option_class = "action-dropdown__item profile-picker__option#{' profile-picker__option--current' if postable == current_postable}"
 = link_to chat_server_channel_default_postable_path(server, channel, postable_type: postable.class.name, postable_uuid: postable.uuid), class: option_class, data: { turbo_method: :patch, "profile-filter-target": "option", "composer-target": "option", search: search_text, prefix: postable.chat_bracket_before.to_s, suffix: postable.chat_bracket_after.to_s } do
   = render "chat/shared/avatar", record: postable, size: 20, shape: "circle"
   .profile-picker__option-info
     .profile-picker__option-name-row
-      %span.profile-picker__option-name= formatted_inline(postable.name)
+      %span.profile-picker__option-name= formatted_inline(postable.chat_name)
       - if pronouns.present?
         %span.profile-picker__option-pronouns= formatted_inline(pronouns)
     - if postable.subtitle.present?
