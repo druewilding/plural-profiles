@@ -171,8 +171,19 @@ class ProfileTest < ActiveSupport::TestCase
     assert_equal profile.name, profile.chat_name
     assert_equal profile.pronouns, profile.chat_pronouns
     assert_equal profile.tag_line, profile.chat_tag_line
-    assert_equal profile.description, profile.chat_description
     assert_equal profile.heart_emojis, profile.chat_heart_emojis
+  end
+
+  # Description is the one exception: it defaults to NOT inherited (and
+  # blank), unlike every other field — it's the field people are most
+  # likely to want to keep out of chat entirely, or write a shorter version
+  # of, so it doesn't default to silently mirroring whatever the full
+  # profile's (possibly long, possibly not chat-appropriate) description says.
+  test "chat_description defaults to not inherited and blank, unlike every other field" do
+    profile = profiles(:alice)
+    assert profile.description.present?
+    assert_not profile.mini_profile_description_inherited?
+    assert_nil profile.chat_description
   end
 
   test "chat_subtitle inherits even when the main subtitle is blank" do
@@ -196,19 +207,19 @@ class ProfileTest < ActiveSupport::TestCase
 
   test "a not-inherited field left blank resolves to blank, not the main value" do
     profile = profiles(:alice)
-    profile.update!(mini_profile_description_inherited: false, mini_profile_description: nil)
-    assert_nil profile.chat_description
+    profile.update!(mini_profile_subtitle_inherited: false, mini_profile_subtitle: nil)
+    assert_nil profile.chat_subtitle
   end
 
-  test "mini_profile_name_inherited defaults to true and every other chat field defaults to true" do
+  test "mini_profile_name_inherited defaults to true and every other chat field defaults to true, except description" do
     profile = users(:one).profiles.create!(name: "Fresh")
     assert profile.mini_profile_name_inherited?
     assert profile.mini_profile_subtitle_inherited?
     assert profile.mini_profile_tag_line_inherited?
-    assert profile.mini_profile_description_inherited?
     assert profile.mini_profile_pronouns_inherited?
     assert profile.mini_profile_heart_emojis_inherited?
     assert profile.mini_profile_avatar_inherited?
+    assert_not profile.mini_profile_description_inherited?
   end
 
   test "mini_profile_link_enabled defaults to false" do

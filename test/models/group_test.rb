@@ -518,8 +518,21 @@ class GroupTest < ActiveSupport::TestCase
 
   test "chat fields default to inheriting the main field" do
     group = groups(:friends)
+    group.update!(tag_line: "Rally around")
     assert_equal group.name, group.chat_name
-    assert_equal group.description, group.chat_description
+    assert_equal group.tag_line, group.chat_tag_line
+  end
+
+  # Description is the one exception: it defaults to NOT inherited (and
+  # blank), unlike every other field — it's the field people are most
+  # likely to want to keep out of chat entirely, or write a shorter version
+  # of, so it doesn't default to silently mirroring whatever the full
+  # group's (possibly long, possibly not chat-appropriate) description says.
+  test "chat_description defaults to not inherited and blank, unlike every other field" do
+    group = groups(:friends)
+    assert group.description.present?
+    assert_not group.mini_profile_description_inherited?
+    assert_nil group.chat_description
   end
 
   test "chat_subtitle inherits even when the main subtitle is blank" do
@@ -536,9 +549,9 @@ class GroupTest < ActiveSupport::TestCase
 
   test "setting a field to not inherited uses the independent mini_profile value instead" do
     group = groups(:friends)
-    group.update!(mini_profile_description_inherited: false, mini_profile_description: "Chat-only blurb")
-    assert_equal "Chat-only blurb", group.chat_description
-    assert_not_equal group.description, group.chat_description
+    group.update!(mini_profile_subtitle_inherited: false, mini_profile_subtitle: "Chat-only subtitle")
+    assert_equal "Chat-only subtitle", group.chat_subtitle
+    assert_not_equal group.subtitle, group.chat_subtitle
   end
 
   test "a not-inherited field left blank resolves to blank, not the main value" do
@@ -547,14 +560,14 @@ class GroupTest < ActiveSupport::TestCase
     assert_nil group.chat_subtitle
   end
 
-  test "every chat field defaults to true, except mini_profile_link_enabled" do
+  test "every chat field defaults to true, except mini_profile_link_enabled and mini_profile_description_inherited" do
     group = users(:one).groups.create!(name: "Fresh")
     assert group.mini_profile_name_inherited?
     assert group.mini_profile_subtitle_inherited?
     assert group.mini_profile_tag_line_inherited?
-    assert group.mini_profile_description_inherited?
     assert group.mini_profile_avatar_inherited?
     assert_not group.mini_profile_link_enabled?
+    assert_not group.mini_profile_description_inherited?
   end
 
   test "mini_profile_name must be present once name is set to not inherited" do
