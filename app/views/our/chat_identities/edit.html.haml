@@ -1,0 +1,139 @@
+- content_for(:title) { "Chat settings — #{plain_field(@postable.name)} — Plural Profiles" }
+- content_for(:container_class) { "chat-identity-page" }
+
+- back_path = @postable.is_a?(Group) ? our_group_path(@postable) : our_profile_path(@postable)
+= link_to back_path, class: "back-link" do
+  %span{"aria-hidden": "true"} ‹
+  = plain_field(@postable.name)
+
+.card
+  .card__header
+    %h1 Edit chat settings
+  %p
+    Chat has its own identity, separate from the main one. For each field, you can pick whether chat should use the main version or something else.
+    %span.chat-identity-intro__sub Changes here never affect the main page, and changes there never affect chat unless a field below is set to "Use main."
+
+- if @postable.errors.any?
+  .error-messages
+    - @postable.errors.full_messages.each do |message|
+      %p= message
+
+.chat-identity-layout{data: {controller: "chat-identity-form", "chat-identity-form-preview-url-value": preview_our_chat_identity_path(@postable.class.name, @postable.uuid)}}
+  .chat-identity-form-col
+    = form_with model: @postable, scope: :chat_identity, url: our_chat_identity_path(@postable.class.name, @postable.uuid), method: :patch, data: {"chat-identity-form-target": "form", action: "change->chat-identity-form#change input->chat-identity-form#schedulePreview avatar-editor:changed->chat-identity-form#avatarChanged"} do |form|
+
+      - avatar_title_id = "chat-identity-field-avatar-title"
+      .card.chat-identity-field{role: "group", "aria-labelledby": avatar_title_id}
+        .chat-identity-field__head
+          %h3{id: avatar_title_id} Chat avatar
+          .chat-identity-toggle
+            %label.chat-identity-toggle__option
+              = form.radio_button :mini_profile_avatar_inherited, true, class: "chat-identity-toggle__input"
+              %span.chat-identity-toggle__option-label Use main
+            %label.chat-identity-toggle__option
+              = form.radio_button :mini_profile_avatar_inherited, false, class: "chat-identity-toggle__input"
+              %span.chat-identity-toggle__option-label Set for chat
+
+        .chat-identity-field__inherited.chat-identity-field__inherited--plain
+          - if @postable.avatar.attached?
+            = image_tag @postable.avatar.variant(resize_to_fill: [64, 64]), class: "avatar #{avatar_shape_class(@postable)}".strip, width: 64, height: 64, alt: @postable.avatar_alt_text.presence || "", loading: "lazy"
+          - else
+            .avatar.avatar--placeholder
+              = render "shared/plural_pride_logo"
+
+        .chat-identity-field__override
+          = render "shared/avatar_editor_dialog", record: @postable, form: form, param_prefix: "chat_identity",
+              attribute: "mini_profile_avatar",
+              label: "chat avatar",
+              trigger_label: "Set chat avatar",
+              fallback_attachment: chat_avatar_for(@postable),
+              fallback_shape: chat_avatar_shape_for(@postable),
+              fallback_alt_text: chat_avatar_alt_text_for(@postable)
+
+      = render "field_toggle", form: form, field: :name, label: "Name",
+          hint: "A message needs a name to post under, so this can't be blank.",
+          inherited_value: formatted_inline(@postable.name),
+          placeholder: "Shown instead of your profile name in chat",
+          override_hint: "Required, since chat always needs a name to post under."
+
+      = render "field_toggle", form: form, field: :subtitle, label: "Subtitle",
+          inherited_value: formatted_inline(@postable.subtitle)
+
+      - if @postable.is_a?(Profile)
+        = render "field_toggle", form: form, field: :pronouns, label: "Pronouns",
+            inherited_value: formatted_inline(@postable.pronouns),
+            placeholder: "e.g. they/them, she/her, he/him"
+
+      - if @postable.is_a?(Profile)
+        - hearts_title_id = "chat-identity-field-hearts-title"
+        .card.chat-identity-field{role: "group", "aria-labelledby": hearts_title_id}
+          .chat-identity-field__head
+            %h3{id: hearts_title_id} Hearts
+            .chat-identity-toggle
+              %label.chat-identity-toggle__option
+                = form.radio_button :mini_profile_heart_emojis_inherited, true, class: "chat-identity-toggle__input"
+                %span.chat-identity-toggle__option-label Use main
+              %label.chat-identity-toggle__option
+                = form.radio_button :mini_profile_heart_emojis_inherited, false, class: "chat-identity-toggle__input"
+                %span.chat-identity-toggle__option-label Set for chat
+
+          .chat-identity-field__inherited
+            - if @postable.heart_emojis.any?
+              .heart-display__grid
+                - @postable.heart_emojis.each do |heart|
+                  .heart-display__heart
+                    = image_tag "/images/hearts/#{heart}.webp", width: 24, height: 24, alt: @postable.heart_emoji_display_name(heart), title: @postable.heart_emoji_display_name(heart), loading: "lazy"
+            - else
+              %span.chat-identity-field__blank (no hearts set)
+
+          .chat-identity-field__override
+            .heart-picker{data: {controller: "heart-picker"}}
+              = hidden_field_tag "chat_identity[mini_profile_heart_emojis][]", ""
+              .heart-picker__grid
+                - Profile::HEART_EMOJIS.each do |heart|
+                  %label.heart-picker__heart{title: @postable.heart_emoji_display_name(heart)}
+                    %input.heart-picker__checkbox{type: "checkbox", name: "chat_identity[mini_profile_heart_emojis][]", value: heart, checked: @postable.mini_profile_heart_emojis.include?(heart) || nil, "aria-label": @postable.heart_emoji_display_name(heart)}
+                    = image_tag "/images/hearts/#{heart}.webp", width: 24, height: 24, alt: "", loading: "lazy"
+
+      = render "field_toggle", form: form, field: :tag_line, label: "Tagline",
+          inherited_value: formatted_inline(@postable.tag_line)
+
+      = render "field_toggle", form: form, field: :description, label: "Description",
+          input_type: :text_area,
+          inherited_value: formatted_description(@postable.description)
+
+      - full_page_label = "Link to full #{@postable.class.name.downcase} page"
+      .card
+        %h3 Link to full page
+        .chat-identity-link-toggle
+          %label.checkbox-label
+            = form.check_box :mini_profile_link_enabled
+            = full_page_label
+        %p.form-hint
+          Allow anyone in chat to open the full #{@postable.class.name.downcase} page from the mini-profile.
+
+      .card
+        %h3 Chat proxy brackets
+        %p.form-hint
+          Start or end a message with these to post as #{plain_field(@postable.name)} from any identity's composer.
+        .chat-bracket-fields
+          = form.text_field :chat_bracket_before, "aria-label": "Text before your message"
+          %span.chat-bracket-fields__sample message
+          = form.text_field :chat_bracket_after, "aria-label": "Text after your message"
+
+      .card
+        .card__header
+          %h3 Save changes
+        .form-group
+          = form.submit "Save chat settings"
+          = link_to "Cancel", back_path, class: "btn btn--secondary"
+
+  .chat-identity-preview-col
+    .card
+      .card__header
+        %h2 Live previews
+      %p
+        Below you can see mini-profile and message previews, as they will be seen in chat. Remember to save changes!
+
+    #chat-identity-preview-panel{data: {"chat-identity-form-target": "preview"}}
+      = render "preview_panel", postable: @postable

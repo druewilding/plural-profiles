@@ -61,6 +61,47 @@ class Our::SearchControllerTest < ActionDispatch::IntegrationTest
     assert_no_match "Bob", main_content
   end
 
+  test "show matches a profile by its chat-only overridden name" do
+    profiles(:alice).update!(mini_profile_name_inherited: false, mini_profile_name: "ChatAlice")
+    sign_in_as @user
+    get our_search_path, params: { q: "ChatAlice" }
+    assert_response :success
+    assert_match "Alice", main_content
+  end
+
+  test "show matches a profile by its chat-only overridden pronouns" do
+    profiles(:alice).update!(mini_profile_pronouns_inherited: false, mini_profile_pronouns: "xe/xem")
+    sign_in_as @user
+    get our_search_path, params: { q: "xe/xem" }
+    assert_response :success
+    assert_match "Alice", main_content
+  end
+
+  test "show matches a profile by its chat-only overridden description, still finding it by the real name" do
+    profiles(:bob).update!(mini_profile_description_inherited: false, mini_profile_description: "chat-only blurb about camping")
+    sign_in_as @user
+    get our_search_path, params: { q: "camping" }
+    assert_response :success
+    assert_match "Bob", main_content
+    assert_no_match "Alice", main_content
+  end
+
+  test "show matches a group by its chat-only overridden tagline" do
+    groups(:friends).update!(mini_profile_tag_line_inherited: false, mini_profile_tag_line: "chat-only rallying cry")
+    sign_in_as @user
+    get our_search_path, params: { q: "rallying cry" }
+    assert_response :success
+    assert_match "Friends", main_content
+  end
+
+  test "show still finds a profile by its real field even once a chat override exists on a different field" do
+    profiles(:alice).update!(mini_profile_subtitle_inherited: false, mini_profile_subtitle: "unrelated chat subtitle")
+    sign_in_as @user
+    get our_search_path, params: { q: "stargazing" }
+    assert_response :success
+    assert_match "Alice", main_content
+  end
+
   test "show matches group by name" do
     sign_in_as @user
     get our_search_path, params: { q: "Friends" }

@@ -4028,9 +4028,28 @@ turbo-frame {
   flex-wrap: wrap;
 }
 
+.chat-message__avatar-trigger,
 .chat-message__name-link {
+  background: none;
+  border: none;
+  margin: 0;
+  padding: 0;
+  font: inherit;
   color: inherit;
-  text-decoration: none;
+  cursor: pointer;
+}
+
+/* The global button:hover rule (for .btn-style buttons) has higher
+   specificity than a plain class selector, so it wins over the reset
+   above on hover without this. */
+.chat-message__avatar-trigger:hover,
+.chat-message__name-link:hover {
+  background: none;
+}
+
+.chat-message__avatar-trigger {
+  display: block;
+  border-radius: 999px;
 }
 
 .chat-message__name-link:hover .chat-message__name {
@@ -4354,4 +4373,317 @@ button.profile-picker__option {
 .invite-card__accept-preview {
   pointer-events: none;
   opacity: 0.85;
+}
+
+/* ── Chat identity settings ────────────────────────────── */
+
+.chat-identity-page {
+  max-width: 1200px;
+}
+
+.back-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  color: color-mix(in srgb, var(--text) 80%, transparent);
+  text-decoration: none;
+  font-size: 0.85rem;
+  margin-bottom: 0.75rem;
+}
+
+.back-link:hover {
+  color: var(--text);
+  text-decoration: underline;
+}
+
+.back-link span {
+  font-size: 1.1rem;
+}
+
+.chat-identity-intro__sub {
+  display: block;
+  margin-top: 0.35rem;
+  color: color-mix(in srgb, var(--text) 75%, transparent);
+  font-size: 0.85rem;
+}
+
+.chat-identity-layout {
+  display: grid;
+  grid-template-columns: 1fr 380px;
+  gap: 2rem;
+  align-items: start;
+}
+
+.chat-identity-preview-col {
+  position: sticky;
+  top: 2rem;
+  max-height: calc(100vh - 4rem);
+  overflow-y: auto;
+}
+
+/* Field cards: "Use main" / "Set for chat" per field */
+
+.chat-identity-field__head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 1rem;
+  flex-wrap: wrap;
+  margin-bottom: 1rem;
+}
+
+.chat-identity-field__head h3 {
+  margin: 0 0 0.25rem;
+  font-size: 1.05rem;
+}
+
+.chat-identity-field__head .form-hint {
+  margin: 0;
+  max-width: 38ch;
+}
+
+.chat-identity-toggle {
+  display: inline-flex;
+  align-items: center;
+  flex-shrink: 0;
+  border: 1px solid var(--input-border);
+  border-radius: 999px;
+  padding: 3px;
+  gap: 2px;
+  background-color: var(--input-bg);
+}
+
+.chat-identity-toggle__option {
+  position: relative;
+  display: inline-block;
+  margin-bottom: 0;
+  cursor: pointer;
+}
+
+.chat-identity-toggle__input {
+  position: absolute;
+  inset: 0;
+  opacity: 0;
+  pointer-events: none;
+}
+
+.chat-identity-toggle__option-label {
+  display: inline-block;
+  line-height: 1;
+  padding: 0.4rem 0.8rem;
+  border-radius: 999px;
+  font-size: 0.78rem;
+  font-weight: 600;
+  color: color-mix(in srgb, var(--text) 70%, transparent);
+  white-space: nowrap;
+  transition: background-color 0.12s ease, color 0.12s ease;
+}
+
+.chat-identity-toggle__option-label:hover {
+  color: var(--heading);
+}
+
+.chat-identity-toggle__input:checked + .chat-identity-toggle__option-label {
+  background-color: var(--secondary-button-bg);
+  color: var(--secondary-button-text);
+}
+
+.chat-identity-toggle__input:focus-visible + .chat-identity-toggle__option-label {
+  outline: 2px solid var(--link);
+  outline-offset: 2px;
+}
+
+@media (forced-colors: active) {
+  /* The checked/unchecked distinction is otherwise carried entirely by
+     background-color, which forced-colors mode flattens away — nothing
+     then shows which pill is selected. outline (not border) so it draws
+     inward rather than shifting the pill's box size. */
+  .chat-identity-toggle__input:checked + .chat-identity-toggle__option-label {
+    outline: 2px solid CanvasText;
+    outline-offset: -2px;
+  }
+}
+
+.chat-identity-field__inherited {
+  display: flex;
+  align-items: baseline;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  padding: 0.6rem 0.85rem;
+  border-radius: 6px;
+  background-color: color-mix(in srgb, var(--link) 12%, transparent);
+  border: 1px solid color-mix(in srgb, var(--link) 30%, transparent);
+  font-size: 0.9rem;
+}
+
+/* The avatar card's "Use main" state is just the image — the tinted
+   panel styling that works for a line of text looks like an unnecessary box
+   around it, so this variant keeps the same element (still what the JS
+   toggle shows/hides) without the surrounding chrome. */
+.chat-identity-field__inherited--plain {
+  padding: 0;
+  border: none;
+  background: none;
+}
+
+.chat-identity-field__value {
+  min-width: 0;
+}
+
+.chat-identity-field__blank {
+  font-style: italic;
+  color: color-mix(in srgb, var(--text) 65%, transparent);
+}
+
+.chat-identity-field__override {
+  margin-top: 0.85rem;
+}
+
+.chat-identity-field__override .form-hint {
+  margin-top: 0.4rem;
+  margin-bottom: 0;
+}
+
+/* Live preview column */
+
+.preview-block {
+  background-color: var(--pane-bg);
+  border: 1px solid var(--pane-border);
+  border-radius: 8px;
+  margin-bottom: 1rem;
+  overflow: hidden;
+}
+
+.preview-block:last-child {
+  margin-bottom: 0;
+}
+
+.preview-block__body {
+  padding: 1rem;
+}
+
+.mini-profile__header {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.85rem;
+  align-items: flex-start;
+}
+
+.mini-profile__header .avatar {
+  flex-shrink: 0;
+}
+
+.mini-profile__header .tag-line {
+  flex-basis: 100%;
+  margin: 0;
+}
+
+/* Edge-to-edge banner, same technique as .card > .card__header — the
+   negative margin equals whichever ancestor's own padding it needs to
+   counteract, since the real popover and the settings-page preview wrap
+   .mini-profile in differently-padded containers. */
+.mini-profile-popover > .mini-profile > .mini-profile__header {
+  background-color: var(--header-bg);
+  margin: -1.25rem -1.25rem 1rem;
+  padding: 1.25rem;
+  border-radius: 9px 9px 0 0;
+}
+
+.preview-block__body > .mini-profile > .mini-profile__header {
+  background-color: var(--header-bg);
+  margin: -1rem -1rem 1rem;
+  padding: 1rem;
+  border-radius: 7px 7px 0 0;
+}
+
+/* No description and the full-page link is off (or this is a Group, which
+   has no link-toggle-independent description either way) — the header is
+   .mini-profile's only child, so there's nothing left to reserve the
+   trailing margin for. Collapse it flush with the container's own bottom
+   edge instead of leaving dead empty space below the header. */
+.mini-profile-popover > .mini-profile > .mini-profile__header:last-child {
+  margin-bottom: -1.25rem;
+  border-radius: 9px;
+}
+
+.preview-block__body > .mini-profile > .mini-profile__header:last-child {
+  margin-bottom: -1rem;
+  border-radius: 7px;
+}
+
+@media (forced-colors: active) {
+  .mini-profile-popover > .mini-profile > .mini-profile__header,
+  .preview-block__body > .mini-profile > .mini-profile__header {
+    border-bottom: 1px solid CanvasText;
+  }
+}
+
+.mini-profile__name {
+  margin: 0;
+  font-size: 1.1rem;
+  color: var(--heading);
+}
+
+.mini-profile__description {
+  margin-top: 0.85rem;
+  margin-bottom: 0.5rem;
+  padding-top: 0.85rem;
+  max-height: 12rem;
+  overflow-y: auto;
+}
+
+.mini-profile__link {
+  margin-top: 0.85rem;
+  padding-top: 0.85rem;
+  font-size: 0.85rem;
+}
+
+/* The real chat popover, fetched on demand — .mini-profile itself (above)
+   is shared with the settings-page preview, which wraps it in .preview-block
+   instead of this. Positioned via inline left/top set by
+   mini_profile_popover_controller.js; inset/margin here override the
+   browser's default centered [popover] placement so those take effect. */
+.mini-profile-popover {
+  /* Explicit, rather than relying on the browser's default [popover]
+     hiding — that default apparently doesn't reliably apply to a
+     <turbo-frame>, a custom element, so it rendered visibly inline above
+     every message before ever being opened. */
+  display: none;
+  position: fixed;
+  inset: auto;
+  margin: 0;
+  width: min(320px, calc(100vw - 1rem));
+  max-height: min(28rem, calc(100vh - 1rem));
+  overflow-y: auto;
+  padding: 1.25rem;
+  background-color: var(--pane-bg);
+  /* The [popover] UA stylesheet also defaults color to CanvasText — without
+     overriding it here too, anything inside that doesn't set its own color
+     (e.g. .profile-description) inherits that instead of the theme. */
+  color: var(--text);
+  border: 1px solid var(--pane-border);
+  border-radius: 10px;
+  box-shadow: 0 8px 24px color-mix(in srgb, var(--pane-border) 60%, transparent);
+}
+
+.mini-profile-popover:popover-open {
+  display: block;
+}
+
+/* Responsive: stack the preview under the form on narrow screens */
+@media (max-width: 900px) {
+  .chat-identity-layout {
+    grid-template-columns: 1fr;
+  }
+
+  .chat-identity-preview-col {
+    position: static;
+    max-height: none;
+  }
+}
+
+@media (max-width: 600px) {
+  .chat-identity-page {
+    max-width: 100%;
+  }
 }

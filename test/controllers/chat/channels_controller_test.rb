@@ -20,7 +20,7 @@ class Chat::ChannelsControllerTest < ActionDispatch::IntegrationTest
     assert_match "hello there", response.body
   end
 
-  test "message author links go to the viewer's own profile page, but the public page for others" do
+  test "each message's popover trigger points at that message's own postable, regardless of who's viewing" do
     @channel.messages.create!(user: @owner, postable: profiles(:alice), body: "from the owner")
     @channel.messages.create!(user: @member, postable: profiles(:carol), body: "from the member")
 
@@ -28,9 +28,25 @@ class Chat::ChannelsControllerTest < ActionDispatch::IntegrationTest
     get chat_server_channel_path(@server, @channel)
     assert_response :success
 
-    assert_match our_profile_path(profiles(:alice)), response.body
-    assert_match profile_path(profiles(:carol)), response.body
-    assert_no_match our_profile_path(profiles(:carol)), response.body
+    assert_match chat_mini_profile_path("Profile", profiles(:alice).uuid), response.body
+    assert_match chat_mini_profile_path("Profile", profiles(:carol).uuid), response.body
+  end
+
+  test "show's posting-as picker shows the resolved chat identity, not the real one" do
+    profiles(:alice).update!(
+      mini_profile_name_inherited: false, mini_profile_name: "ChatAlice",
+      mini_profile_pronouns_inherited: false, mini_profile_pronouns: "ey/em"
+    )
+    sign_in_as @owner
+    get chat_server_channel_path(@server, @channel)
+    assert_response :success
+
+    assert_match "ChatAlice", response.body
+    assert_no_match ">Alice<", response.body
+    assert_match "ey/em", response.body
+    # search_text (the data-search attribute the filter reads) indexes both
+    # the real and chat forms, so searching either finds the option.
+    assert_match(/data-search="[^"]*\balice\b[^"]*chatalice/, response.body)
   end
 
   test "show is blocked for a non-member" do

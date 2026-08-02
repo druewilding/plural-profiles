@@ -1,0 +1,69 @@
+-# Locals:
+-#   postable — a Profile or Group, possibly carrying unsaved in-memory
+-#              attribute changes (e.g. from the chat settings page's live
+-#              preview) — this partial only ever reads through it, never
+-#              persists anything
+-#   preview  — (optional, default false) true from the settings-page
+-#              preview — the "view full page" link points at "#" and has
+-#              its click prevented (chat-identity-form#preventDefault, on
+-#              the ancestor controller the settings page's form sets up),
+-#              since it's a mockup of what will exist once saved, not a
+-#              live navigation target a stray click should be able to lose
+-#              unsaved edits over — but it should still look exactly like a
+-#              real link.
+-#
+-# Reads exclusively through the chat_* resolver methods (ChatIdentity) and
+-# the chat_avatar_* helpers, never the raw full-profile or mini_profile_*
+-# columns directly — that's what makes this safely reusable for both the
+-# real chat popover and the settings-page preview of unsaved changes.
+
+- has_pronouns = postable.respond_to?(:chat_pronouns) && postable.chat_pronouns.present?
+- has_hearts = postable.respond_to?(:chat_heart_emojis) && postable.chat_heart_emojis.any?
+- avatar = chat_avatar_for(postable)
+
+.mini-profile
+  .mini-profile__header
+    - if avatar.attached?
+      = image_tag avatar.variant(resize_to_fill: [64, 64]),
+                  class: "avatar avatar--large #{avatar_shape_class(postable, shape: chat_avatar_shape_for(postable))}".strip,
+                  width: 64,
+                  height: 64,
+                  alt: chat_avatar_alt_text_for(postable),
+                  loading: "lazy"
+    - else
+      .avatar.avatar--large.avatar--placeholder
+        = render "shared/plural_pride_logo"
+    %div
+      %h2.mini-profile__name= formatted_inline(postable.chat_name)
+      - if postable.chat_subtitle.present?
+        %p.subtitle= formatted_inline(postable.chat_subtitle)
+      - if has_pronouns || has_hearts
+        .pronouns
+          - if has_pronouns
+            %span= formatted_inline(postable.chat_pronouns)
+          - if has_hearts
+            .heart-display__grid
+              - postable.chat_heart_emojis.each do |heart|
+                .heart-display__heart
+                  = image_tag "/images/hearts/#{heart}.webp", width: 24, height: 24, alt: postable.heart_emoji_display_name(heart), title: postable.heart_emoji_display_name(heart), loading: "lazy"
+    - if postable.chat_tag_line.present?
+      %p.tag-line= formatted_inline(postable.chat_tag_line)
+
+  - if postable.chat_description.present?
+    .profile-description.mini-profile__description
+      = formatted_description(postable.chat_description)
+
+  - if postable.mini_profile_link_enabled?
+    .mini-profile__link
+      - full_page_label = "View full #{postable.class.name.downcase} page"
+      - if local_assigns[:preview]
+        = link_to full_page_label, "#", data: {action: "click->chat-identity-form#preventDefault"}
+      - else
+        -# A plain profile_path/group_path is host-relative, which resolves
+        -# against whatever host the popover itself was fetched from — the
+        -# chat subdomain, for the real popover. The full-page views aren't
+        -# chat-namespaced routes, so the link needs an explicit main-site
+        -# host to land on the right domain rather than chat.example.com.
+        - url_options = {host: main_site_host, port: request.port, protocol: request.protocol}
+        - url = postable.is_a?(Group) ? group_url(postable.uuid, **url_options) : profile_url(postable.uuid, **url_options)
+        = link_to full_page_label, url, target: "_blank", rel: "noopener"

@@ -23,6 +23,15 @@ class Chat::MembershipsControllerTest < ActionDispatch::IntegrationTest
     assert_response :success
   end
 
+  test "edit's default-postable picker shows the resolved chat identity, not the real one" do
+    profiles(:stray).update!(mini_profile_name_inherited: false, mini_profile_name: "ChatStray")
+    sign_in_as @member
+    get edit_chat_server_membership_path(@server)
+    assert_response :success
+    assert_match "ChatStray", response.body
+    assert_no_match ">Stray<", response.body
+  end
+
   test "edit is blocked for a non-member" do
     sign_in_as @outsider
     get edit_chat_server_membership_path(@server)

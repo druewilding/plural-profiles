@@ -1,13 +1,16 @@
 - # A single option button in the plain-form "post as" picker (chat/shared/_profile_picker).
-- # postable is a Profile or a Group.
-- pronouns = postable.respond_to?(:pronouns) ? postable.pronouns : nil
-- search_text = plain_field([postable.name, pronouns, postable.subtitle, postable.labels.join(" ")].compact.join(" ")).downcase
+- # postable is a Profile or a Group. Name/pronouns shown are the resolved
+- # chat identity (see chat/channels/_posting_as_option for why); search_text
+- # indexes both the real and chat forms.
+- pronouns = postable.respond_to?(:chat_pronouns) ? postable.chat_pronouns : nil
+- real_pronouns = postable.respond_to?(:pronouns) ? postable.pronouns : nil
+- search_text = plain_field([postable.name, postable.chat_name, pronouns, real_pronouns, postable.subtitle, postable.labels.join(" ")].compact.join(" ")).downcase
 - option_class = "action-dropdown__item profile-picker__option#{' profile-picker__option--current' if postable == selected_postable}"
 %button{type: "button", class: option_class, data: {"profile-filter-target": "option", "profile-picker-target": "option", action: "click->profile-picker#select", "postable-type": postable.class.name, "postable-id": postable.id, search: search_text}}
   = render "chat/shared/avatar", record: postable, size: 20, shape: "circle"
   .profile-picker__option-info
     .profile-picker__option-name-row
-      %span.profile-picker__option-name= formatted_inline(postable.name)
+      %span.profile-picker__option-name= formatted_inline(postable.chat_name)
       - if pronouns.present?
         %span.profile-picker__option-pronouns= formatted_inline(pronouns)
     - if postable.subtitle.present?

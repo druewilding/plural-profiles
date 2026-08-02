@@ -514,6 +514,134 @@ class GroupTest < ActiveSupport::TestCase
     assert group.valid?
   end
 
+  # -- chat identity (mini-profile) --
+
+  test "chat fields default to inheriting the main field" do
+    group = groups(:friends)
+    group.update!(tag_line: "Rally around")
+    assert_equal group.name, group.chat_name
+    assert_equal group.tag_line, group.chat_tag_line
+  end
+
+  # Description is the one exception: it defaults to NOT inherited (and
+  # blank), unlike every other field — it's the field people are most
+  # likely to want to keep out of chat entirely, or write a shorter version
+  # of, so it doesn't default to silently mirroring whatever the full
+  # group's (possibly long, possibly not chat-appropriate) description says.
+  test "chat_description defaults to not inherited and blank, unlike every other field" do
+    group = groups(:friends)
+    assert group.description.present?
+    assert_not group.mini_profile_description_inherited?
+    assert_nil group.chat_description
+  end
+
+  test "chat_subtitle inherits even when the main subtitle is blank" do
+    group = groups(:friends)
+    assert_nil group.subtitle
+    assert_nil group.chat_subtitle
+  end
+
+  test "inherited chat fields track live changes to the main field" do
+    group = groups(:friends)
+    group.update!(tag_line: "New tagline")
+    assert_equal "New tagline", group.chat_tag_line
+  end
+
+  test "setting a field to not inherited uses the independent mini_profile value instead" do
+    group = groups(:friends)
+    group.update!(mini_profile_subtitle_inherited: false, mini_profile_subtitle: "Chat-only subtitle")
+    assert_equal "Chat-only subtitle", group.chat_subtitle
+    assert_not_equal group.subtitle, group.chat_subtitle
+  end
+
+  test "a not-inherited field left blank resolves to blank, not the main value" do
+    group = groups(:friends)
+    group.update!(mini_profile_subtitle_inherited: false, mini_profile_subtitle: nil)
+    assert_nil group.chat_subtitle
+  end
+
+  test "every chat field defaults to true, except mini_profile_link_enabled and mini_profile_description_inherited" do
+    group = users(:one).groups.create!(name: "Fresh")
+    assert group.mini_profile_name_inherited?
+    assert group.mini_profile_subtitle_inherited?
+    assert group.mini_profile_tag_line_inherited?
+    assert group.mini_profile_avatar_inherited?
+    assert_not group.mini_profile_link_enabled?
+    assert_not group.mini_profile_description_inherited?
+  end
+
+  test "mini_profile_name must be present once name is set to not inherited" do
+    group = groups(:friends)
+    group.mini_profile_name_inherited = false
+    group.mini_profile_name = nil
+    assert_not group.valid?
+    assert_includes group.errors[:mini_profile_name], "can't be blank when not inheriting the main name"
+  end
+
+  test "chat_name uses the independent name once set" do
+    group = groups(:friends)
+    group.update!(mini_profile_name_inherited: false, mini_profile_name: "Nickname")
+    assert_equal "Nickname", group.chat_name
+  end
+
+  test "does not respond to pronouns or hearts chat fields" do
+    group = groups(:friends)
+    assert_not group.respond_to?(:chat_pronouns)
+    assert_not group.respond_to?(:chat_heart_emojis)
+  end
+
+  test "can attach a mini_profile_avatar independently of the main avatar" do
+    group = groups(:friends)
+    group.mini_profile_avatar.attach(
+      io: File.open(file_fixture("avatar.png")),
+      filename: "avatar.png",
+      content_type: "image/png"
+    )
+    assert group.mini_profile_avatar.attached?
+    assert_not group.avatar.attached?
+  end
+
+  test "rejects non-image mini_profile_avatar" do
+    group = groups(:friends)
+    group.mini_profile_avatar.attach(
+      io: StringIO.new("<script>alert('xss')</script>"),
+      filename: "evil.html",
+      content_type: "text/html"
+    )
+    assert_not group.valid?
+    assert_includes group.errors[:mini_profile_avatar], "must be a JPG/JPEG, PNG, or WebP image"
+  end
+
+  test "rejects mini_profile_avatar over 2 MB" do
+    group = groups(:friends)
+    group.mini_profile_avatar.attach(
+      io: StringIO.new("a" * (HasAvatar::AVATAR_MAX_SIZE + 1)),
+      filename: "toobig.png",
+      content_type: "image/png"
+    )
+    assert_not group.valid?
+    assert_includes group.errors[:mini_profile_avatar], "must be 2 MB or less"
+  end
+
+  test "mini_profile_avatar_shape defaults to rounded" do
+    group = users(:one).groups.create!(name: "Fresh")
+    assert_equal "rounded", group.mini_profile_avatar_shape
+  end
+
+  test "mini_profile_avatar_shape is independent of avatar_shape" do
+    group = groups(:friends)
+    group.update!(avatar_shape: "square", mini_profile_avatar_shape: "circle")
+    assert_equal "square", group.avatar_shape
+    assert_equal "circle", group.mini_profile_avatar_shape
+  end
+
+  test "rejects an invalid mini_profile_avatar_shape" do
+    group = groups(:friends)
+    group.mini_profile_avatar_shape = "triangle"
+    assert_not group.valid?
+    assert_includes group.errors[:mini_profile_avatar_shape], "is not included in the list"
+  end
+
   # -- labels --
 
   test "labels defaults to empty array" do

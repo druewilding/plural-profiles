@@ -68,6 +68,16 @@ export default class extends Controller {
     }
     this._applyShapeToElement(this.mainPreviewTarget)
     this.dialogTarget.close()
+
+    // Lets listeners (e.g. the chat-identity settings page's live preview)
+    // reflect a picked-but-unsaved file without re-uploading it anywhere —
+    // this is the same object URL already used for the in-dialog preview.
+    this.dispatch("changed", {
+      detail: {
+        src: this.mainPreviewTarget.hidden ? null : this.mainPreviewTarget.src,
+        shape: this._currentShape()
+      }
+    })
   }
 
   // ── Cancel ────────────────────────────────────────────────────────────────

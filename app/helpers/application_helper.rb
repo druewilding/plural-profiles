@@ -107,21 +107,48 @@ module ApplicationHelper
     end
   end
 
-  # The public-facing URL for a chat message's postable (a Profile or a
-  # Group): the owner's own private management page if the current viewer
-  # owns it, otherwise the public uuid-keyed share page. &. on Current.user
-  # falls back to the public link when there's no request context at all
-  # (e.g. a message broadcast rendered outside a real request) — always a
-  # safe destination, since Our::ProfilesController/Our::GroupsController
-  # redirect there anyway for anyone viewing a postable that isn't theirs.
-  def chat_postable_url(postable)
-    own = postable.user_id == Current.user&.id
-    url_options = { host: main_site_host, port: request.port, protocol: request.protocol }
-    if postable.is_a?(Group)
-      own ? our_group_url(postable, **url_options) : group_url(postable.uuid, **url_options)
+  # The avatar chat should show for a postable. Gated on
+  # mini_profile_avatar_inherited rather than attachment presence: shape and
+  # alt text can be overridden independently of the image itself (see
+  # chat_avatar_shape_for), so "inherited" is the actual source of truth —
+  # attachment presence is only consulted as a fallback within the
+  # not-inherited branch, for someone who's switched to "Set for chat" but
+  # hasn't (yet, or ever) uploaded a replacement image.
+  def chat_avatar_for(postable)
+    return postable.avatar if postable.mini_profile_avatar_inherited?
+    postable.mini_profile_avatar.attached? ? postable.mini_profile_avatar : postable.avatar
+  end
+
+  def chat_avatar_alt_text_for(postable)
+    if postable.mini_profile_avatar_inherited?
+      postable.avatar_alt_text.presence || ""
     else
-      own ? our_profile_url(postable, **url_options) : profile_url(postable.uuid, **url_options)
+      postable.mini_profile_avatar_alt_text.presence || ""
     end
+  end
+
+  # The shape to render chat_avatar_for(postable) with. Independent of
+  # whether a replacement image was actually uploaded — someone can keep the
+  # main avatar's image but still pick a different shape for chat, so this
+  # follows mini_profile_avatar_inherited, not attachment presence. Message
+  # rows ignore this entirely and always force circle for visual consistency
+  # in the channel — only the popover (which shows "the chosen shape") should
+  # call this.
+  def chat_avatar_shape_for(postable)
+    postable.mini_profile_avatar_inherited? ? postable.avatar_shape : postable.mini_profile_avatar_shape
+  end
+
+  # The default id for a postable's mini-profile turbo-frame. Only actually
+  # unique per postable, not per message — when the same postable has
+  # multiple messages in a channel, each one's own placeholder frame needs a
+  # further per-message discriminator (see _message.html.haml) so the page
+  # never has two elements sharing an id, and passes it to the popover route
+  # as a frame_id param so the response's turbo-frame echoes the same id
+  # back (Chat::MiniProfilesController#show falls back to this method's
+  # output when that param is absent, e.g. someone hitting the route
+  # directly).
+  def mini_profile_frame_id(postable)
+    "mini_profile_#{postable.class.name}_#{postable.uuid}"
   end
 
   private

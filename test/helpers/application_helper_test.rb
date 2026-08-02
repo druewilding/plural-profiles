@@ -638,6 +638,87 @@ class ApplicationHelperTest < ActionView::TestCase
     assert_equal "avatar--circle", avatar_shape_class(record, shape: "circle")
   end
 
+  # -- chat_avatar_for / chat_avatar_alt_text_for / chat_avatar_shape_for --
+
+  test "chat_avatar_for falls back to the main avatar when no mini_profile_avatar is attached" do
+    profile = profiles(:alice)
+    assert_not profile.mini_profile_avatar.attached?
+    assert_equal profile.avatar, chat_avatar_for(profile)
+  end
+
+  test "chat_avatar_for falls back to the main avatar when inherited even if a mini_profile_avatar happens to be attached" do
+    profile = profiles(:alice)
+    profile.mini_profile_avatar.attach(
+      io: File.open(file_fixture("avatar.png")),
+      filename: "avatar.png",
+      content_type: "image/png"
+    )
+    assert profile.mini_profile_avatar_inherited?
+    assert_equal profile.avatar, chat_avatar_for(profile)
+  end
+
+  test "chat_avatar_for uses the mini_profile_avatar once not inherited and one is attached" do
+    profile = profiles(:alice)
+    profile.update!(mini_profile_avatar_inherited: false)
+    profile.mini_profile_avatar.attach(
+      io: File.open(file_fixture("avatar.png")),
+      filename: "avatar.png",
+      content_type: "image/png"
+    )
+    assert_equal profile.mini_profile_avatar, chat_avatar_for(profile)
+  end
+
+  test "chat_avatar_for falls back to the main avatar when not inherited but nothing has been uploaded" do
+    profile = profiles(:alice)
+    profile.update!(mini_profile_avatar_inherited: false)
+    assert_not profile.mini_profile_avatar.attached?
+    assert_equal profile.avatar, chat_avatar_for(profile)
+  end
+
+  test "chat_avatar_shape_for falls back to avatar_shape when inherited" do
+    profile = profiles(:alice)
+    profile.update!(avatar_shape: "square", mini_profile_avatar_shape: "circle")
+    assert_equal "square", chat_avatar_shape_for(profile)
+  end
+
+  test "chat_avatar_shape_for uses the mini_profile_avatar_shape once not inherited" do
+    profile = profiles(:alice)
+    profile.update!(avatar_shape: "square", mini_profile_avatar_shape: "circle")
+    profile.mini_profile_avatar.attach(
+      io: File.open(file_fixture("avatar.png")),
+      filename: "avatar.png",
+      content_type: "image/png"
+    )
+    profile.update!(mini_profile_avatar_inherited: false)
+    assert_equal "circle", chat_avatar_shape_for(profile)
+  end
+
+  test "chat_avatar_shape_for honors an overridden shape even without uploading a replacement image" do
+    profile = profiles(:alice)
+    profile.update!(avatar_shape: "square", mini_profile_avatar_shape: "circle", mini_profile_avatar_inherited: false)
+    assert_not profile.mini_profile_avatar.attached?
+    assert_equal "circle", chat_avatar_shape_for(profile)
+    assert_equal profile.avatar, chat_avatar_for(profile)
+  end
+
+  test "chat_avatar_alt_text_for falls back to avatar_alt_text when inherited" do
+    profile = profiles(:alice)
+    profile.update!(avatar_alt_text: "Alice's main avatar")
+    assert_equal "Alice's main avatar", chat_avatar_alt_text_for(profile)
+  end
+
+  test "chat_avatar_alt_text_for uses mini_profile_avatar_alt_text once not inherited" do
+    profile = profiles(:alice)
+    profile.update!(avatar_alt_text: "Alice's main avatar", mini_profile_avatar_alt_text: "Alice's chat avatar",
+                     mini_profile_avatar_inherited: false)
+    profile.mini_profile_avatar.attach(
+      io: File.open(file_fixture("avatar.png")),
+      filename: "avatar.png",
+      content_type: "image/png"
+    )
+    assert_equal "Alice's chat avatar", chat_avatar_alt_text_for(profile)
+  end
+
   test "full floating image with text works as intended" do
     text = '<p><img src="x.jpg" alt="photo" style="float:left; width:100px;height:100px; padding:10px;">Some text alongside</p>'
     result = formatted_description(text)

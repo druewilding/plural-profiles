@@ -5,9 +5,15 @@
 - # avatar_shape (servers keep their placeholder unshaped, matching every
 - # other placeholder render in the app).
 - shape_override = local_assigns[:shape]
-- shape = shape_override || record.avatar_shape
-- if record.avatar.attached?
-  = image_tag record.avatar.variant(resize_to_fill: [size, size]), class: "avatar #{avatar_shape_class(record, shape: shape)}".strip, width: size, height: size, alt: "", loading: "lazy"
+- # record is a Profile/Group (a "postable", with a chat identity to resolve
+- # through) in every picker/option caller, or a Chat::Server (no chat
+- # identity at all) in _invite_card/servers#index — respond_to? tells them
+- # apart so this one partial can serve both without a caller-side flag.
+- is_postable = record.respond_to?(:mini_profile_avatar)
+- avatar = is_postable ? chat_avatar_for(record) : record.avatar
+- shape = shape_override || (is_postable ? chat_avatar_shape_for(record) : record.avatar_shape)
+- if avatar.attached?
+  = image_tag avatar.variant(resize_to_fill: [size, size]), class: "avatar #{avatar_shape_class(record, shape: shape)}".strip, width: size, height: size, alt: "", loading: "lazy"
 - else
   .avatar{class: "avatar--placeholder #{'avatar--circle' if shape_override == 'circle'}".strip}
     = render "shared/plural_pride_logo"

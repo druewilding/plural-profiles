@@ -29,8 +29,8 @@
       - if selected_postable
         = render "chat/shared/avatar", record: selected_postable, size: 22, shape: "circle"
     %span
-      %strong{data: {"profile-picker-target": "triggerName"}}= selected_postable ? formatted_inline(selected_postable.name) : "Choose a profile or group…"
-      - selected_pronouns = selected_postable.respond_to?(:pronouns) ? selected_postable.pronouns : nil
+      %strong{data: {"profile-picker-target": "triggerName"}}= selected_postable ? formatted_inline(selected_postable.chat_name) : "Choose a profile or group…"
+      - selected_pronouns = selected_postable.respond_to?(:chat_pronouns) ? selected_postable.chat_pronouns : nil
       %span.profile-picker__trigger-pronouns{data: {"profile-picker-target": "triggerPronouns"}, hidden: selected_pronouns.blank?}= selected_pronouns.presence && formatted_inline(selected_pronouns)
   .action-dropdown__menu.profile-picker__menu{data: {controller: "profile-filter"}}
     %input.profile-picker__search{type: "text", autocomplete: "off", placeholder: "Find a profile or group…", "aria-label": "Filter profiles and groups", data: {"profile-filter-target": "input", action: "input->profile-filter#apply"}}

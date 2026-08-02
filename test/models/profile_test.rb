@@ -164,6 +164,161 @@ class ProfileTest < ActiveSupport::TestCase
     assert_nil Profile.resolve_heart_emoji("99_fake_heart")
   end
 
+  # -- chat identity (mini-profile) --
+
+  test "chat fields default to inheriting the main field" do
+    profile = profiles(:alice)
+    assert_equal profile.name, profile.chat_name
+    assert_equal profile.pronouns, profile.chat_pronouns
+    assert_equal profile.tag_line, profile.chat_tag_line
+    assert_equal profile.heart_emojis, profile.chat_heart_emojis
+  end
+
+  # Description is the one exception: it defaults to NOT inherited (and
+  # blank), unlike every other field — it's the field people are most
+  # likely to want to keep out of chat entirely, or write a shorter version
+  # of, so it doesn't default to silently mirroring whatever the full
+  # profile's (possibly long, possibly not chat-appropriate) description says.
+  test "chat_description defaults to not inherited and blank, unlike every other field" do
+    profile = profiles(:alice)
+    assert profile.description.present?
+    assert_not profile.mini_profile_description_inherited?
+    assert_nil profile.chat_description
+  end
+
+  test "chat_subtitle inherits even when the main subtitle is blank" do
+    profile = profiles(:alice)
+    assert_nil profile.subtitle
+    assert_nil profile.chat_subtitle
+  end
+
+  test "inherited chat fields track live changes to the main field" do
+    profile = profiles(:alice)
+    profile.update!(tag_line: "New tagline")
+    assert_equal "New tagline", profile.chat_tag_line
+  end
+
+  test "setting a field to not inherited uses the independent mini_profile value instead" do
+    profile = profiles(:alice)
+    profile.update!(mini_profile_pronouns_inherited: false, mini_profile_pronouns: "it/its")
+    assert_equal "it/its", profile.chat_pronouns
+    assert_not_equal profile.pronouns, profile.chat_pronouns
+  end
+
+  test "a not-inherited field left blank resolves to blank, not the main value" do
+    profile = profiles(:alice)
+    profile.update!(mini_profile_subtitle_inherited: false, mini_profile_subtitle: nil)
+    assert_nil profile.chat_subtitle
+  end
+
+  test "mini_profile_name_inherited defaults to true and every other chat field defaults to true, except description" do
+    profile = users(:one).profiles.create!(name: "Fresh")
+    assert profile.mini_profile_name_inherited?
+    assert profile.mini_profile_subtitle_inherited?
+    assert profile.mini_profile_tag_line_inherited?
+    assert profile.mini_profile_pronouns_inherited?
+    assert profile.mini_profile_heart_emojis_inherited?
+    assert profile.mini_profile_avatar_inherited?
+    assert_not profile.mini_profile_description_inherited?
+  end
+
+  test "mini_profile_link_enabled defaults to false" do
+    profile = users(:one).profiles.create!(name: "Fresh")
+    assert_not profile.mini_profile_link_enabled?
+  end
+
+  test "mini_profile_name can be blank while inherited" do
+    profile = profiles(:alice)
+    assert_nil profile.mini_profile_name
+    assert profile.valid?
+  end
+
+  test "mini_profile_name must be present once name is set to not inherited" do
+    profile = profiles(:alice)
+    profile.mini_profile_name_inherited = false
+    profile.mini_profile_name = nil
+    assert_not profile.valid?
+    assert_includes profile.errors[:mini_profile_name], "can't be blank when not inheriting the main name"
+  end
+
+  test "chat_name uses the independent name once set" do
+    profile = profiles(:alice)
+    profile.update!(mini_profile_name_inherited: false, mini_profile_name: "Nickname")
+    assert_equal "Nickname", profile.chat_name
+  end
+
+  test "valid mini_profile_heart_emojis are accepted" do
+    profile = profiles(:alice)
+    profile.mini_profile_heart_emojis = %w[dewdrop_heart red_heart]
+    assert profile.valid?
+  end
+
+  test "invalid mini_profile_heart_emojis are rejected" do
+    profile = profiles(:alice)
+    profile.mini_profile_heart_emojis = %w[dewdrop_heart fake_heart]
+    assert_not profile.valid?
+    assert profile.errors[:mini_profile_heart_emojis].any? { |e| e.include?("fake_heart") }
+  end
+
+  test "assigning mini_profile_heart_emojis normalizes old number prefixes to their bare form" do
+    profile = profiles(:alice)
+    profile.mini_profile_heart_emojis = %w[13_storm_heart 50cadbury_heart]
+    assert_equal %w[storm_heart cadbury_heart], profile.mini_profile_heart_emojis
+    assert profile.valid?
+  end
+
+  test "can attach a mini_profile_avatar independently of the main avatar" do
+    profile = profiles(:alice)
+    profile.mini_profile_avatar.attach(
+      io: File.open(file_fixture("avatar.png")),
+      filename: "avatar.png",
+      content_type: "image/png"
+    )
+    assert profile.mini_profile_avatar.attached?
+    assert_not profile.avatar.attached?
+  end
+
+  test "rejects non-image mini_profile_avatar" do
+    profile = profiles(:alice)
+    profile.mini_profile_avatar.attach(
+      io: StringIO.new("<script>alert('xss')</script>"),
+      filename: "evil.html",
+      content_type: "text/html"
+    )
+    assert_not profile.valid?
+    assert_includes profile.errors[:mini_profile_avatar], "must be a JPG/JPEG, PNG, or WebP image"
+  end
+
+  test "rejects mini_profile_avatar over 2 MB" do
+    profile = profiles(:alice)
+    profile.mini_profile_avatar.attach(
+      io: StringIO.new("a" * (HasAvatar::AVATAR_MAX_SIZE + 1)),
+      filename: "toobig.png",
+      content_type: "image/png"
+    )
+    assert_not profile.valid?
+    assert_includes profile.errors[:mini_profile_avatar], "must be 2 MB or less"
+  end
+
+  test "mini_profile_avatar_shape defaults to rounded" do
+    profile = users(:one).profiles.create!(name: "Fresh")
+    assert_equal "rounded", profile.mini_profile_avatar_shape
+  end
+
+  test "mini_profile_avatar_shape is independent of avatar_shape" do
+    profile = profiles(:alice)
+    profile.update!(avatar_shape: "square", mini_profile_avatar_shape: "circle")
+    assert_equal "square", profile.avatar_shape
+    assert_equal "circle", profile.mini_profile_avatar_shape
+  end
+
+  test "rejects an invalid mini_profile_avatar_shape" do
+    profile = profiles(:alice)
+    profile.mini_profile_avatar_shape = "triangle"
+    assert_not profile.valid?
+    assert_includes profile.errors[:mini_profile_avatar_shape], "is not included in the list"
+  end
+
   # -- labels --
 
   test "labels defaults to empty array" do
