@@ -102,14 +102,15 @@
           input_type: :text_area,
           inherited_value: formatted_description(@postable.description)
 
+      - full_page_label = "Link to full #{@postable.class.name.downcase} page"
       .card
-        %h3 Link to full profile
+        %h3 Link to full page
         .chat-identity-link-toggle
           %label.checkbox-label
             = form.check_box :mini_profile_link_enabled
-            Let people view your full profile
+            = full_page_label
         %p.form-hint
-          Off by default. When off, the popover shows the fields above with no link at all — other viewers can't reach your full profile from chat.
+          Off by default. When off, the popover shows the fields above with no link at all — other viewers can't reach the full page from chat.
 
       .card
         %h3 Chat proxy brackets

@@ -24,6 +24,13 @@ export default class extends Controller {
     clearTimeout(this.previewTimeout)
   }
 
+  // The preview panel's "view full page" link looks exactly like a real
+  // link, but clicking it here shouldn't navigate anywhere — a stray click
+  // while reviewing the preview shouldn't cost someone their unsaved edits.
+  preventDefault(event) {
+    event.preventDefault()
+  }
+
   change(event) {
     const target = event.target
     if (target.classList.contains("chat-identity-toggle__input")) {

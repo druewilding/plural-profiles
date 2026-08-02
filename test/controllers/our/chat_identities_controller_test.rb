@@ -202,12 +202,25 @@ class Our::ChatIdentitiesControllerTest < ActionDispatch::IntegrationTest
     assert_nil @profile.reload.mini_profile_subtitle
   end
 
-  test "preview shows the edit link since the settings-page preview is always your own" do
+  test "preview shows nothing about the full-page link when mini_profile_link_enabled is off" do
     sign_in_as @user
+    assert_not @profile.mini_profile_link_enabled?
     post preview_our_chat_identity_path("Profile", @profile.uuid), params: {
       chat_identity: { mini_profile_subtitle: "" }
     }
     assert_response :success
-    assert_match "Edit profile", response.body
+    assert_no_match "Edit profile", response.body
+    assert_no_match "View full profile page", response.body
+  end
+
+  test "preview shows the full-page link pointing at # instead of the real destination, when enabled" do
+    sign_in_as @user
+    post preview_our_chat_identity_path("Profile", @profile.uuid), params: {
+      chat_identity: { mini_profile_link_enabled: "1" }
+    }
+    assert_response :success
+    assert_match %r{<a [^>]*href="#"[^>]*>View full profile page</a>}, response.body
+    assert_match "chat-identity-form#preventDefault", response.body
+    assert_no_match "rel=\"noopener\"", response.body
   end
 end

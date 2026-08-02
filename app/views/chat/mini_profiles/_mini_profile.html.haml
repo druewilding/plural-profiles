@@ -3,9 +3,20 @@
 -#              attribute changes (e.g. from the chat settings page's live
 -#              preview) — this partial only ever reads through it, never
 -#              persists anything
--#   own      — true when the current viewer owns postable (always true from
--#              the settings-page preview, since you're always looking at
--#              your own chat identity there)
+-#   own      — true when the current viewer owns postable. The settings-page
+-#              preview passes false here even though you're looking at your
+-#              own chat identity — it's showing what *other* chatters would
+-#              see (own's "Edit profile"/"Edit group" link is something only
+-#              you get in the real popover, not a preview of the checkbox
+-#              this page is actually letting you control).
+-#   preview  — (optional, default false) true from the settings-page
+-#              preview — the "view full page" link points at "#" and has
+-#              its click prevented (chat-identity-form#preventDefault, on
+-#              the ancestor controller the settings page's form sets up),
+-#              since it's a mockup of what will exist once saved, not a
+-#              live navigation target a stray click should be able to lose
+-#              unsaved edits over — but it should still look exactly like a
+-#              real link.
 -#
 -# Reads exclusively through the chat_* resolver methods (ChatIdentity) and
 -# the chat_avatar_* helpers, never the raw full-profile or mini_profile_*
@@ -57,5 +68,9 @@
         - else
           = link_to "Edit profile", edit_our_profile_path(postable)
       - else
-        - url = postable.is_a?(Group) ? group_path(postable.uuid) : profile_path(postable.uuid)
-        = link_to "View full profile", url, target: "_blank", rel: "noopener"
+        - full_page_label = "View full #{postable.class.name.downcase} page"
+        - if local_assigns[:preview]
+          = link_to full_page_label, "#", data: {action: "click->chat-identity-form#preventDefault"}
+        - else
+          - url = postable.is_a?(Group) ? group_path(postable.uuid) : profile_path(postable.uuid)
+          = link_to full_page_label, url, target: "_blank", rel: "noopener"
