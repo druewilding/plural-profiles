@@ -4464,8 +4464,8 @@ button.profile-picker__option {
 
 .chat-identity-toggle__option {
   position: relative;
-  display: inline-flex;
-  align-items: center;
+  display: inline-block;
+  margin-bottom: 0;
   cursor: pointer;
 }
 
@@ -4477,10 +4477,9 @@ button.profile-picker__option {
 }
 
 .chat-identity-toggle__option-label {
-  display: inline-flex;
-  align-items: center;
+  display: inline-block;
   line-height: 1;
-  padding: 0.45rem 0.8rem;
+  padding: 0.4rem 0.8rem;
   border-radius: 999px;
   font-size: 0.78rem;
   font-weight: 600;
