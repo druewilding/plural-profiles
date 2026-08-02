@@ -4557,7 +4557,6 @@ button.profile-picker__option {
 .mini-profile__description {
   margin-top: 0.85rem;
   padding-top: 0.85rem;
-  border-top: 1px solid var(--pane-border);
   max-height: 12rem;
   overflow-y: auto;
 }
@@ -4565,7 +4564,6 @@ button.profile-picker__option {
 .mini-profile__link {
   margin-top: 0.85rem;
   padding-top: 0.85rem;
-  border-top: 1px solid var(--pane-border);
   font-size: 0.85rem;
 }
 
