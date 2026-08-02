@@ -25,7 +25,7 @@ class ThemeTest < ActiveSupport::TestCase
 
   test "color_for falls back to default" do
     theme = Theme.new(user: users(:one), name: "Empty", colors: {})
-    assert_equal "#0e2e24", theme.color_for("page_bg")
+    assert_equal "#0b221b", theme.color_for("page_bg")
   end
 
   test "swatch_colors returns five colours in SWATCH_PROPERTIES order" do
@@ -251,17 +251,17 @@ class ThemeTest < ActiveSupport::TestCase
 
   test "color_for falls back to default for primary_button_border" do
     theme = Theme.new(user: users(:one), name: "B", colors: {})
-    assert_equal "#58cc9d", theme.color_for("primary_button_border")
+    assert_equal "#4ec59a", theme.color_for("primary_button_border")
   end
 
   test "color_for falls back to default for secondary_button_border" do
     theme = Theme.new(user: users(:one), name: "B", colors: {})
-    assert_equal "#58cc9d", theme.color_for("secondary_button_border")
+    assert_equal "#4dbb8f", theme.color_for("secondary_button_border")
   end
 
   test "color_for falls back to default for danger_button_border" do
     theme = Theme.new(user: users(:one), name: "B", colors: {})
-    assert_equal "#e6c4cf", theme.color_for("danger_button_border")
+    assert_equal "#d8b5c0", theme.color_for("danger_button_border")
   end
 
   test "to_css_properties includes all three button border variables" do
