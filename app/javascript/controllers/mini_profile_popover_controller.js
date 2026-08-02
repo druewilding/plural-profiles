@@ -7,9 +7,23 @@ export default class extends Controller {
   static values = { url: String }
 
   open(event) {
+    this.lastTrigger = event.currentTarget
     if (!this.frameTarget.getAttribute("src")) this.frameTarget.src = this.urlValue
     this.panelTarget.showPopover()
-    this.position(event.currentTarget)
+    this.position(this.lastTrigger)
+  }
+
+  // The frame is still empty (or showing whatever it last held) at the
+  // moment open() positions it — the fetched content swaps in later,
+  // asynchronously, and can be much taller once it does (more so with a
+  // long description or a larger font size). Without repositioning once
+  // that actually happens, the bottom-of-viewport clamp in position() was
+  // computed against the wrong height and the popover could still run off
+  // the bottom of the window. Wired via turbo:frame-load on the frame
+  // itself (see the message partial).
+  reposition() {
+    if (!this.lastTrigger || !this.panelTarget.matches(":popover-open")) return
+    this.position(this.lastTrigger)
   }
 
   position(trigger) {

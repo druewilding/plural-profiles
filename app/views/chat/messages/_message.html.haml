@@ -30,4 +30,4 @@
     .chat-message__body{style: "white-space: pre-wrap"}= formatted_inline(message.body)
 
   - if postable
-    %turbo-frame.mini-profile-popover{id: mini_profile_frame_id(postable), popover: "auto", data: {"mini-profile-popover-target": "frame panel"}}
+    %turbo-frame.mini-profile-popover{id: mini_profile_frame_id(postable), popover: "auto", data: {"mini-profile-popover-target": "frame panel", action: "turbo:frame-load->mini-profile-popover#reposition"}}
