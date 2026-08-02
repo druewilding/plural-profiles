@@ -4559,12 +4559,43 @@ button.profile-picker__option {
 
 .mini-profile__header {
   display: flex;
+  flex-wrap: wrap;
   gap: 0.85rem;
   align-items: flex-start;
 }
 
 .mini-profile__header .avatar {
   flex-shrink: 0;
+}
+
+.mini-profile__header .tag-line {
+  flex-basis: 100%;
+  margin: 0;
+}
+
+/* Edge-to-edge banner, same technique as .card > .card__header — the
+   negative margin equals whichever ancestor's own padding it needs to
+   counteract, since the real popover and the settings-page preview wrap
+   .mini-profile in differently-padded containers. */
+.mini-profile-popover > .mini-profile > .mini-profile__header {
+  background-color: var(--header-bg);
+  margin: -1.25rem -1.25rem 1rem;
+  padding: 1.25rem;
+  border-radius: 9px 9px 0 0;
+}
+
+.preview-block__body > .mini-profile > .mini-profile__header {
+  background-color: var(--header-bg);
+  margin: -1rem -1rem 1rem;
+  padding: 1rem;
+  border-radius: 7px 7px 0 0;
+}
+
+@media (forced-colors: active) {
+  .mini-profile-popover > .mini-profile > .mini-profile__header,
+  .preview-block__body > .mini-profile > .mini-profile__header {
+    border-bottom: 1px solid CanvasText;
+  }
 }
 
 .mini-profile__name {

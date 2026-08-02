@@ -52,9 +52,8 @@
               - postable.chat_heart_emojis.each do |heart|
                 .heart-display__heart
                   = image_tag "/images/hearts/#{heart}.webp", width: 24, height: 24, alt: postable.heart_emoji_display_name(heart), title: postable.heart_emoji_display_name(heart), loading: "lazy"
-
-  - if postable.chat_tag_line.present?
-    %p.tag-line= formatted_inline(postable.chat_tag_line)
+    - if postable.chat_tag_line.present?
+      %p.tag-line= formatted_inline(postable.chat_tag_line)
 
   - if postable.chat_description.present?
     .profile-description.mini-profile__description
