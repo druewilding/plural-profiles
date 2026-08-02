@@ -124,8 +124,9 @@
       .card
         .card__header
           %h3 Save changes
-        = form.submit "Save chat settings"
-        = link_to "Cancel", back_path, class: "btn btn--secondary"
+        .form-group
+          = form.submit "Save chat settings"
+          = link_to "Cancel", back_path, class: "btn btn--secondary"
 
   .chat-identity-preview-col
     .card
