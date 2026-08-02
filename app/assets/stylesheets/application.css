@@ -4499,6 +4499,17 @@ button.profile-picker__option {
   outline-offset: 2px;
 }
 
+@media (forced-colors: active) {
+  /* The checked/unchecked distinction is otherwise carried entirely by
+     background-color, which forced-colors mode flattens away — nothing
+     then shows which pill is selected. outline (not border) so it draws
+     inward rather than shifting the pill's box size. */
+  .chat-identity-toggle__input:checked + .chat-identity-toggle__option-label {
+    outline: 2px solid CanvasText;
+    outline-offset: -2px;
+  }
+}
+
 .chat-identity-field__inherited {
   display: flex;
   align-items: baseline;
