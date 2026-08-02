@@ -4408,7 +4408,7 @@ button.profile-picker__option {
   justify-content: flex-end;
 }
 
-/* Field cards: "Follow profile" / "Set for chat" per field */
+/* Field cards: "Use main" / "Set for chat" per field */
 
 .chat-identity-field__head {
   display: flex;
@@ -4492,7 +4492,7 @@ button.profile-picker__option {
   font-size: 0.9rem;
 }
 
-/* The avatar card's "Follow profile" state is just the image — the tinted
+/* The avatar card's "Use main" state is just the image — the tinted
    panel styling that works for a line of text looks like an unnecessary box
    around it, so this variant keeps the same element (still what the JS
    toggle shows/hides) without the surrounding chrome. */

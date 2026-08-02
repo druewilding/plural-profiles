@@ -3,9 +3,9 @@
 -#   field            — base field name, e.g. :subtitle (drives
 -#                      mini_profile_<field> / mini_profile_<field>_inherited)
 -#   label            — human label for the card title, e.g. "Subtitle"
--#   inherited_value  — the live main-profile value to show when following
--#                      it, already formatted (formatted_inline/
--#                      formatted_description) and html_safe, or blank
+-#   inherited_value  — the live main value to show when using it, already
+-#                      formatted (formatted_inline/formatted_description)
+-#                      and html_safe, or blank
 -#   hint             — (optional) hint text shown under the title
 -#   input_type       — (optional, default :text_field) :text_field or
 -#                      :text_area, whichever form builder method edits the
@@ -20,10 +20,9 @@
 -# the card header layout needs, but this keeps the same "these radios
 -# belong to this label" semantics for assistive tech.
 -#
--# Both the "follow profile" and "set independently" content are always
--# visible for now — the inherit/override radios don't yet show/hide them
--# (that's chat_identity_form_controller.js, not built yet), so this stays
--# fully usable without JavaScript in the meantime.
+-# `chat_identity_form_controller.js` shows/hides the "currently on X" and
+-# override blocks based on which radio is checked (see syncCard) — both
+-# render server-side regardless, so the page still works without JS.
 
 - inherited_field = :"mini_profile_#{field}_inherited"
 - override_field = :"mini_profile_#{field}"
@@ -39,7 +38,7 @@
     .chat-identity-toggle
       %label.chat-identity-toggle__option
         = form.radio_button inherited_field, true, class: "chat-identity-toggle__input"
-        %span.chat-identity-toggle__option-label Follow profile
+        %span.chat-identity-toggle__option-label Use main
       %label.chat-identity-toggle__option
         = form.radio_button inherited_field, false, class: "chat-identity-toggle__input"
         %span.chat-identity-toggle__option-label Set for chat

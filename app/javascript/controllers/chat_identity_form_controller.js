@@ -55,7 +55,7 @@ export default class extends Controller {
 
   // Decides what the preview should show for the avatar, independent of
   // whatever the last server-rendered preview_panel happened to contain:
-  //  - "Follow profile" selected → always the main avatar (or its
+  //  - "Use main" selected → always the main avatar (or its
   //    placeholder), matching what saving with that mode would purge to.
   //  - "Set for chat" selected, and a file was picked/removed this session
   //    → that pick wins, since it hasn't round-tripped through the server.

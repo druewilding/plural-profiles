@@ -155,7 +155,7 @@ class Our::ChatIdentitiesControllerTest < ActionDispatch::IntegrationTest
     assert @profile.avatar.attached?
   end
 
-  test "update with mini_profile_avatar_inherited true (Follow profile) purges an existing mini_profile_avatar" do
+  test "update with mini_profile_avatar_inherited true (Use main) purges an existing mini_profile_avatar" do
     sign_in_as @user
     @profile.mini_profile_avatar.attach(
       io: File.open(file_fixture("avatar.png")), filename: "avatar.png", content_type: "image/png"

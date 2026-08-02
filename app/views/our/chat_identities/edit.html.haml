@@ -10,8 +10,8 @@
   .card__header
     %h1 Edit chat settings
   %p
-    Chat has its own identity, separate from your full profile. For each field, you can pick whether chat should follow your profile or show something different.
-    %span.chat-identity-intro__sub Changes here never affect your full profile page, and changes to your full profile never affect chat unless a field below is set to "Follow profile."
+    Chat has its own identity, separate from the main one. For each field, you can pick whether chat should use the main version or something else.
+    %span.chat-identity-intro__sub Changes here never affect the main page, and changes there never affect chat unless a field below is set to "Use main."
 
 - if @postable.errors.any?
   .error-messages
@@ -29,7 +29,7 @@
           .chat-identity-toggle
             %label.chat-identity-toggle__option
               = form.radio_button :mini_profile_avatar_inherited, true, class: "chat-identity-toggle__input"
-              %span.chat-identity-toggle__option-label Follow profile
+              %span.chat-identity-toggle__option-label Use main
             %label.chat-identity-toggle__option
               = form.radio_button :mini_profile_avatar_inherited, false, class: "chat-identity-toggle__input"
               %span.chat-identity-toggle__option-label Set for chat
@@ -72,7 +72,7 @@
             .chat-identity-toggle
               %label.chat-identity-toggle__option
                 = form.radio_button :mini_profile_heart_emojis_inherited, true, class: "chat-identity-toggle__input"
-                %span.chat-identity-toggle__option-label Follow profile
+                %span.chat-identity-toggle__option-label Use main
               %label.chat-identity-toggle__option
                 = form.radio_button :mini_profile_heart_emojis_inherited, false, class: "chat-identity-toggle__input"
                 %span.chat-identity-toggle__option-label Set for chat
