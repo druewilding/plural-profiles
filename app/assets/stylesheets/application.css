@@ -4596,6 +4596,21 @@ button.profile-picker__option {
   border-radius: 7px 7px 0 0;
 }
 
+/* No description and the full-page link is off (or this is a Group, which
+   has no link-toggle-independent description either way) — the header is
+   .mini-profile's only child, so there's nothing left to reserve the
+   trailing margin for. Collapse it flush with the container's own bottom
+   edge instead of leaving dead empty space below the header. */
+.mini-profile-popover > .mini-profile > .mini-profile__header:last-child {
+  margin-bottom: -1.25rem;
+  border-radius: 9px;
+}
+
+.preview-block__body > .mini-profile > .mini-profile__header:last-child {
+  margin-bottom: -1rem;
+  border-radius: 7px;
+}
+
 @media (forced-colors: active) {
   .mini-profile-popover > .mini-profile > .mini-profile__header,
   .preview-block__body > .mini-profile > .mini-profile__header {
