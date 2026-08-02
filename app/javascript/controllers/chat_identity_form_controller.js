@@ -13,6 +13,11 @@ export default class extends Controller {
     // "Set for chat" with a pre-existing saved mini_profile_avatar can still
     // defer to the server's own render of it (see applyAvatarCard).
     this.pickedAvatar = undefined
+    // Tracked separately from pickedAvatar: shape and image are independent
+    // overrides (see ChatIdentity), so removing the picked image shouldn't
+    // also discard a shape choice made in the same dialog session — see
+    // applyAvatarCard's fallback branch.
+    this.pickedAvatarShape = undefined
 
     this.element.querySelectorAll(".chat-identity-toggle").forEach(toggle => {
       this.syncCard(toggle.closest(".card"))
@@ -52,6 +57,7 @@ export default class extends Controller {
   avatarChanged(event) {
     const { src, shape } = event.detail
     this.pickedAvatar = src ? { src, shape } : null
+    this.pickedAvatarShape = shape
     this.applyAvatarCard(this.avatarCard())
     this.schedulePreview()
   }
@@ -79,6 +85,12 @@ export default class extends Controller {
       this.pendingAvatar = this.pickedAvatar
     } else {
       this.pendingAvatar = this.fallbackAvatar(card) // inherit mode, or an explicit removal
+      // An explicit removal (pickedAvatar === null) can still carry a
+      // shape picked in the dialog before/while removing the image —
+      // don't fall all the way back to the main avatar's own shape too.
+      if (overriding && this.pickedAvatarShape && this.pendingAvatar) {
+        this.pendingAvatar = { ...this.pendingAvatar, shape: this.pickedAvatarShape }
+      }
     }
     this.applyPendingAvatar()
   }

@@ -94,6 +94,30 @@ class ChatIdentitySettingsTest < ApplicationSystemTestCase
     within("#chat-identity-preview-panel .mini-profile__header") { assert_selector "img.avatar--circle" }
   end
 
+  # Regression: shape and image are independent overrides (see
+  # ChatIdentity) — removing the picked chat avatar image should fall back
+  # to the main avatar's image, but must not also discard a shape picked in
+  # the same dialog session. The live-preview JS previously read {src,
+  # shape} off the avatar-editor:changed event and discarded shape whenever
+  # src was null (an explicit removal), silently reverting the popover
+  # preview to the main avatar's own shape instead.
+  test "removing a picked chat avatar image keeps the shape picked alongside it, in the live preview" do
+    @profile.avatar.attach(io: File.open(file_fixture("avatar.png")), filename: "main.png", content_type: "image/png")
+    @profile.mini_profile_avatar.attach(io: File.open(file_fixture("avatar.png")), filename: "chat.png", content_type: "image/png")
+    @profile.update!(avatar_shape: "square", mini_profile_avatar_shape: "rounded", mini_profile_avatar_inherited: false)
+
+    visit edit_our_chat_identity_path("Profile", @profile.uuid)
+    click_button "Set chat avatar"
+    find(".avatar-shape-picker__option", text: "Circle").click
+    check "Remove avatar"
+    click_button "Done"
+
+    within("#chat-identity-preview-panel .mini-profile__header") do
+      assert_selector ".avatar--circle"
+      assert_no_selector ".avatar--square"
+    end
+  end
+
   test "a blank required name shows a validation error and does not save" do
     visit edit_our_chat_identity_path("Profile", @profile.uuid)
 
