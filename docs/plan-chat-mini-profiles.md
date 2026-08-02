@@ -14,14 +14,16 @@ The motivating case: someone's full profile page might be "an enormous sprawling
 
 **User feedback round 2 (also incorporated below):** editing this shouldn't live on the already-busy create/edit-profile page — not everyone uses chat at all, and cramming chat options into profile creation overwhelms people who don't care about it. It gets its own dedicated page instead. On that page, *every* field — including the name — should be individually choosable as "inherit from my main profile" or "set independently for chat," with a live preview of what the chat identity will actually look like. And chat should surface a way back into that page: a settings cog next to the "Posting as" pill in the composer.
 
+**User feedback round 3 (also incorporated below, and it changes the defaults from earlier drafts):** every field should default to **inherited**, not independent-and-blank — "by default, people's chat profiles should follow their main profiles, unless they want something different." The one exception is `mini_profile_link_enabled`, which has no full-profile equivalent to inherit and stays off by default. Description is the one field this is in tension with — it's literally the field the motivating anecdote at the top of this doc was about ("an enormous sprawling mess of half-finished html") — but the call, made explicitly, is to default it to inherited too, and handle long descriptions in the popover with truncation or a scrollable area rather than by hiding them by default.
+
 ## Direction agreed so far
 
-- **Core privacy principle:** the chat identity is a **separate, independently maintained set of content**, not a filtered/reused view of the full profile. It's safe by default: filling out an elaborate full profile never, by itself, exposes anything new in chat.
+- **Core privacy principle:** the chat identity is a **separate, independently maintained set of content**, not a filtered/reused view of the full profile — every field's value is under the owner's explicit, individual control, and changes to one context (chat vs. full profile) never silently affect the other. This is a different guarantee than "safe by default": round 3 (below) deliberately moves the *defaults* toward convenience, but the *mechanism* — full independence, per-field, always visible and reviewable on the settings page's live preview — is what actually delivers "no exposure you didn't choose," not the starting values.
 - **Every field is independently overridable, including name — via an explicit per-field inherit/override choice, not just a blank/filled column.** Each chat-identity field (name, subtitle, pronouns, hearts, tagline, description) has its own "inherit from my main profile" vs. "set independently for chat" toggle. This is a deliberate two-mode design, not three: there's no separate "hidden" mode, because choosing "set independently" and simply leaving the override blank *is* hidden — one less concept for the owner to learn, and it composes with "omit the section if blank" (below) for free.
-  - **Defaults differ by field, and this is where the two rounds of feedback reconcile:** name defaults to **inherited** (`true`) — a chat message has to be posted under *some* name, so unlike the other fields it has no safe "blank" state, and defaulting to inherit means nobody's messages break because a column happened to be empty. Every other field (subtitle, pronouns, hearts, tagline, description) defaults to **not inherited, with a blank override** (`false` / blank) — i.e. hidden — preserving the round-1 "nothing chat-visible without explicit opt-in" default. So: everything is *available* to inherit if the owner wants the convenience, but only name does so out of the box.
+  - **Every field defaults to inherited (`true`), except `mini_profile_link_enabled` (`false`)** — per round 3. This replaces the round-1-derived "independent and blank unless opted in" default from earlier drafts of this plan. The reasoning: most people are fine with their chat identity matching their profile, and forcing everyone through an empty-by-default settings page before chat shows anything about them is more friction than the privacy problem warrants once the *real* mechanism for control — per-field override plus a live preview that shows exactly what's exposed — exists. Nothing is hidden from the owner's control; the settings page is where they go to see and adjust it, whenever they want, not only once at signup.
+  - **Description is the deliberate exception worth flagging, not resolving away:** it defaults to inherited too, which means it's possible to ship this feature and have the exact "sprawling mess" scenario from the top of this doc show up in chat by default, for anyone who hasn't visited the settings page. The mitigation isn't a different default — it's a **UI treatment for long descriptions in the popover**: a `max-height` with `overflow-y: auto` (a scroll area, not hard truncation — nothing is cut off or silently dropped, it's just contained) on `.pop-description`/`.mini-profile-popover__description`. Chosen over truncate-with-"show more" because it needs no JS and never loses content; revisit if a scroll area inside a small popover turns out to be awkward in practice.
   - Sections are omitted entirely (no heading, no placeholder) whenever the *resolved* value (after applying inherit-or-override) is blank — same rule as before, now applied uniformly through the resolver methods described in Data model.
-- **The always-visible chat message row is in scope too, not just the popover.** Today `_message.html.haml` reads `postable.name`/`postable.pronouns`/`postable.subtitle` straight off the full profile on *every* message (`app/views/chat/messages/_message.html.haml:11-19`) — an unconditional exposure on every message, a bigger version of the exact problem this plan exists to solve. This plan switches those to the resolved chat-identity values (`chat_name`, `chat_pronouns`, `chat_subtitle` — see Data model).
-  - **Rollout note, deliberately left open rather than resolved here:** for existing users, pronouns/subtitle will go blank in chat until they visit the new settings page (name won't change, since it defaults to inherited). That's the correct outcome under "nothing chat-visible without explicit opt-in" for those two fields, but it's a silent behavior change on ship day. Whether that needs an announcement or a one-time nudge is a product call, not resolved here.
+- **The always-visible chat message row is in scope too, not just the popover.** Today `_message.html.haml` reads `postable.name`/`postable.pronouns`/`postable.subtitle` straight off the full profile on *every* message (`app/views/chat/messages/_message.html.haml:11-19`). This plan switches those to the resolved chat-identity values (`chat_name`, `chat_pronouns`, `chat_subtitle` — see Data model) — and because every field now defaults to inherited, **this is a no-op for existing users on ship day**: `chat_pronouns`/`chat_subtitle` resolve to exactly what `pronouns`/`subtitle` already showed, until someone visits the new settings page and changes something. The round-1/round-2 drafts of this plan had an open "rollout note" here about existing users' chat identity silently going blank on ship day — that concern no longer applies with inherit-by-default, and no backfill migration is needed either (see Data model).
 - **One mini-profile per Profile/Group, not per-server.** Explicitly rejected: a different mini-profile per server they're in. A single shared lightweight alternate identity, reused everywhere in chat regardless of which server.
 - **Clicking a name/avatar in chat always opens the mini-profile popover now.** This supersedes the earlier "full profile vs. mini-profile" framing — there is no mode where a click still does a full-page navigation. The popover is the universal click target for names/avatars on chat messages.
   - **Scoped to messages only.** The "posting as" identity picker in the composer keeps its current full-page-link behavior for its dropdown *options* (see the composer bullet below for what does change there — the new settings cog).
@@ -57,15 +59,15 @@ The motivating case: someone's full profile page might be "an enormous sprawling
 Both `Profile` and `Group` get a "chat identity" column set: one override column plus one `_inherited` boolean per invertible field, matching the full-profile field it stands in for:
 
 - `mini_profile_name` (`string`, nullable) + `mini_profile_name_inherited` (`boolean`, `default: true, null: false`).
-- `mini_profile_subtitle` (`string`, nullable) + `mini_profile_subtitle_inherited` (`boolean`, `default: false, null: false`).
-- `mini_profile_tag_line` (`string`, nullable) + `mini_profile_tag_line_inherited` (`boolean`, `default: false, null: false`).
-- `mini_profile_description` (`text`, nullable) + `mini_profile_description_inherited` (`boolean`, `default: false, null: false`) — rendered with `formatted_description`, no length cap.
-- `mini_profile_pronouns` (`string`, nullable) + `mini_profile_pronouns_inherited` (`boolean`, `default: false, null: false`) — **Profile only**.
-- `mini_profile_heart_emojis` (`jsonb`, `default: [], null: false`) + `mini_profile_heart_emojis_inherited` (`boolean`, `default: false, null: false`) — **Profile only**; the override array is normalized/validated the same way as `heart_emojis`.
-- `mini_profile_avatar_alt_text` (`string`, nullable) — pairs with the `mini_profile_avatar` attachment; no `_inherited` column (attachment presence is the inherit/override flag) and no `mini_profile_avatar_shape` (shape is shared with `avatar_shape`).
-- `mini_profile_link_enabled` (`boolean`, `default: false, null: false`) — not part of the inherit/override system (no full-profile equivalent).
+- `mini_profile_subtitle` (`string`, nullable) + `mini_profile_subtitle_inherited` (`boolean`, `default: true, null: false`).
+- `mini_profile_tag_line` (`string`, nullable) + `mini_profile_tag_line_inherited` (`boolean`, `default: true, null: false`).
+- `mini_profile_description` (`text`, nullable) + `mini_profile_description_inherited` (`boolean`, `default: true, null: false`) — rendered with `formatted_description`; the popover contains it in a scrollable area rather than capping its length (see Direction).
+- `mini_profile_pronouns` (`string`, nullable) + `mini_profile_pronouns_inherited` (`boolean`, `default: true, null: false`) — **Profile only**.
+- `mini_profile_heart_emojis` (`jsonb`, `default: [], null: false`) + `mini_profile_heart_emojis_inherited` (`boolean`, `default: true, null: false`) — **Profile only**; the override array is normalized/validated the same way as `heart_emojis`.
+- `mini_profile_avatar_alt_text` (`string`, nullable) — pairs with the `mini_profile_avatar` attachment; no `_inherited` column (attachment presence is the inherit/override flag, defaulting to "inherit" since nothing is attached until the owner uploads something) and no `mini_profile_avatar_shape` (shape is shared with `avatar_shape`).
+- `mini_profile_link_enabled` (`boolean`, `default: false, null: false`) — not part of the inherit/override system (no full-profile equivalent), and the one field that stays off by default per round 3.
 
-One migration touching both tables:
+One migration touching both tables — **built** (see `db/migrate/*_add_chat_identity_fields_to_profiles_and_groups.rb`):
 
 ```ruby
 class AddChatIdentityFieldsToProfilesAndGroups < ActiveRecord::Migration[8.1]
@@ -73,33 +75,33 @@ class AddChatIdentityFieldsToProfilesAndGroups < ActiveRecord::Migration[8.1]
     add_column :profiles, :mini_profile_name, :string
     add_column :profiles, :mini_profile_name_inherited, :boolean, default: true, null: false
     add_column :profiles, :mini_profile_subtitle, :string
-    add_column :profiles, :mini_profile_subtitle_inherited, :boolean, default: false, null: false
+    add_column :profiles, :mini_profile_subtitle_inherited, :boolean, default: true, null: false
     add_column :profiles, :mini_profile_tag_line, :string
-    add_column :profiles, :mini_profile_tag_line_inherited, :boolean, default: false, null: false
+    add_column :profiles, :mini_profile_tag_line_inherited, :boolean, default: true, null: false
     add_column :profiles, :mini_profile_description, :text
-    add_column :profiles, :mini_profile_description_inherited, :boolean, default: false, null: false
+    add_column :profiles, :mini_profile_description_inherited, :boolean, default: true, null: false
     add_column :profiles, :mini_profile_pronouns, :string
-    add_column :profiles, :mini_profile_pronouns_inherited, :boolean, default: false, null: false
+    add_column :profiles, :mini_profile_pronouns_inherited, :boolean, default: true, null: false
     add_column :profiles, :mini_profile_heart_emojis, :jsonb, default: [], null: false
-    add_column :profiles, :mini_profile_heart_emojis_inherited, :boolean, default: false, null: false
+    add_column :profiles, :mini_profile_heart_emojis_inherited, :boolean, default: true, null: false
     add_column :profiles, :mini_profile_avatar_alt_text, :string
     add_column :profiles, :mini_profile_link_enabled, :boolean, default: false, null: false
 
     add_column :groups, :mini_profile_name, :string
     add_column :groups, :mini_profile_name_inherited, :boolean, default: true, null: false
     add_column :groups, :mini_profile_subtitle, :string
-    add_column :groups, :mini_profile_subtitle_inherited, :boolean, default: false, null: false
+    add_column :groups, :mini_profile_subtitle_inherited, :boolean, default: true, null: false
     add_column :groups, :mini_profile_tag_line, :string
-    add_column :groups, :mini_profile_tag_line_inherited, :boolean, default: false, null: false
+    add_column :groups, :mini_profile_tag_line_inherited, :boolean, default: true, null: false
     add_column :groups, :mini_profile_description, :text
-    add_column :groups, :mini_profile_description_inherited, :boolean, default: false, null: false
+    add_column :groups, :mini_profile_description_inherited, :boolean, default: true, null: false
     add_column :groups, :mini_profile_avatar_alt_text, :string
     add_column :groups, :mini_profile_link_enabled, :boolean, default: false, null: false
   end
 end
 ```
 
-No backfill — every existing profile/group starts with every override column blank and every `_inherited` flag at its default (see the rollout note above).
+No backfill needed — every `_inherited` flag defaults to `true` (except `mini_profile_link_enabled`), so every existing profile/group's chat identity resolves to exactly its current full-profile fields immediately, with no separate data migration required to get there.
 
 #### Model changes
 
@@ -242,7 +244,7 @@ No backfill — every existing profile/group starts with every override column b
   - Name (`formatted_inline(postable.chat_name)`), `postable.chat_subtitle` if present.
   - `postable.chat_pronouns` and `postable.chat_heart_emojis`, guarded by `postable.respond_to?(:chat_pronouns)` / `respond_to?(:chat_heart_emojis)` (same technique already used in `_message.html.haml`) since `Group` doesn't define them. Hearts rendered as `.heart-display__grid` / `.heart-display__heart` as in `profiles/show.html.haml`.
   - `postable.chat_tag_line` if present.
-  - `postable.chat_description`, via `formatted_description(...)`, section omitted entirely when blank.
+  - `postable.chat_description`, via `formatted_description(...)`, section omitted entirely when blank, otherwise contained in a scrollable area (`max-height` + `overflow-y: auto`) rather than length-capped — see Direction on why a long inherited description shouldn't be silently truncated.
   - Link at the bottom (unchanged from the original plan): `@own`/`local_assigns[:own]` → edit link; not own and `mini_profile_link_enabled?` → "View full profile"; otherwise no link. (The `own:` local passed as `true` from the settings-page preview always renders the edit-link branch, which is correct — you're always looking at your own preview there.)
 
 ### Frontend
@@ -343,8 +345,9 @@ No backfill — every existing profile/group starts with every override column b
 - `bin/rails db:migrate`, `bin/rails test`, `bin/rails test:system` (targeted at the new/updated files).
 - Manual: run the dev server, open a chat channel as two different users. Confirm:
   - clicking your own message's name shows "Edit profile"/"Edit group"; clicking another user's message shows no link by default; toggling the checkbox on in "Edit chat settings" makes "View full profile" (new tab) appear for the other viewer;
-  - a profile with full-profile pronouns/subtitle/hearts/tagline/description set, and every mini-profile field left at its default, shows **only its real name** in chat — nothing else leaks in until explicitly inherited or overridden;
-  - switching a field to "Inherit from my profile" makes it track the full profile live (edit the full profile's subtitle, watch it update in chat without touching the chat settings page); switching to "Set independently" and typing something shows only that in chat, regardless of what the full profile says;
+  - a profile with full-profile pronouns/subtitle/hearts/tagline/description set, and every mini-profile field left at its default, shows **all of that in chat, matching the full profile exactly** — inherit-by-default means nothing needs to be set up before chat looks right;
+  - switching a field to "Set independently" and leaving it blank hides that field from chat, without touching the full profile; typing something into it shows only that in chat, regardless of what the full profile says; switching back to "Inherit from my profile" makes it track the full profile live again (edit the full profile's subtitle, watch it update in chat without touching the chat settings page);
+  - a long inherited description shows in full inside a scrolling area in the popover, rather than being cut off;
   - the live preview on the settings page updates as fields are edited, before saving;
   - uploading a mini-profile-specific avatar changes the chat avatar (message row + popover + preview) without changing the full profile's avatar; removing it reverts chat to inheriting the main avatar;
   - the settings cog next to "Posting as" opens the correct postable's settings page in a new tab, and updates which postable it points to when the picker switches identity;
@@ -357,8 +360,8 @@ No backfill — every existing profile/group starts with every override column b
 - Subtitle and labels shown in the picker option rows stay as the real full-profile values — not part of the "no surprises" resolved-identity treatment, since they're not shown in the trigger pill or posted messages (see Direction).
 - No `pp!` chat-command surface for toggling/editing this (per `docs/plan-chat-commands.md`, still just an idea).
 - No per-server override of any chat-identity field — it's profile/group-level only, everywhere.
-- No backfill/migration of existing profiles' or groups' full-profile subtitle/pronouns/hearts/tagline into the mini-profile fields — everyone starts at the defaults described in Direction; whether/how to communicate that to existing users is an open rollout question, not resolved here.
 - No bulk "reset everything to inherit" / "hide everything" shortcut on the settings page — each field's toggle is set individually. Worth revisiting if the per-field toggling turns out to be tedious in practice, but not scoped now.
+- No hard character cap or "show more" truncation for a long inherited description in the popover — a scroll area was chosen instead (see Direction); revisit only if that reads badly in practice.
 - No mini-profile-specific avatar shape control — shape is shared with the main avatar; only the image itself is independent.
 
 ## Depends on / relates to
