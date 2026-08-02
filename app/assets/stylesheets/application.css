@@ -4421,12 +4421,6 @@ button.profile-picker__option {
   overflow-y: auto;
 }
 
-.chat-identity-actions {
-  display: flex;
-  gap: 0.75rem;
-  justify-content: flex-end;
-}
-
 /* Field cards: "Use main" / "Set for chat" per field */
 
 .chat-identity-field__head {

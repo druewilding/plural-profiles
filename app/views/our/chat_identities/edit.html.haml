@@ -121,7 +121,9 @@
           %span.chat-bracket-fields__sample message
           = form.text_field :chat_bracket_after, "aria-label": "Text after your message"
 
-      .chat-identity-actions
+      .card
+        .card__header
+          %h3 Save changes
         = form.submit "Save chat settings"
         = link_to "Cancel", back_path, class: "btn btn--secondary"
 
