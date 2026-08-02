@@ -7,9 +7,17 @@ export default class extends Controller {
   static values = { previewUrl: String }
 
   connect() {
+    // Set only by an actual avatar-editor:changed event this session — a
+    // freshly picked file ({src, shape}), or an explicit removal (null).
+    // Left `undefined` when the user hasn't touched the dialog at all, so
+    // "Set for chat" with a pre-existing saved mini_profile_avatar can still
+    // defer to the server's own render of it (see applyAvatarCard).
+    this.pickedAvatar = undefined
+
     this.element.querySelectorAll(".chat-identity-toggle").forEach(toggle => {
       this.syncCard(toggle.closest(".card"))
     })
+    this.applyAvatarCard(this.avatarCard())
   }
 
   disconnect() {
@@ -22,6 +30,7 @@ export default class extends Controller {
       const card = target.closest(".card")
       this.syncCard(card)
       if (target.matches('[value="false"]:checked')) this.focusOverrideField(card)
+      if (card === this.avatarCard()) this.applyAvatarCard(card)
     }
     this.schedulePreview()
   }
@@ -35,33 +44,80 @@ export default class extends Controller {
   // already created for its own local preview, no server involved.
   avatarChanged(event) {
     const { src, shape } = event.detail
-    this.pendingAvatar = src ? { src, shape } : null
-    this.applyPendingAvatar()
+    this.pickedAvatar = src ? { src, shape } : null
+    this.applyAvatarCard(this.avatarCard())
     this.schedulePreview()
   }
 
-  applyPendingAvatar() {
-    if (!this.pendingAvatar || !this.hasPreviewTarget) return
-    const { src, shape } = this.pendingAvatar
-
-    const messageSlot = this.previewTarget.querySelector(".chat-message__avatar")
-    if (messageSlot) this.setAvatarImage(messageSlot, src, "circle", 34)
-
-    const popoverSlot = this.previewTarget.querySelector(".mini-profile__header")
-    if (popoverSlot) this.setAvatarImage(popoverSlot, src, shape, 64, "avatar--large")
+  avatarCard() {
+    return this.element.querySelector(".chat-identity-field__override .avatar-editor")?.closest(".card") ?? null
   }
 
-  setAvatarImage(slot, src, shape, size, extraClass) {
+  // Decides what the preview should show for the avatar, independent of
+  // whatever the last server-rendered preview_panel happened to contain:
+  //  - "Follow profile" selected → always the main avatar (or its
+  //    placeholder), matching what saving with that mode would purge to.
+  //  - "Set for chat" selected, and a file was picked/removed this session
+  //    → that pick wins, since it hasn't round-tripped through the server.
+  //  - "Set for chat" selected, untouched this session → defer to the
+  //    server's own render (there may already be a saved mini_profile_avatar
+  //    for it to show, which this controller has no other way to know).
+  applyAvatarCard(card) {
+    if (!card) return
+    const overriding = card.querySelector('.chat-identity-toggle__input[value="false"]')?.checked
+
+    if (overriding && this.pickedAvatar === undefined) {
+      this.pendingAvatar = null // defer to the server-rendered preview
+    } else if (overriding && this.pickedAvatar) {
+      this.pendingAvatar = this.pickedAvatar
+    } else {
+      this.pendingAvatar = this.fallbackAvatar(card) // inherit mode, or an explicit removal
+    }
+    this.applyPendingAvatar()
+  }
+
+  // Reads the main avatar already shown in this same card's "Currently on
+  // your profile" panel — server-rendered, so no separate data source to
+  // keep in sync with — either an <img> (src + shape class) or the
+  // placeholder logo (nothing attached).
+  fallbackAvatar(card) {
+    const inherited = card.querySelector(".chat-identity-field__inherited")
+    const img = inherited?.querySelector("img.avatar")
+    if (img) {
+      const shape = img.className.includes("avatar--circle") ? "circle"
+        : img.className.includes("avatar--square") ? "square" : "rounded"
+      return { src: img.src, shape }
+    }
+    const placeholder = inherited?.querySelector(".avatar--placeholder")
+    return placeholder ? { placeholderHtml: placeholder.innerHTML } : null
+  }
+
+  applyPendingAvatar() {
+    if (!this.hasPreviewTarget || !this.pendingAvatar) return
+
+    const messageSlot = this.previewTarget.querySelector(".chat-message__avatar")
+    if (messageSlot) this.setAvatarImage(messageSlot, this.pendingAvatar, "circle", 34)
+
+    const popoverSlot = this.previewTarget.querySelector(".mini-profile__header")
+    if (popoverSlot) this.setAvatarImage(popoverSlot, this.pendingAvatar, this.pendingAvatar.shape ?? "rounded", 64, "avatar--large")
+  }
+
+  setAvatarImage(slot, { src, placeholderHtml }, shape, size, extraClass) {
     const existing = slot.querySelector(".avatar")
-    const img = document.createElement("img")
-    img.src = src
-    img.width = size
-    img.height = size
-    img.alt = ""
-    img.className = ["avatar", extraClass, shape === "circle" ? "avatar--circle" : shape === "square" ? "avatar--square" : null]
-      .filter(Boolean).join(" ")
-    if (existing) existing.replaceWith(img)
-    else slot.prepend(img)
+    const shapeClass = shape === "circle" ? "avatar--circle" : shape === "square" ? "avatar--square" : null
+
+    const el = document.createElement(placeholderHtml ? "div" : "img")
+    el.className = ["avatar", extraClass, placeholderHtml ? "avatar--placeholder" : shapeClass].filter(Boolean).join(" ")
+    if (placeholderHtml) {
+      el.innerHTML = placeholderHtml
+    } else {
+      el.src = src
+      el.width = size
+      el.height = size
+      el.alt = ""
+    }
+    if (existing) existing.replaceWith(el)
+    else slot.prepend(el)
   }
 
   syncCard(card) {
