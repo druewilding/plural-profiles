@@ -120,6 +120,33 @@ class Our::ChatIdentitiesControllerTest < ActionDispatch::IntegrationTest
     assert_response :not_found
   end
 
+  test "update cannot touch another user's group" do
+    other_group = groups(:family)
+    sign_in_as @user
+    patch our_chat_identity_path("Group", other_group.uuid), params: {
+      chat_identity: { mini_profile_subtitle: "Hijacked" }
+    }
+    assert_response :not_found
+    assert_nil other_group.reload.mini_profile_subtitle
+  end
+
+  test "update rejects a blank name once set to not inherited, for a group too" do
+    sign_in_as @user
+    patch our_chat_identity_path("Group", @group.uuid), params: {
+      chat_identity: { mini_profile_name_inherited: "false", mini_profile_name: "" }
+    }
+    assert_response :unprocessable_entity
+    assert_match "can&#39;t be blank when not inheriting the main name", response.body
+  end
+
+  test "update persists mini_profile_avatar_alt_text" do
+    sign_in_as @user
+    patch our_chat_identity_path("Profile", @profile.uuid), params: {
+      chat_identity: { mini_profile_avatar_inherited: "false", mini_profile_avatar_alt_text: "A chat-only alt text" }
+    }
+    assert_equal "A chat-only alt text", @profile.reload.mini_profile_avatar_alt_text
+  end
+
   # -- update: mini_profile_avatar upload/remove, independent of the main avatar --
 
   test "update attaches a mini_profile_avatar without touching the main avatar" do
@@ -211,6 +238,22 @@ class Our::ChatIdentitiesControllerTest < ActionDispatch::IntegrationTest
     assert_response :success
     assert_no_match "Edit profile", response.body
     assert_no_match "View full profile page", response.body
+  end
+
+  test "preview cannot be pointed at another user's profile" do
+    sign_in_as @user
+    post preview_our_chat_identity_path("Profile", @other_profile.uuid), params: {
+      chat_identity: { mini_profile_subtitle_inherited: "false", mini_profile_subtitle: "Snooped" }
+    }
+    assert_response :not_found
+    assert_nil @other_profile.reload.mini_profile_subtitle
+  end
+
+  test "preview redirects to sign-in when unauthenticated" do
+    post preview_our_chat_identity_path("Profile", @profile.uuid), params: {
+      chat_identity: { mini_profile_subtitle: "Anonymous" }
+    }
+    assert_redirected_to new_session_path
   end
 
   test "preview shows the full-page link pointing at # instead of the real destination, when enabled" do

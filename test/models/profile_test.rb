@@ -208,6 +208,7 @@ class ProfileTest < ActiveSupport::TestCase
     assert profile.mini_profile_description_inherited?
     assert profile.mini_profile_pronouns_inherited?
     assert profile.mini_profile_heart_emojis_inherited?
+    assert profile.mini_profile_avatar_inherited?
   end
 
   test "mini_profile_link_enabled defaults to false" do

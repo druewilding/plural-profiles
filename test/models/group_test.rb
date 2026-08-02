@@ -553,6 +553,7 @@ class GroupTest < ActiveSupport::TestCase
     assert group.mini_profile_subtitle_inherited?
     assert group.mini_profile_tag_line_inherited?
     assert group.mini_profile_description_inherited?
+    assert group.mini_profile_avatar_inherited?
     assert_not group.mini_profile_link_enabled?
   end
 
