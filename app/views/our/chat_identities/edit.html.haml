@@ -23,15 +23,6 @@
     = form_with model: @postable, scope: :chat_identity, url: our_chat_identity_path(@postable.class.name, @postable.uuid), method: :patch, data: {"chat-identity-form-target": "form", action: "change->chat-identity-form#change input->chat-identity-form#schedulePreview"} do |form|
 
       .card
-        %h3 Chat proxy brackets
-        %p.form-hint
-          Start or end a message with these to post as #{plain_field(@postable.name)} from any identity's composer.
-        .chat-bracket-fields
-          = form.text_field :chat_bracket_before, "aria-label": "Text before your message"
-          %span.chat-bracket-fields__sample message
-          = form.text_field :chat_bracket_after, "aria-label": "Text after your message"
-
-      .card
         %h3 Chat avatar
         %p.form-hint Uses your main avatar until you upload one just for chat.
         = render "shared/avatar_editor_dialog", record: @postable, form: form, param_prefix: "chat_identity",
@@ -100,6 +91,15 @@
             Let people view your full profile
         %p.form-hint
           Off by default. When off, the popover shows the fields above with no link at all — other viewers can't reach your full profile from chat.
+
+      .card
+        %h3 Chat proxy brackets
+        %p.form-hint
+          Start or end a message with these to post as #{plain_field(@postable.name)} from any identity's composer.
+        .chat-bracket-fields
+          = form.text_field :chat_bracket_before, "aria-label": "Text before your message"
+          %span.chat-bracket-fields__sample message
+          = form.text_field :chat_bracket_after, "aria-label": "Text after your message"
 
       .chat-identity-actions
         = form.submit "Save chat settings"
