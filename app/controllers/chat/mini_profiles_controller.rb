@@ -7,7 +7,6 @@ module Chat
     def show
       klass = POSTABLE_TYPES.fetch(params[:postable_type]) { raise ActiveRecord::RecordNotFound }
       @postable = klass.find_by!(uuid: params[:postable_uuid])
-      @own = @postable.user_id == Current.user.id
     end
   end
 end

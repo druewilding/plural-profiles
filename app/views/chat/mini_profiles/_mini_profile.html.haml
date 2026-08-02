@@ -3,12 +3,6 @@
 -#              attribute changes (e.g. from the chat settings page's live
 -#              preview) — this partial only ever reads through it, never
 -#              persists anything
--#   own      — true when the current viewer owns postable. The settings-page
--#              preview passes false here even though you're looking at your
--#              own chat identity — it's showing what *other* chatters would
--#              see (own's "Edit profile"/"Edit group" link is something only
--#              you get in the real popover, not a preview of the checkbox
--#              this page is actually letting you control).
 -#   preview  — (optional, default false) true from the settings-page
 -#              preview — the "view full page" link points at "#" and has
 -#              its click prevented (chat-identity-form#preventDefault, on
@@ -59,17 +53,11 @@
     .profile-description.mini-profile__description
       = formatted_description(postable.chat_description)
 
-  - if own || postable.mini_profile_link_enabled?
+  - if postable.mini_profile_link_enabled?
     .mini-profile__link
-      - if own
-        - if postable.is_a?(Group)
-          = link_to "Edit group", edit_our_group_path(postable)
-        - else
-          = link_to "Edit profile", edit_our_profile_path(postable)
+      - full_page_label = "View full #{postable.class.name.downcase} page"
+      - if local_assigns[:preview]
+        = link_to full_page_label, "#", data: {action: "click->chat-identity-form#preventDefault"}
       - else
-        - full_page_label = "View full #{postable.class.name.downcase} page"
-        - if local_assigns[:preview]
-          = link_to full_page_label, "#", data: {action: "click->chat-identity-form#preventDefault"}
-        - else
-          - url = postable.is_a?(Group) ? group_path(postable.uuid) : profile_path(postable.uuid)
-          = link_to full_page_label, url, target: "_blank", rel: "noopener"
+        - url = postable.is_a?(Group) ? group_path(postable.uuid) : profile_path(postable.uuid)
+        = link_to full_page_label, url, target: "_blank", rel: "noopener"

@@ -9,27 +9,22 @@ class Chat::MiniProfilesControllerTest < ActionDispatch::IntegrationTest
     @group = groups(:friends)
   end
 
-  test "show renders the owner's edit link when the viewer owns the postable" do
+  test "show never renders an edit link, even for the owner" do
     sign_in_as @owner
-    get chat_mini_profile_path("Profile", @profile.uuid)
-    assert_response :success
-    assert_match "Edit profile", response.body
-  end
-
-  test "show renders a group's owner edit link" do
-    sign_in_as @owner
-    get chat_mini_profile_path("Group", @group.uuid)
-    assert_response :success
-    assert_match "Edit group", response.body
-  end
-
-  test "show renders no link for a non-owner when mini_profile_link_enabled is off" do
-    assert_not @profile.mini_profile_link_enabled?
-    sign_in_as @other
     get chat_mini_profile_path("Profile", @profile.uuid)
     assert_response :success
     assert_no_match "Edit profile", response.body
-    assert_no_match "View full profile page", response.body
+  end
+
+  test "show renders no link for anyone, owner included, when mini_profile_link_enabled is off" do
+    assert_not @profile.mini_profile_link_enabled?
+    [ @owner, @other ].each do |user|
+      sign_in_as user
+      get chat_mini_profile_path("Profile", @profile.uuid)
+      assert_response :success
+      assert_no_match "View full profile page", response.body
+      sign_out
+    end
   end
 
   test "show renders the view-full-page link for a non-owner when mini_profile_link_enabled is on" do
@@ -39,6 +34,23 @@ class Chat::MiniProfilesControllerTest < ActionDispatch::IntegrationTest
     assert_response :success
     assert_match "View full profile page", response.body
     assert_match profile_path(@profile.uuid), response.body
+  end
+
+  test "show renders the view-full-page link for the owner too, when mini_profile_link_enabled is on" do
+    @profile.update!(mini_profile_link_enabled: true)
+    sign_in_as @owner
+    get chat_mini_profile_path("Profile", @profile.uuid)
+    assert_response :success
+    assert_match "View full profile page", response.body
+  end
+
+  test "show renders a group's view-full-page link when enabled" do
+    @group.update!(mini_profile_link_enabled: true)
+    sign_in_as @owner
+    get chat_mini_profile_path("Group", @group.uuid)
+    assert_response :success
+    assert_match "View full group page", response.body
+    assert_match group_path(@group.uuid), response.body
   end
 
   test "show reflects an overridden chat identity, not the full profile" do
