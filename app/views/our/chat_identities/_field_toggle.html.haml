@@ -1,0 +1,49 @@
+-# Locals:
+-#   form             — the chat_identity form builder
+-#   field            — base field name, e.g. :subtitle (drives
+-#                      mini_profile_<field> / mini_profile_<field>_inherited)
+-#   label            — human label for the legend, e.g. "Subtitle"
+-#   inherited_value  — the live main-profile value to show when following
+-#                      it, already formatted (formatted_inline/
+-#                      formatted_description) and html_safe, or blank
+-#   hint             — (optional) hint text shown under the legend
+-#   input_type       — (optional, default :text_field) :text_field or
+-#                      :text_area, whichever form builder method edits the
+-#                      override value
+-#   placeholder      — (optional) placeholder for the override input
+-#   override_hint    — (optional) replaces the default "Leave blank to hide
+-#                      this from chat." hint under the override input —
+-#                      name uses this, since it can't be left blank
+-#
+-# Both the "follow profile" and "set independently" content are always
+-# visible for now — the inherit/override radios don't yet show/hide them
+-# (that's chat_identity_form_controller.js, not built yet), so this stays
+-# fully usable without JavaScript in the meantime.
+
+- inherited_field = :"mini_profile_#{field}_inherited"
+- override_field = :"mini_profile_#{field}"
+- input_type = local_assigns[:input_type] || :text_field
+
+%fieldset.form-group.chat-identity-field
+  %legend= label
+  - if local_assigns[:hint]
+    %p.form-hint= hint
+
+  .chat-identity-field__toggle
+    %label.chat-identity-field__toggle-option
+      = form.radio_button inherited_field, true
+      Follow my profile
+    %label.chat-identity-field__toggle-option
+      = form.radio_button inherited_field, false
+      Set independently for chat
+
+  .chat-identity-field__inherited
+    %span.chat-identity-field__tag Currently on your profile:
+    - if inherited_value.present?
+      = inherited_value
+    - else
+      %span.chat-identity-field__blank (nothing set)
+
+  .chat-identity-field__override
+    = form.public_send(input_type, override_field, placeholder: local_assigns[:placeholder])
+    %p.form-hint= local_assigns[:override_hint] || "Leave blank to hide this from chat."

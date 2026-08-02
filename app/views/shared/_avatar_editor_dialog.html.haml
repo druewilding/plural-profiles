@@ -1,15 +1,25 @@
 -# Locals:
--#   record       — the Profile, Group, or Chat::Server instance
--#   form         — the form_with builder object
--#   param_prefix — top-level param key of the form (e.g. "profile", "group",
--#                  "chat_identity") — used for the remove_<attribute>
--#                  checkbox name, which isn't mass-assigned so it isn't a
--#                  real form.check_box on the model.
--#   attribute    — (optional, default "avatar") the has_one_attached name to
--#                  edit — "avatar" or "mini_profile_avatar". Its paired
--#                  "<attribute>_shape"/"<attribute>_alt_text" columns are
--#                  driven off this too, so a second instance of this dialog
--#                  edits a fully independent avatar/shape/alt-text trio.
+-#   record             — the Profile, Group, or Chat::Server instance
+-#   form               — the form_with builder object
+-#   param_prefix       — top-level param key of the form (e.g. "profile",
+-#                        "group", "chat_identity") — used for the
+-#                        remove_<attribute> checkbox name, which isn't
+-#                        mass-assigned so it isn't a real form.check_box on
+-#                        the model.
+-#   attribute          — (optional, default "avatar") the has_one_attached
+-#                        name to edit — "avatar" or "mini_profile_avatar".
+-#                        Its paired "<attribute>_shape"/"<attribute>_alt_text"
+-#                        columns are driven off this too, so a second
+-#                        instance of this dialog edits a fully independent
+-#                        avatar/shape/alt-text trio.
+-#   fallback_attachment, fallback_shape, fallback_alt_text — (all optional)
+-#                        shown instead of the empty placeholder when
+-#                        `attribute` itself isn't attached — e.g. the main
+-#                        avatar, for the mini-profile avatar instance, which
+-#                        effectively inherits it until something's uploaded
+-#                        here specifically. Purely cosmetic: doesn't affect
+-#                        the "Add"/"Edit" button copy or whether "Remove"
+-#                        shows, which are always about `attribute` itself.
 -#
 -# Must be rendered inside a form_with block. The <dialog> is a child of the
 -# form element so all its inputs submit with the main form. Multiple
@@ -22,14 +32,24 @@
 - shape_attribute = "#{attribute}_shape"
 - alt_text_attribute = "#{attribute}_alt_text"
 
+- if attachment.attached?
+  - displayed_attachment = attachment
+  - displayed_shape = record.public_send(shape_attribute)
+  - displayed_alt_text = record.public_send(alt_text_attribute)
+- else
+  - displayed_attachment = local_assigns[:fallback_attachment]
+  - displayed_shape = local_assigns[:fallback_shape]
+  - displayed_alt_text = local_assigns[:fallback_alt_text]
+- displayed = displayed_attachment&.attached? || false
+
 .avatar-editor{data: {controller: "avatar-editor"}}
   .avatar-editor__current
-    - if attachment.attached?
-      = image_tag attachment.variant(resize_to_fill: [64, 64]),
-                  class: "avatar #{avatar_shape_class(record, shape: record.public_send(shape_attribute))}".strip,
+    - if displayed
+      = image_tag displayed_attachment.variant(resize_to_fill: [64, 64]),
+                  class: "avatar #{avatar_shape_class(record, shape: displayed_shape)}".strip,
                   width: 64,
                   height: 64,
-                  alt: record.public_send(alt_text_attribute).presence || "",
+                  alt: displayed_alt_text.presence || "",
                   loading: "lazy",
                   data: {"avatar-editor-target": "mainPreview"}
       .avatar.avatar--placeholder{hidden: true, data: {"avatar-editor-target": "mainPlaceholder"}}
@@ -54,9 +74,9 @@
         Add avatar
 
     .avatar-editor-dialog__preview
-      - if attachment.attached?
-        = image_tag attachment.variant(resize_to_fill: [96, 96]),
-                    class: "avatar avatar--large #{avatar_shape_class(record, shape: record.public_send(shape_attribute))}".strip,
+      - if displayed
+        = image_tag displayed_attachment.variant(resize_to_fill: [96, 96]),
+                    class: "avatar avatar--large #{avatar_shape_class(record, shape: displayed_shape)}".strip,
                     width: 96,
                     height: 96,
                     alt: "",

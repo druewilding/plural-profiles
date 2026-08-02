@@ -1,0 +1,61 @@
+-# Locals:
+-#   postable — a Profile or Group, possibly carrying unsaved in-memory
+-#              attribute changes (e.g. from the chat settings page's live
+-#              preview) — this partial only ever reads through it, never
+-#              persists anything
+-#   own      — true when the current viewer owns postable (always true from
+-#              the settings-page preview, since you're always looking at
+-#              your own chat identity there)
+-#
+-# Reads exclusively through the chat_* resolver methods (ChatIdentity) and
+-# the chat_avatar_* helpers, never the raw full-profile or mini_profile_*
+-# columns directly — that's what makes this safely reusable for both the
+-# real chat popover and the settings-page preview of unsaved changes.
+
+- has_pronouns = postable.respond_to?(:chat_pronouns) && postable.chat_pronouns.present?
+- has_hearts = postable.respond_to?(:chat_heart_emojis) && postable.chat_heart_emojis.any?
+- avatar = chat_avatar_for(postable)
+
+.mini-profile
+  .mini-profile__header
+    - if avatar.attached?
+      = image_tag avatar.variant(resize_to_fill: [64, 64]),
+                  class: "avatar avatar--large #{avatar_shape_class(postable, shape: chat_avatar_shape_for(postable))}".strip,
+                  width: 64,
+                  height: 64,
+                  alt: chat_avatar_alt_text_for(postable),
+                  loading: "lazy"
+    - else
+      .avatar.avatar--large.avatar--placeholder
+        = render "shared/plural_pride_logo"
+    %div
+      %h2.mini-profile__name= formatted_inline(postable.chat_name)
+      - if postable.chat_subtitle.present?
+        %p.subtitle= formatted_inline(postable.chat_subtitle)
+      - if has_pronouns || has_hearts
+        .pronouns
+          - if has_pronouns
+            %span= formatted_inline(postable.chat_pronouns)
+          - if has_hearts
+            .heart-display__grid
+              - postable.chat_heart_emojis.each do |heart|
+                .heart-display__heart
+                  = image_tag "/images/hearts/#{heart}.webp", width: 24, height: 24, alt: postable.heart_emoji_display_name(heart), title: postable.heart_emoji_display_name(heart), loading: "lazy"
+
+  - if postable.chat_tag_line.present?
+    %p.tag-line= formatted_inline(postable.chat_tag_line)
+
+  - if postable.chat_description.present?
+    .mini-profile__description
+      = formatted_description(postable.chat_description)
+
+  - if own || postable.mini_profile_link_enabled?
+    .mini-profile__link
+      - if own
+        - if postable.is_a?(Group)
+          = link_to "Edit group", edit_our_group_path(postable)
+        - else
+          = link_to "Edit profile", edit_our_profile_path(postable)
+      - else
+        - url = postable.is_a?(Group) ? group_path(postable.uuid) : profile_path(postable.uuid)
+        = link_to "View full profile", url, target: "_blank", rel: "noopener"

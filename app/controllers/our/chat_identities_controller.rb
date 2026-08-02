@@ -1,0 +1,53 @@
+class Our::ChatIdentitiesController < ApplicationController
+  include OurSidebar
+
+  POSTABLE_TYPES = { "Profile" => :profiles, "Group" => :groups }.freeze
+
+  before_action :set_postable
+
+  def edit
+  end
+
+  def update
+    @postable.mini_profile_avatar.purge if params[:chat_identity][:remove_mini_profile_avatar] == "1"
+    if @postable.update(chat_identity_params)
+      redirect_to edit_our_chat_identity_path(@postable.class.name, @postable.uuid), notice: "Chat settings updated."
+    else
+      if params.dig(:chat_identity, :mini_profile_avatar).present?
+        @postable.mini_profile_avatar.blob&.persisted? ? @postable.mini_profile_avatar.purge_later : @postable.mini_profile_avatar.detach
+      end
+      render :edit, status: :unprocessable_entity
+    end
+  end
+
+  # Renders the same partial the real chat popover uses, against an unsaved
+  # in-memory copy of the postable with the current form's values applied —
+  # never persisted, purely for the live preview panel.
+  def preview
+    @postable.assign_attributes(chat_identity_params)
+    render partial: "chat/mini_profiles/mini_profile", locals: { postable: @postable, own: true }, layout: false
+  end
+
+  private
+
+  def set_postable
+    association = POSTABLE_TYPES.fetch(params[:postable_type]) { raise ActiveRecord::RecordNotFound }
+    @postable = Current.user.public_send(association).find_by!(uuid: params[:postable_uuid])
+  end
+
+  def chat_identity_params
+    shared = %i[chat_bracket_before chat_bracket_after
+                mini_profile_name mini_profile_name_inherited
+                mini_profile_subtitle mini_profile_subtitle_inherited
+                mini_profile_tag_line mini_profile_tag_line_inherited
+                mini_profile_description mini_profile_description_inherited
+                mini_profile_avatar mini_profile_avatar_alt_text mini_profile_avatar_shape
+                mini_profile_link_enabled]
+    profile_only = %i[mini_profile_pronouns mini_profile_pronouns_inherited
+                       mini_profile_heart_emojis_inherited]
+    permitted = @postable.is_a?(Profile) ? shared + profile_only : shared
+    params.require(:chat_identity).permit(*permitted, mini_profile_heart_emojis: []).tap do |p|
+      p[:mini_profile_heart_emojis] = p[:mini_profile_heart_emojis].reject(&:blank?) if p.key?(:mini_profile_heart_emojis)
+    end
+  end
+end

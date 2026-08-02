@@ -1,0 +1,104 @@
+- content_for(:title) { "Chat settings — #{plain_field(@postable.name)} — Plural Profiles" }
+
+- back_path = @postable.is_a?(Group) ? our_group_path(@postable) : our_profile_path(@postable)
+= link_to "← #{plain_field(@postable.name)}", back_path, class: "back-link"
+
+%h1 Edit chat settings
+
+%p.form-hint
+  This is what people see in chat when #{formatted_inline(@postable.chat_name)} posts — independent from the full profile page. Nothing here is filled in automatically except the name.
+
+- if @postable.errors.any?
+  .error-messages
+    - @postable.errors.full_messages.each do |message|
+      %p= message
+
+.chat-identity-layout
+  .chat-identity-form-col
+    = form_with model: @postable, scope: :chat_identity, url: our_chat_identity_path(@postable.class.name, @postable.uuid), method: :patch, data: {controller: "chat-identity-form", "chat-identity-form-preview-url-value": preview_our_chat_identity_path(@postable.class.name, @postable.uuid)} do |form|
+
+      %fieldset.form-group
+        %legend Chat proxy brackets
+        .chat-bracket-fields
+          = form.text_field :chat_bracket_before, "aria-label": "Text before your message"
+          %span.chat-bracket-fields__sample message
+          = form.text_field :chat_bracket_after, "aria-label": "Text after your message"
+        %p.form-hint
+          In chat, typing a message that starts and/or ends with the brackets posts as this identity, instead of your default. Leave either side blank if you don't need it.
+
+      .form-group
+        %label Chat avatar
+        = render "shared/avatar_editor_dialog", record: @postable, form: form, param_prefix: "chat_identity",
+            attribute: "mini_profile_avatar",
+            fallback_attachment: chat_avatar_for(@postable),
+            fallback_shape: chat_avatar_shape_for(@postable),
+            fallback_alt_text: chat_avatar_alt_text_for(@postable)
+        %p.form-hint Used in chat instead of your main avatar. Until you upload one here, chat uses your main avatar.
+
+      = render "field_toggle", form: form, field: :name, label: "Name",
+          hint: "A message needs a name to post under, so this can't be blank.",
+          inherited_value: formatted_inline(@postable.name),
+          placeholder: "Shown instead of your profile name in chat",
+          override_hint: "Required, since chat always needs a name to post under."
+
+      = render "field_toggle", form: form, field: :subtitle, label: "Subtitle",
+          inherited_value: formatted_inline(@postable.subtitle)
+
+      - if @postable.is_a?(Profile)
+        = render "field_toggle", form: form, field: :pronouns, label: "Pronouns",
+            inherited_value: formatted_inline(@postable.pronouns),
+            placeholder: "e.g. they/them, she/her, he/him"
+
+      - if @postable.is_a?(Profile)
+        %fieldset.form-group.chat-identity-field
+          %legend Hearts
+          .chat-identity-field__toggle
+            %label.chat-identity-field__toggle-option
+              = form.radio_button :mini_profile_heart_emojis_inherited, true
+              Follow my profile
+            %label.chat-identity-field__toggle-option
+              = form.radio_button :mini_profile_heart_emojis_inherited, false
+              Set independently for chat
+
+          .chat-identity-field__inherited
+            %span.chat-identity-field__tag Currently on your profile:
+            - if @postable.heart_emojis.any?
+              .heart-display__grid
+                - @postable.heart_emojis.each do |heart|
+                  .heart-display__heart
+                    = image_tag "/images/hearts/#{heart}.webp", width: 24, height: 24, alt: @postable.heart_emoji_display_name(heart), title: @postable.heart_emoji_display_name(heart), loading: "lazy"
+            - else
+              %span.chat-identity-field__blank (no hearts set)
+
+          .chat-identity-field__override
+            .heart-picker{data: {controller: "heart-picker"}}
+              = hidden_field_tag "chat_identity[mini_profile_heart_emojis][]", ""
+              .heart-picker__grid
+                - Profile::HEART_EMOJIS.each do |heart|
+                  %label.heart-picker__heart{title: @postable.heart_emoji_display_name(heart)}
+                    %input.heart-picker__checkbox{type: "checkbox", name: "chat_identity[mini_profile_heart_emojis][]", value: heart, checked: @postable.mini_profile_heart_emojis.include?(heart) || nil, "aria-label": @postable.heart_emoji_display_name(heart)}
+                    = image_tag "/images/hearts/#{heart}.webp", width: 24, height: 24, alt: "", loading: "lazy"
+
+      = render "field_toggle", form: form, field: :tag_line, label: "Tagline",
+          inherited_value: formatted_inline(@postable.tag_line)
+
+      = render "field_toggle", form: form, field: :description, label: "Description",
+          input_type: :text_area,
+          inherited_value: formatted_description(@postable.description)
+
+      .form-group
+        %label.checkbox-label
+          = form.check_box :mini_profile_link_enabled
+          Let people view your full profile
+        %p.form-hint
+          Off by default. When off, the popover shows the fields above with no link at all — other viewers can't reach your full profile from chat.
+
+      .form-group
+        = form.submit "Save chat settings"
+        = link_to "Cancel", back_path, class: "btn btn--secondary"
+
+  .chat-identity-preview-col
+    %h2 Live preview
+    %p.form-hint This updates as you edit — exactly what other chatters will see, nothing more.
+    #chat-identity-preview-panel{data: {"chat-identity-form-target": "preview"}}
+      = render "chat/mini_profiles/mini_profile", postable: @postable, own: true

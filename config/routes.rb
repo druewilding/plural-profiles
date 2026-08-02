@@ -29,6 +29,13 @@ Rails.application.routes.draw do
       post :duplicate_execute
     end
   end
+  get "our/chat_identity/:postable_type/:postable_uuid/edit", to: "our/chat_identities#edit",
+    as: :edit_our_chat_identity, constraints: { postable_type: /Profile|Group/ }
+  patch "our/chat_identity/:postable_type/:postable_uuid", to: "our/chat_identities#update",
+    as: :our_chat_identity, constraints: { postable_type: /Profile|Group/ }
+  post "our/chat_identity/:postable_type/:postable_uuid/preview", to: "our/chat_identities#preview",
+    as: :preview_our_chat_identity, constraints: { postable_type: /Profile|Group/ }
+
   resource :our_search, path: "our/search", controller: "our/search", only: %i[show]
   resource :our_account, path: "our/account", controller: "our/account", only: %i[show] do
     patch :update_password

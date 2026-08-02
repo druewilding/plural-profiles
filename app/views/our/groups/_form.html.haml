@@ -38,6 +38,10 @@
       = form.label :created_at
       = render "shared/datetime_picker", form: form, field: :created_at, value: group.created_at
 
+    .form-group
+      = link_to "Manage chat settings →", edit_our_chat_identity_path(group.class.name, group.uuid)
+      %p.form-hint What people see about this group in chat — independent from everything above.
+
   .form-group
     = form.submit group.persisted? ? "Update group" : "Create group"
     = link_to "Cancel", group.persisted? ? our_group_path(group) : our_groups_path, class: "btn btn--secondary"
