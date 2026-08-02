@@ -110,7 +110,7 @@
             = form.check_box :mini_profile_link_enabled
             = full_page_label
         %p.form-hint
-          Off by default. When off, the popover shows the fields above with no link at all — other viewers can't reach the full page from chat.
+          Allow anyone in chat to open the full #{@postable.class.name.downcase} page from the mini-profile.
 
       .card
         %h3 Chat proxy brackets
