@@ -46,7 +46,7 @@
     %p.tag-line= formatted_inline(postable.chat_tag_line)
 
   - if postable.chat_description.present?
-    .mini-profile__description
+    .profile-description.mini-profile__description
       = formatted_description(postable.chat_description)
 
   - if own || postable.mini_profile_link_enabled?

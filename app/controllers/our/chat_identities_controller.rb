@@ -1,6 +1,8 @@
 class Our::ChatIdentitiesController < ApplicationController
-  include OurSidebar
-
+  # Deliberately no `include OurSidebar` — this page needs the width the
+  # sidebar would otherwise take, for the two-column form + live-preview
+  # layout. `application.html.haml` only renders the sidebar grid when
+  # @sidebar_trees is set, so simply not including the concern is enough.
   POSTABLE_TYPES = { "Profile" => :profiles, "Group" => :groups }.freeze
 
   before_action :set_postable
@@ -20,12 +22,13 @@ class Our::ChatIdentitiesController < ApplicationController
     end
   end
 
-  # Renders the same partial the real chat popover uses, against an unsaved
-  # in-memory copy of the postable with the current form's values applied —
-  # never persisted, purely for the live preview panel.
+  # Renders the same preview-panel partial the edit page's initial render
+  # uses (message-row mockup + the real popover partial), against an
+  # unsaved in-memory copy of the postable with the current form's values
+  # applied — never persisted, purely for the live preview panel.
   def preview
     @postable.assign_attributes(chat_identity_params)
-    render partial: "chat/mini_profiles/mini_profile", locals: { postable: @postable, own: true }, layout: false
+    render partial: "our/chat_identities/preview_panel", locals: { postable: @postable }, layout: false
   end
 
   private

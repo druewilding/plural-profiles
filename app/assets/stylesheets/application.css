@@ -39,6 +39,15 @@
   --warning-text: var(--warning-border);
   --tree-guide: color-mix(in srgb, var(--text) 30%, transparent);
   --avatar-placeholder-border: color-mix(in srgb, var(--text) 50%, transparent);
+  /* Same hue family as --warning-*, but a distinct token: chat-identity
+     "set independently for chat" state and its badge/icon reuse this warm
+     rose deliberately (it's the "you changed something from the default"
+     color), but aliasing it to --warning-* would tie it to actual warning
+     semantics (flash--warning) elsewhere in the app, which isn't what a
+     settings badge or an active toggle option means. */
+  --chat-accent-bg: #a81d49;
+  --chat-accent-border: #e6c4cf;
+  --chat-accent-text: #e6c4cf;
 }
 
 html {
@@ -4354,4 +4363,296 @@ button.profile-picker__option {
 .invite-card__accept-preview {
   pointer-events: none;
   opacity: 0.85;
+}
+
+/* ── Chat identity settings ────────────────────────────── */
+
+.chat-identity-page {
+  max-width: 1200px;
+}
+
+.back-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  color: color-mix(in srgb, var(--text) 80%, transparent);
+  text-decoration: none;
+  font-size: 0.85rem;
+  margin-bottom: 0.75rem;
+}
+
+.back-link:hover {
+  color: var(--text);
+  text-decoration: underline;
+}
+
+.back-link span {
+  font-size: 1.1rem;
+}
+
+.chat-identity-eyebrow {
+  display: inline-block;
+  margin-bottom: 0.5rem;
+  padding: 0.15rem 0.6rem;
+  border-radius: 999px;
+  font-size: 0.7rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  background: color-mix(in srgb, var(--chat-accent-bg) 40%, transparent);
+  color: var(--chat-accent-text);
+  border: 1px solid color-mix(in srgb, var(--chat-accent-border) 45%, transparent);
+}
+
+.chat-identity-intro {
+  display: flex;
+  gap: 0.85rem;
+  align-items: flex-start;
+  padding: 1.25rem 1.5rem;
+}
+
+.chat-identity-intro svg {
+  width: 20px;
+  height: 20px;
+  flex-shrink: 0;
+  margin-top: 0.15rem;
+  color: var(--chat-accent-border);
+}
+
+.chat-identity-intro p {
+  margin: 0;
+  font-size: 0.92rem;
+}
+
+.chat-identity-intro__sub {
+  display: block;
+  margin-top: 0.35rem;
+  color: color-mix(in srgb, var(--text) 75%, transparent);
+  font-size: 0.85rem;
+}
+
+.chat-identity-layout {
+  display: grid;
+  grid-template-columns: 1fr 380px;
+  gap: 2rem;
+  align-items: start;
+}
+
+.chat-identity-preview-col {
+  position: sticky;
+  top: 2rem;
+  max-height: calc(100vh - 4rem);
+  overflow-y: auto;
+}
+
+.chat-identity-preview-eyebrow {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  font-size: 0.72rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: color-mix(in srgb, var(--text) 70%, transparent);
+}
+
+.chat-identity-preview-pulse {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background-color: var(--chat-accent-border);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--chat-accent-border) 25%, transparent);
+}
+
+.chat-identity-actions {
+  display: flex;
+  gap: 0.75rem;
+  justify-content: flex-end;
+}
+
+/* Field cards: "Follow profile" / "Set for chat" per field */
+
+.chat-identity-field__head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 1rem;
+  flex-wrap: wrap;
+  margin-bottom: 1rem;
+}
+
+.chat-identity-field__head h3 {
+  margin: 0 0 0.25rem;
+  font-size: 1.05rem;
+}
+
+.chat-identity-field__head .form-hint {
+  margin: 0;
+  max-width: 38ch;
+}
+
+.chat-identity-toggle {
+  display: inline-flex;
+  flex-shrink: 0;
+  border: 1px solid var(--input-border);
+  border-radius: 999px;
+  padding: 2px;
+  background-color: var(--input-bg);
+}
+
+.chat-identity-toggle__option {
+  position: relative;
+  display: inline-flex;
+  cursor: pointer;
+}
+
+.chat-identity-toggle__input {
+  position: absolute;
+  opacity: 0;
+  pointer-events: none;
+}
+
+.chat-identity-toggle__option-label {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.35rem 0.75rem;
+  border-radius: 999px;
+  font-size: 0.78rem;
+  font-weight: 600;
+  color: color-mix(in srgb, var(--text) 70%, transparent);
+  white-space: nowrap;
+}
+
+.chat-identity-toggle__input:checked + .chat-identity-toggle__option-label {
+  background-color: var(--pane-bg);
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.35);
+}
+
+.chat-identity-toggle__input:checked + .chat-identity-toggle__option-label--inherit {
+  color: var(--link);
+}
+
+.chat-identity-toggle__input:checked + .chat-identity-toggle__option-label--override {
+  color: var(--chat-accent-text);
+}
+
+.chat-identity-toggle__input:focus-visible + .chat-identity-toggle__option-label {
+  outline: 2px solid var(--link);
+  outline-offset: 2px;
+}
+
+.chat-identity-field__inherited {
+  display: flex;
+  align-items: baseline;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  padding: 0.6rem 0.85rem;
+  border-radius: 6px;
+  background-color: color-mix(in srgb, var(--link) 12%, transparent);
+  border: 1px solid color-mix(in srgb, var(--link) 30%, transparent);
+  font-size: 0.9rem;
+}
+
+.chat-identity-field__tag {
+  font-size: 0.68rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--link);
+  flex-shrink: 0;
+}
+
+.chat-identity-field__value {
+  min-width: 0;
+}
+
+.chat-identity-field__blank {
+  font-style: italic;
+  color: color-mix(in srgb, var(--text) 65%, transparent);
+}
+
+.chat-identity-field__override {
+  margin-top: 0.85rem;
+}
+
+.chat-identity-field__override .form-hint {
+  margin-top: 0.4rem;
+  margin-bottom: 0;
+}
+
+/* Live preview column */
+
+.preview-block {
+  background-color: var(--pane-bg);
+  border: 1px solid var(--pane-border);
+  border-radius: 8px;
+  margin-bottom: 1rem;
+  overflow: hidden;
+}
+
+.preview-block:last-child {
+  margin-bottom: 0;
+}
+
+.preview-block__head {
+  padding: 0.5rem 1rem;
+  font-size: 0.68rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: color-mix(in srgb, var(--text) 65%, transparent);
+  border-bottom: 1px solid var(--pane-border);
+}
+
+.preview-block__body {
+  padding: 1rem;
+}
+
+.mini-profile__header {
+  display: flex;
+  gap: 0.85rem;
+  align-items: flex-start;
+}
+
+.mini-profile__header .avatar {
+  flex-shrink: 0;
+}
+
+.mini-profile__name {
+  margin: 0;
+  font-size: 1.1rem;
+  color: var(--heading);
+}
+
+.mini-profile__description {
+  margin-top: 0.85rem;
+  padding-top: 0.85rem;
+  border-top: 1px solid var(--pane-border);
+  max-height: 12rem;
+  overflow-y: auto;
+}
+
+.mini-profile__link {
+  margin-top: 0.85rem;
+  padding-top: 0.85rem;
+  border-top: 1px solid var(--pane-border);
+  font-size: 0.85rem;
+}
+
+/* Responsive: stack the preview under the form on narrow screens */
+@media (max-width: 900px) {
+  .chat-identity-layout {
+    grid-template-columns: 1fr;
+  }
+
+  .chat-identity-preview-col {
+    position: static;
+    max-height: none;
+  }
+}
+
+@media (max-width: 600px) {
+  .chat-identity-page {
+    max-width: 100%;
+  }
 }

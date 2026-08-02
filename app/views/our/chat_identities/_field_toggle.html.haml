@@ -2,11 +2,11 @@
 -#   form             — the chat_identity form builder
 -#   field            — base field name, e.g. :subtitle (drives
 -#                      mini_profile_<field> / mini_profile_<field>_inherited)
--#   label            — human label for the legend, e.g. "Subtitle"
+-#   label            — human label for the card title, e.g. "Subtitle"
 -#   inherited_value  — the live main-profile value to show when following
 -#                      it, already formatted (formatted_inline/
 -#                      formatted_description) and html_safe, or blank
--#   hint             — (optional) hint text shown under the legend
+-#   hint             — (optional) hint text shown under the title
 -#   input_type       — (optional, default :text_field) :text_field or
 -#                      :text_area, whichever form builder method edits the
 -#                      override value
@@ -14,6 +14,11 @@
 -#   override_hint    — (optional) replaces the default "Leave blank to hide
 -#                      this from chat." hint under the override input —
 -#                      name uses this, since it can't be left blank
+-#
+-# `role="group"`/`aria-labelledby` stands in for `<fieldset>`/`<legend>`
+-# here — a real legend can't sit inline next to the toggle control the way
+-# the card header layout needs, but this keeps the same "these radios
+-# belong to this label" semantics for assistive tech.
 -#
 -# Both the "follow profile" and "set independently" content are always
 -# visible for now — the inherit/override radios don't yet show/hide them
@@ -23,24 +28,26 @@
 - inherited_field = :"mini_profile_#{field}_inherited"
 - override_field = :"mini_profile_#{field}"
 - input_type = local_assigns[:input_type] || :text_field
+- title_id = "chat-identity-field-#{field}-title"
 
-%fieldset.form-group.chat-identity-field
-  %legend= label
-  - if local_assigns[:hint]
-    %p.form-hint= hint
-
-  .chat-identity-field__toggle
-    %label.chat-identity-field__toggle-option
-      = form.radio_button inherited_field, true
-      Follow my profile
-    %label.chat-identity-field__toggle-option
-      = form.radio_button inherited_field, false
-      Set independently for chat
+.card.chat-identity-field{role: "group", "aria-labelledby": title_id}
+  .chat-identity-field__head
+    %div
+      %h3{id: title_id}= label
+      - if local_assigns[:hint]
+        %p.form-hint= hint
+    .chat-identity-toggle
+      %label.chat-identity-toggle__option
+        = form.radio_button inherited_field, true, class: "chat-identity-toggle__input"
+        %span.chat-identity-toggle__option-label.chat-identity-toggle__option-label--inherit Follow profile
+      %label.chat-identity-toggle__option
+        = form.radio_button inherited_field, false, class: "chat-identity-toggle__input"
+        %span.chat-identity-toggle__option-label.chat-identity-toggle__option-label--override Set for chat
 
   .chat-identity-field__inherited
-    %span.chat-identity-field__tag Currently on your profile:
+    %span.chat-identity-field__tag Currently on your profile
     - if inherited_value.present?
-      = inherited_value
+      .chat-identity-field__value= inherited_value
     - else
       %span.chat-identity-field__blank (nothing set)
 
