@@ -58,7 +58,7 @@
             - if @conflict_type == "Profile" && @existing_copy.pronouns.present?
               %span.pronouns= @existing_copy.pronouns
           - if @existing_copy.description.present?
-            %p.duplicate-comparison__description= truncate(@existing_copy.description, length: 120)
+            %p.duplicate-comparison__description= truncate(@existing_copy.description, length: 500)
 
     .profile-actions
       = form.submit "Next", class: "btn", data: { duplicate_resolution_target: "submit" }

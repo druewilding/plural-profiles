@@ -355,8 +355,16 @@ class Our::GroupsController < ApplicationController
   # current user and the group in the URL, so it can never be used to resume
   # someone else's (or a different group's) wizard.
   def load_wizard_record
-    return nil unless session[:duplication_wizard_id]
-    Current.user.duplication_wizards.find_by(id: session[:duplication_wizard_id], group_id: @group.id)
+    unless session[:duplication_wizard_id]
+      Rails.logger.warn("[duplication_wizard] no duplication_wizard_id in session (user=#{Current.user&.id}, group=#{@group&.id})")
+      return nil
+    end
+
+    record = Current.user.duplication_wizards.find_by(id: session[:duplication_wizard_id], group_id: @group.id)
+    unless record
+      Rails.logger.warn("[duplication_wizard] session had id=#{session[:duplication_wizard_id]} but no matching row (user=#{Current.user&.id}, group=#{@group&.id})")
+    end
+    record
   end
 
   def resolve_group_conflict(wizard_record, wizard)
