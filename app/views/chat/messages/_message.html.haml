@@ -2,7 +2,7 @@
 .chat-message{id: dom_id(message), data: postable ? {controller: "mini-profile-popover", "mini-profile-popover-url-value": chat_mini_profile_path(postable.class.name, postable.uuid)} : {}}
   .chat-message__avatar
     - if postable
-      %button.chat-message__avatar-trigger{type: "button", data: {action: "click->mini-profile-popover#open"}}
+      %button.chat-message__avatar-trigger{type: "button", "aria-label": "Open mini-profile for #{plain_field(postable.chat_name)}", data: {action: "click->mini-profile-popover#open"}}
         - avatar = chat_avatar_for(postable)
         - if avatar.attached?
           = image_tag avatar.variant(resize_to_fill: [34, 34]), class: "avatar #{avatar_shape_class(postable, shape: "circle")}".strip, width: 34, height: 34, alt: chat_avatar_alt_text_for(postable), loading: "lazy"
