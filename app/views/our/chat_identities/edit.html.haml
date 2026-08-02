@@ -6,14 +6,12 @@
   %span{"aria-hidden": "true"} ‹
   = plain_field(@postable.name)
 
-.card.chat-identity-intro
-  %svg{viewBox: "0 0 24 24", fill: "none", stroke: "currentColor", "stroke-width": "2", "stroke-linecap": "round", "stroke-linejoin": "round", "aria-hidden": "true"}
-    %path{d: "M12 16v-4M12 8h.01M22 12c0 5.523-4.477 10-10 10S2 17.523 2 12 6.477 2 12 2s10 4.477 10 10z"}
-  .chat-identity-intro__body
+.card
+  .card__header
     %h1 Edit chat settings
-    %p
-      Chat has its own identity, separate from your full profile. Nothing here is filled in automatically except the name. Pick, for each field, whether chat should follow your profile or say something different.
-      %span.chat-identity-intro__sub Changes here never affect your full profile page, and changes to your full profile never affect chat unless a field below is set to "Follow profile."
+  %p
+    Chat has its own identity, separate from your full profile. For each field, you can pick whether chat should follow your profile or show something different.
+    %span.chat-identity-intro__sub Changes here never affect your full profile page, and changes to your full profile never affect chat unless a field below is set to "Follow profile."
 
 - if @postable.errors.any?
   .error-messages
