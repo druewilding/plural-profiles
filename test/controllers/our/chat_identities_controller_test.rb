@@ -93,14 +93,31 @@ class Our::ChatIdentitiesControllerTest < ActionDispatch::IntegrationTest
 
   test "update ignores pronouns/heart_emojis params for a group" do
     sign_in_as @user
+    # Group has neither column at all — permitting mini_profile_heart_emojis
+    # unconditionally (rather than only for Profile) previously let this
+    # sail through Strong Parameters and then raise UnknownAttributeError
+    # (a 500) on #update, instead of being silently dropped like any other
+    # unpermitted param.
     patch our_chat_identity_path("Group", @group.uuid), params: {
       chat_identity: {
         mini_profile_subtitle_inherited: "false",
-        mini_profile_subtitle: "Group chat subtitle"
+        mini_profile_subtitle: "Group chat subtitle",
+        mini_profile_pronouns: "it/its",
+        mini_profile_heart_emojis: [ "aqua_heart" ]
       }
     }
     assert_response :redirect
     assert_equal "Group chat subtitle", @group.reload.mini_profile_subtitle
+    assert_not @group.respond_to?(:mini_profile_pronouns)
+    assert_not @group.respond_to?(:mini_profile_heart_emojis)
+  end
+
+  test "preview does not blow up when sent heart_emojis params for a group" do
+    sign_in_as @user
+    post preview_our_chat_identity_path("Group", @group.uuid), params: {
+      chat_identity: { mini_profile_heart_emojis: [ "aqua_heart" ] }
+    }
+    assert_response :success
   end
 
   test "update rejects a blank name once set to not inherited" do

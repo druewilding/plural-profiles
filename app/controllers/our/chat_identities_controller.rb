@@ -51,7 +51,12 @@ class Our::ChatIdentitiesController < ApplicationController
     profile_only = %i[mini_profile_pronouns mini_profile_pronouns_inherited
                        mini_profile_heart_emojis_inherited]
     permitted = @postable.is_a?(Profile) ? shared + profile_only : shared
-    params.require(:chat_identity).permit(*permitted, mini_profile_heart_emojis: []).tap do |p|
+    # mini_profile_heart_emojis only exists on Profile — permitting it
+    # unconditionally would let a crafted request for a Group sail through
+    # permit and then blow up with UnknownAttributeError on #update, since
+    # Group has no such column.
+    array_options = @postable.is_a?(Profile) ? { mini_profile_heart_emojis: [] } : {}
+    params.require(:chat_identity).permit(*permitted, **array_options).tap do |p|
       p[:mini_profile_heart_emojis] = p[:mini_profile_heart_emojis].reject(&:blank?) if p.key?(:mini_profile_heart_emojis)
     end
   end
