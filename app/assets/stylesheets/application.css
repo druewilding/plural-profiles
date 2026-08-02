@@ -39,9 +39,6 @@
   --warning-text: var(--warning-border);
   --tree-guide: color-mix(in srgb, var(--text) 30%, transparent);
   --avatar-placeholder-border: color-mix(in srgb, var(--text) 50%, transparent);
-  /* Same hue as --warning-border, but its own token — used only for the
-     chat-identity live-preview pulse dot, which isn't a warning. */
-  --chat-accent-border: #e6c4cf;
 }
 
 html {
@@ -4405,25 +4402,6 @@ button.profile-picker__option {
   overflow-y: auto;
 }
 
-.chat-identity-preview-eyebrow {
-  display: flex;
-  align-items: center;
-  gap: 0.4rem;
-  font-size: 0.72rem;
-  font-weight: 700;
-  text-transform: uppercase;
-  letter-spacing: 0.05em;
-  color: color-mix(in srgb, var(--text) 70%, transparent);
-}
-
-.chat-identity-preview-pulse {
-  width: 7px;
-  height: 7px;
-  border-radius: 50%;
-  background-color: var(--chat-accent-border);
-  box-shadow: 0 0 0 3px color-mix(in srgb, var(--chat-accent-border) 25%, transparent);
-}
-
 .chat-identity-actions {
   display: flex;
   gap: 0.75rem;
@@ -4544,16 +4522,6 @@ button.profile-picker__option {
 
 .preview-block:last-child {
   margin-bottom: 0;
-}
-
-.preview-block__head {
-  padding: 0.5rem 1rem;
-  font-size: 0.68rem;
-  font-weight: 700;
-  text-transform: uppercase;
-  letter-spacing: 0.04em;
-  color: color-mix(in srgb, var(--text) 65%, transparent);
-  border-bottom: 1px solid var(--pane-border);
 }
 
 .preview-block__body {

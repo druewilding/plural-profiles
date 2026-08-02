@@ -106,9 +106,10 @@
         = link_to "Cancel", back_path, class: "btn btn--secondary"
 
   .chat-identity-preview-col
-    .chat-identity-preview-eyebrow
-      %span.chat-identity-preview-pulse{"aria-hidden": "true"}
-      Live preview
-    %p.form-hint Updates as you edit — this is exactly what other chatters will see, nothing more.
-    #chat-identity-preview-panel{data: {"chat-identity-form-target": "preview"}}
-      = render "preview_panel", postable: @postable
+    .card
+      .card__header
+        %h2 Live preview
+      %p
+        Here you can see a preview of a message and the pop-up mini-profile as they will be seen in chat.
+      #chat-identity-preview-panel{data: {"chat-identity-form-target": "preview"}}
+        = render "preview_panel", postable: @postable
