@@ -638,6 +638,58 @@ class ApplicationHelperTest < ActionView::TestCase
     assert_equal "avatar--circle", avatar_shape_class(record, shape: "circle")
   end
 
+  # -- chat_avatar_for / chat_avatar_alt_text_for / chat_avatar_shape_for --
+
+  test "chat_avatar_for falls back to the main avatar when no mini_profile_avatar is attached" do
+    profile = profiles(:alice)
+    assert_not profile.mini_profile_avatar.attached?
+    assert_equal profile.avatar, chat_avatar_for(profile)
+  end
+
+  test "chat_avatar_for uses the mini_profile_avatar once one is attached" do
+    profile = profiles(:alice)
+    profile.mini_profile_avatar.attach(
+      io: File.open(file_fixture("avatar.png")),
+      filename: "avatar.png",
+      content_type: "image/png"
+    )
+    assert_equal profile.mini_profile_avatar, chat_avatar_for(profile)
+  end
+
+  test "chat_avatar_shape_for falls back to avatar_shape when no mini_profile_avatar is attached" do
+    profile = profiles(:alice)
+    profile.update!(avatar_shape: "square", mini_profile_avatar_shape: "circle")
+    assert_equal "square", chat_avatar_shape_for(profile)
+  end
+
+  test "chat_avatar_shape_for uses the mini_profile_avatar's own shape once one is attached" do
+    profile = profiles(:alice)
+    profile.update!(avatar_shape: "square", mini_profile_avatar_shape: "circle")
+    profile.mini_profile_avatar.attach(
+      io: File.open(file_fixture("avatar.png")),
+      filename: "avatar.png",
+      content_type: "image/png"
+    )
+    assert_equal "circle", chat_avatar_shape_for(profile)
+  end
+
+  test "chat_avatar_alt_text_for falls back to avatar_alt_text when no mini_profile_avatar is attached" do
+    profile = profiles(:alice)
+    profile.update!(avatar_alt_text: "Alice's main avatar")
+    assert_equal "Alice's main avatar", chat_avatar_alt_text_for(profile)
+  end
+
+  test "chat_avatar_alt_text_for uses mini_profile_avatar_alt_text once a mini_profile_avatar is attached" do
+    profile = profiles(:alice)
+    profile.update!(avatar_alt_text: "Alice's main avatar", mini_profile_avatar_alt_text: "Alice's chat avatar")
+    profile.mini_profile_avatar.attach(
+      io: File.open(file_fixture("avatar.png")),
+      filename: "avatar.png",
+      content_type: "image/png"
+    )
+    assert_equal "Alice's chat avatar", chat_avatar_alt_text_for(profile)
+  end
+
   test "full floating image with text works as intended" do
     text = '<p><img src="x.jpg" alt="photo" style="float:left; width:100px;height:100px; padding:10px;">Some text alongside</p>'
     result = formatted_description(text)

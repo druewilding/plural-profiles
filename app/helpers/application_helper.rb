@@ -107,6 +107,31 @@ module ApplicationHelper
     end
   end
 
+  # The avatar chat should show for a postable: its independent
+  # mini_profile_avatar if one has been uploaded, otherwise falling back to
+  # ("inheriting") the main avatar.
+  def chat_avatar_for(postable)
+    postable.mini_profile_avatar.attached? ? postable.mini_profile_avatar : postable.avatar
+  end
+
+  def chat_avatar_alt_text_for(postable)
+    if postable.mini_profile_avatar.attached?
+      postable.mini_profile_avatar_alt_text.presence || ""
+    else
+      postable.avatar_alt_text.presence || ""
+    end
+  end
+
+  # The shape to render chat_avatar_for(postable) with. Pairs with the
+  # attachment it came from: an overridden mini_profile_avatar uses its own
+  # mini_profile_avatar_shape, an inherited main avatar uses avatar_shape.
+  # Message rows ignore this entirely and always force circle for visual
+  # consistency in the channel — only the popover (which shows "the chosen
+  # shape") should call this.
+  def chat_avatar_shape_for(postable)
+    postable.mini_profile_avatar.attached? ? postable.mini_profile_avatar_shape : postable.avatar_shape
+  end
+
   # The public-facing URL for a chat message's postable (a Profile or a
   # Group): the owner's own private management page if the current viewer
   # owns it, otherwise the public uuid-keyed share page. &. on Current.user

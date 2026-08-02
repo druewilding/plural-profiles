@@ -2,6 +2,14 @@ class Profile < ApplicationRecord
   include HasAvatar
   include HasLabels
   include ChatProxyable
+  include ChatIdentity
+
+  chat_identity_field :name
+  chat_identity_field :subtitle
+  chat_identity_field :tag_line
+  chat_identity_field :description
+  chat_identity_field :pronouns
+  chat_identity_field :heart_emojis
 
   # Order here is the display order on the profile form. Numbers are not part of
   # the stored/canonical name — Discord's numbering churns as hearts are added,
@@ -72,6 +80,7 @@ class Profile < ApplicationRecord
   validates :uuid, uniqueness: true
 
   validate :heart_emojis_are_valid
+  validate :mini_profile_heart_emojis_are_valid
 
   def to_param
     uuid
@@ -121,6 +130,12 @@ class Profile < ApplicationRecord
     super(Array(values).map { |value| value.blank? ? value : (self.class.resolve_heart_emoji(value) || value) })
   end
 
+  # Mirrors heart_emojis= — same number-prefix normalization, applied to the
+  # independent chat-identity override rather than the main field.
+  def mini_profile_heart_emojis=(values)
+    super(Array(values).map { |value| value.blank? ? value : (self.class.resolve_heart_emoji(value) || value) })
+  end
+
   private
 
   def generate_uuid
@@ -131,5 +146,11 @@ class Profile < ApplicationRecord
     return if heart_emojis.blank?
     invalid = heart_emojis - HEART_EMOJIS
     errors.add(:heart_emojis, "contains invalid hearts: #{invalid.join(', ')}") if invalid.any?
+  end
+
+  def mini_profile_heart_emojis_are_valid
+    return if mini_profile_heart_emojis.blank?
+    invalid = mini_profile_heart_emojis - HEART_EMOJIS
+    errors.add(:mini_profile_heart_emojis, "contains invalid hearts: #{invalid.join(', ')}") if invalid.any?
   end
 end

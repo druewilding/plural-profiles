@@ -27,11 +27,11 @@ The motivating case: someone's full profile page might be "an enormous sprawling
 - **One mini-profile per Profile/Group, not per-server.** Explicitly rejected: a different mini-profile per server they're in. A single shared lightweight alternate identity, reused everywhere in chat regardless of which server.
 - **Clicking a name/avatar in chat always opens the mini-profile popover now.** This supersedes the earlier "full profile vs. mini-profile" framing — there is no mode where a click still does a full-page navigation. The popover is the universal click target for names/avatars on chat messages.
   - **Scoped to messages only.** The "posting as" identity picker in the composer keeps its current full-page-link behavior for its dropdown *options* (see the composer bullet below for what does change there — the new settings cog).
-- **Avatar: a separate, independently-uploadable mini-profile avatar image**, using the same inherit-or-override shape as everything else, just expressed structurally rather than via a boolean column:
-  - Stored as its own attachment (`mini_profile_avatar`), with its own alt text (`mini_profile_avatar_alt_text`). Same content-type/size validation as the main avatar.
-  - **Falls back to (i.e. "inherits") the full profile's avatar when no mini-profile-specific image has been uploaded** — attachment presence *is* the inherit/override flag here, so there's no separate `mini_profile_avatar_inherited` column; uploading is "override," removing is "back to inherit."
-  - **Shape** (`circle`/`rounded`/`square`) is shared with the existing `avatar_shape` column rather than duplicated — it's cosmetic framing, not identifying content, so there's no privacy reason to keep it independent. Only the *image itself* has an inherit/override choice.
-  - Both the popover and the always-visible message-row avatar resolve through this same fallback (one shared helper), so a chat-specific avatar, once set, applies consistently everywhere in chat.
+- **Avatar: a separate, independently-uploadable mini-profile avatar image, with its own shape and alt text** — corrected from an earlier draft of this plan, which shared shape with the main avatar and only let the image itself be independent. It's not just the image: the whole visual presentation is independently choosable, using the same inherit-or-override shape as everything else, just expressed structurally rather than via a boolean column:
+  - Stored as its own attachment (`mini_profile_avatar`), with its own alt text (`mini_profile_avatar_alt_text`) **and its own shape (`mini_profile_avatar_shape`)** — `circle`/`rounded`/`square`, same as `avatar_shape`, defaulting to `"rounded"`. Same content-type/size validation as the main avatar.
+  - **Falls back to (i.e. "inherits") the full profile's avatar — image, shape, and alt text together — when no mini-profile-specific image has been uploaded.** Attachment presence *is* the inherit/override flag here, so there's no separate `mini_profile_avatar_inherited` column; uploading is "override" (bringing its own shape/alt text with it), removing is "back to inherit."
+  - **The message row and the popover treat shape differently, and that's deliberate, not an inconsistency:** the message row *always* forces circle for every avatar, chat-specific or not, to keep the channel's message list visually consistent — it never looks at `mini_profile_avatar_shape` or `avatar_shape` at all. The **popover** is where "the chosen shape" actually shows: whichever avatar is in effect (overridden or inherited) renders in *its own* shape — `mini_profile_avatar_shape` if the mini-profile avatar is the one showing, `avatar_shape` if it fell back to the main one.
+  - Both the popover and the always-visible message-row avatar resolve *which image* through the same fallback (one shared helper); a second helper resolves *which shape* the same way, but the message row deliberately never calls it.
 - **Link at the bottom of the popover, gated by a new opt-in boolean** (default `false` — off unless the owner turns it on). This one has no full-profile equivalent to inherit from, so it stays a plain boolean, not part of the inherit/override system:
   - Owner viewing their own postable: always shows **"Edit profile"** / **"Edit group"** (links to `edit_our_profile_path`/`edit_our_group_path`), regardless of the boolean — the boolean only affects what other viewers see.
   - Other viewers, boolean **on**: shows **"View full profile"**, opens in a new tab, links to the public `profile_path`/`group_path` (uuid).
@@ -64,7 +64,7 @@ Both `Profile` and `Group` get a "chat identity" column set: one override column
 - `mini_profile_description` (`text`, nullable) + `mini_profile_description_inherited` (`boolean`, `default: true, null: false`) — rendered with `formatted_description`; the popover contains it in a scrollable area rather than capping its length (see Direction).
 - `mini_profile_pronouns` (`string`, nullable) + `mini_profile_pronouns_inherited` (`boolean`, `default: true, null: false`) — **Profile only**.
 - `mini_profile_heart_emojis` (`jsonb`, `default: [], null: false`) + `mini_profile_heart_emojis_inherited` (`boolean`, `default: true, null: false`) — **Profile only**; the override array is normalized/validated the same way as `heart_emojis`.
-- `mini_profile_avatar_alt_text` (`string`, nullable) — pairs with the `mini_profile_avatar` attachment; no `_inherited` column (attachment presence is the inherit/override flag, defaulting to "inherit" since nothing is attached until the owner uploads something) and no `mini_profile_avatar_shape` (shape is shared with `avatar_shape`).
+- `mini_profile_avatar_alt_text` (`string`, nullable) + `mini_profile_avatar_shape` (`string`, `default: "rounded", null: false`) — both pair with the `mini_profile_avatar` attachment, both independent of `avatar_alt_text`/`avatar_shape`. No `_inherited` column for any of the three (attachment presence is the inherit/override flag, defaulting to "inherit" since nothing is attached until the owner uploads something) — image, shape, and alt text all switch together as a unit when an override is uploaded or removed.
 - `mini_profile_link_enabled` (`boolean`, `default: false, null: false`) — not part of the inherit/override system (no full-profile equivalent), and the one field that stays off by default per round 3.
 
 One migration touching both tables — **built** (see `db/migrate/*_add_chat_identity_fields_to_profiles_and_groups.rb`):
@@ -85,6 +85,7 @@ class AddChatIdentityFieldsToProfilesAndGroups < ActiveRecord::Migration[8.1]
     add_column :profiles, :mini_profile_heart_emojis, :jsonb, default: [], null: false
     add_column :profiles, :mini_profile_heart_emojis_inherited, :boolean, default: true, null: false
     add_column :profiles, :mini_profile_avatar_alt_text, :string
+    add_column :profiles, :mini_profile_avatar_shape, :string, default: "rounded", null: false
     add_column :profiles, :mini_profile_link_enabled, :boolean, default: false, null: false
 
     add_column :groups, :mini_profile_name, :string
@@ -96,6 +97,7 @@ class AddChatIdentityFieldsToProfilesAndGroups < ActiveRecord::Migration[8.1]
     add_column :groups, :mini_profile_description, :text
     add_column :groups, :mini_profile_description_inherited, :boolean, default: true, null: false
     add_column :groups, :mini_profile_avatar_alt_text, :string
+    add_column :groups, :mini_profile_avatar_shape, :string, default: "rounded", null: false
     add_column :groups, :mini_profile_link_enabled, :boolean, default: false, null: false
   end
 end
@@ -137,7 +139,7 @@ No backfill needed — every `_inherited` flag defaults to `true` (except `mini_
   `Profile` then declares `include ChatIdentity` plus `chat_identity_field :name`, `:subtitle`, `:tag_line`, `:description`, `:pronouns`, `:heart_emojis`. `Group` declares the same minus `:pronouns`/`:heart_emojis` (it has neither the main nor the mini column). The macro works unmodified for the `heart_emojis` array case — `blank?` on `[]` is `true`, so "omit if blank" downstream needs no special-casing.
   - Because the default is `mini_profile_name_inherited: true`, this validation never fires for existing records or for saves coming from the main profile/group form — it only matters once an owner explicitly switches name to "set independently" on the new chat settings page and leaves it blank.
 - **`Profile`**: mirror the existing `heart_emojis=` normalization and `heart_emojis_are_valid` validation for `mini_profile_heart_emojis` — same `resolve_heart_emoji` logic, same "contains invalid hearts" error, since it's the same free-form array-of-strings shape.
-- **`HasAvatar`** (`app/models/concerns/has_avatar.rb`): add `has_one_attached :mini_profile_avatar`, and generalize the existing `avatar_content_type_allowed`/`avatar_size_allowed` validations to run against both attachment names instead of duplicating them:
+- **`HasAvatar`** (`app/models/concerns/has_avatar.rb`): add `has_one_attached :mini_profile_avatar`, generalize the existing `avatar_content_type_allowed`/`avatar_size_allowed` validations to run against both attachment names instead of duplicating them, and validate the new `mini_profile_avatar_shape` column the same way `avatar_shape` already is:
   ```ruby
   AVATAR_ATTACHMENTS = %i[avatar mini_profile_avatar].freeze
 
@@ -146,6 +148,7 @@ No backfill needed — every `_inherited` flag defaults to `true` (except `mini_
     has_one_attached :mini_profile_avatar
     validate :avatar_attachments_are_valid
     validates :avatar_shape, inclusion: { in: AVATAR_SHAPES }
+    validates :mini_profile_avatar_shape, inclusion: { in: AVATAR_SHAPES }
   end
 
   private
@@ -159,7 +162,7 @@ No backfill needed — every `_inherited` flag defaults to `true` (except `mini_
     end
   end
   ```
-- **New helper** (`app/helpers/application_helper.rb`, next to `avatar_shape_class`) — the avatar's inherit/override resolution, used by both the message row and the popover/preview:
+- **New helpers** (`app/helpers/application_helper.rb`, next to `avatar_shape_class`) — the avatar's inherit/override resolution, split into "which image" and "which shape" so callers that force a shape (the message row) can use the first without the second:
   ```ruby
   def chat_avatar_for(postable)
     postable.mini_profile_avatar.attached? ? postable.mini_profile_avatar : postable.avatar
@@ -171,6 +174,12 @@ No backfill needed — every `_inherited` flag defaults to `true` (except `mini_
     else
       postable.avatar_alt_text.presence || ""
     end
+  end
+
+  # Only the popover should call this — the message row always forces circle
+  # instead, regardless of either shape column (see Direction).
+  def chat_avatar_shape_for(postable)
+    postable.mini_profile_avatar.attached? ? postable.mini_profile_avatar_shape : postable.avatar_shape
   end
   ```
 
@@ -240,7 +249,7 @@ No backfill needed — every `_inherited` flag defaults to `true` (except `mini_
 - **Views**: `app/views/our/chat_identities/edit.html.haml` (the new page — see Frontend), no `show`/`new`/`destroy`, this is a single always-existing settings surface per postable (a `Profile`/`Group` always has these columns, just possibly all-default).
 - **Chat popover controller/route (unchanged from the original plan)**: `Chat::MiniProfilesController#show` at the existing `constraints subdomain: "chat"` route, `@postable`/`@own` resolution unchanged. Only its partial's content source changes — see below.
 - **Popover partial `app/views/chat/mini_profiles/_mini_profile.html.haml`** now reads exclusively through the `chat_*` resolver methods (this is what makes it safely reusable for both the real popover and the settings-page preview, since both just need "a postable" and don't care whether it's persisted):
-  - Avatar via `chat_avatar_for(postable)` / `chat_avatar_alt_text_for(postable)`, using the postable's own configured shape: `avatar_shape_class(postable)` (the message row keeps forcing `shape: "circle"`, this partial doesn't).
+  - Avatar via `chat_avatar_for(postable)` / `chat_avatar_alt_text_for(postable)`, in **the chosen shape**: `avatar_shape_class(postable, shape: chat_avatar_shape_for(postable))` — whichever avatar is actually showing (overridden or inherited) renders in its own shape, not a forced one. This is the one place in chat that shows a non-circle shape at all (the message row keeps forcing `shape: "circle"`, this partial deliberately doesn't).
   - Name (`formatted_inline(postable.chat_name)`), `postable.chat_subtitle` if present.
   - `postable.chat_pronouns` and `postable.chat_heart_emojis`, guarded by `postable.respond_to?(:chat_pronouns)` / `respond_to?(:chat_heart_emojis)` (same technique already used in `_message.html.haml`) since `Group` doesn't define them. Hearts rendered as `.heart-display__grid` / `.heart-display__heart` as in `profiles/show.html.haml`.
   - `postable.chat_tag_line` if present.
@@ -250,7 +259,7 @@ No backfill needed — every `_inherited` flag defaults to `true` (except `mini_
 ### Frontend
 
 - **`_message.html.haml`** (`app/views/chat/messages/_message.html.haml`):
-  - Avatar block: `chat_avatar_for(message.postable)` / `chat_avatar_alt_text_for(message.postable)` instead of `message.postable.avatar`, keeping the forced-circle shape.
+  - Avatar block: `chat_avatar_for(message.postable)` / `chat_avatar_alt_text_for(message.postable)` instead of `message.postable.avatar`, keeping the forced-circle shape (`avatar_shape_class(message.postable, shape: "circle")`, unchanged) — deliberately **not** `chat_avatar_shape_for`, so every message in the channel stays visually consistent regardless of what shape either avatar is configured with.
   - Name: `formatted_inline(message.postable.chat_name)` instead of `.name`.
   - Pronouns: `message.postable.respond_to?(:chat_pronouns) && message.postable.chat_pronouns.present?`, rendering `chat_pronouns`.
   - Subtitle: `message.postable&.chat_subtitle&.present?`, rendering `chat_subtitle`.
@@ -261,7 +270,7 @@ No backfill needed — every `_inherited` flag defaults to `true` (except `mini_
   - On trigger click: if `frame.src` isn't set yet, set it to the `url` value (fires the Turbo fetch exactly once per message); position `panel` near the trigger's `getBoundingClientRect()`; call `panel.showPopover()`.
   - Uses the HTML **Popover API** (`popover="auto"`) rather than the `<dialog>` pattern used by `avatar_editor_controller.js` — deliberate, not an inconsistency: `popover="auto"` gets outside-click/Escape light-dismiss for free. First use of the Popover API in the codebase, and the first on-demand-fetch UI pattern anywhere in the app, so allow some extra care/review time.
 - **New partial-backed styles**: `.mini-profile-popover` styling (positioned via inline styles set by the controller, visually similar to the existing `.card`/`.profile-card` treatment) — left to implementation.
-- **Avatar editor needs to support a second, independent avatar on the same form.** `app/views/shared/_avatar_editor_dialog.html.haml` and `app/javascript/controllers/avatar_editor_controller.js` currently hardcode the `avatar`/`avatar_shape`/`avatar_alt_text`/`remove_avatar` attribute and param names — parameterize them (locals for the attribute name / target prefix / param key) so the new chat-settings page can render the dialog for `mini_profile_avatar` (no shape picker — shape is shared with the main avatar). Two independent `data: {controller: "avatar-editor"}` instances on the same page are already fine — Stimulus scopes targets/values to each controller's own DOM subtree.
+- **Avatar editor needs to support a second, independent avatar on the same form — shape picker included.** `app/views/shared/_avatar_editor_dialog.html.haml` and `app/javascript/controllers/avatar_editor_controller.js` currently hardcode the `avatar`/`avatar_shape`/`avatar_alt_text`/`remove_avatar` attribute and param names — parameterize them (locals for the attribute name / target prefix / param key) so the new chat-settings page can render the dialog for `mini_profile_avatar` **with its own shape picker bound to `mini_profile_avatar_shape`**, not the main avatar's. Two independent `data: {controller: "avatar-editor"}` instances on the same page are already fine — Stimulus scopes targets/values to each controller's own DOM subtree.
   - The mini-profile instance's "current" preview shows the *effective* avatar (`chat_avatar_for`) when nothing's attached yet, so the form doesn't show an empty state for someone whose main avatar will be used as the fallback anyway — but "Remove" only appears once an actual `mini_profile_avatar` is attached (removing it reverts to inheriting the main avatar, doesn't touch the main avatar itself).
 - **New "Edit chat settings" page** (`app/views/our/chat_identities/edit.html.haml`): one `form_with` posting to `our_chat_identity_path(@postable.class.name, @postable.uuid)`, containing:
   - Chat proxy brackets (moved here unchanged from `_form.html.haml`).
@@ -295,13 +304,15 @@ No backfill needed — every `_inherited` flag defaults to `true` (except `mini_
   - **Subtitle and labels in the option rows are left showing the real full-profile values, deliberately** — they're not shown in the trigger pill and aren't part of the JS clone-swap below, so they're pure picker metadata for the owner's own recognition, not a preview of chat output.
   - **Avatar doesn't need per-file changes**: all four files already render the avatar via `render "chat/shared/avatar", record: postable, ...`. Update that one shared partial (`app/views/chat/shared/_avatar.html.haml`) instead, guarded so it only affects postables, not the `Chat::Server` records it's also used for (`_invite_card.html.haml`, `servers/index.html.haml`):
     ```haml
-    - avatar = record.respond_to?(:mini_profile_avatar) ? chat_avatar_for(record) : record.avatar
+    - is_postable = record.respond_to?(:mini_profile_avatar)
+    - avatar = is_postable ? chat_avatar_for(record) : record.avatar
+    - shape = shape_override || (is_postable ? chat_avatar_shape_for(record) : record.avatar_shape)
     - if avatar.attached?
       = image_tag avatar.variant(resize_to_fill: [size, size]), class: "avatar #{avatar_shape_class(record, shape: shape)}".strip, width: size, height: size, alt: "", loading: "lazy"
     - else
       ...  -# placeholder branch unchanged
     ```
-    `record.respond_to?(:mini_profile_avatar)` is `true` for `Profile`/`Group` (once `HasAvatar` gets the new attachment) and `false` for `Chat::Server`, so this one guarded change fixes the composer pill, both option-row partials, and the generic picker's trigger all at once — no other avatar call site needs touching.
+    `is_postable` is `true` for `Profile`/`Group` (once `HasAvatar` gets the new attachment) and `false` for `Chat::Server`, so this one guarded change fixes the composer pill, both option-row partials, and the generic picker's trigger all at once — no other avatar call site needs touching. Every current caller here passes `shape: "circle"` explicitly (`shape_override` is always set), so `chat_avatar_shape_for` is never actually reached in practice today — it's included for correctness in case a future caller doesn't force a shape, not because it changes current behavior.
   - **Why this matters beyond the picker looking right**: `app/javascript/controllers/composer_controller.js#detectProxy` (the live bracket-typing preview) and `app/javascript/controllers/profile_picker_controller.js#select` both work by cloning the `.avatar`/`.profile-picker__option-name`/`.profile-picker__option-pronouns` elements straight out of the matched option row into the trigger — no JS changes needed there, but it's *why* fixing the option-row partials is what actually makes those existing swap mechanisms show the right identity, not just the initial page render.
 
 ### Order of implementation
@@ -330,7 +341,8 @@ No backfill needed — every `_inherited` flag defaults to `true` (except `mini_
   - a fresh profile/group has `mini_profile_name_inherited: true` and every other `_inherited` flag `false`, all override columns blank;
   - `mini_profile_avatar` upload/remove/fallback: uploading sets it, `remove_mini_profile_avatar=1` purges it without touching `avatar`;
   - `preview` renders the mini-profile partial reflecting unsubmitted form values without persisting anything (a follow-up `reload` shows the record unchanged).
-- Extend/replace the earlier plan's controller test for the popover (`test/controllers/chat/mini_profiles_controller_test.rb`), now asserting content comes from the resolved `chat_*` values — e.g. a profile with a full-profile `pronouns` set, `mini_profile_pronouns_inherited: false`, and a blank `mini_profile_pronouns` override shows no pronouns in the popover even though the full profile has some; the same profile with `mini_profile_pronouns_inherited: true` shows the full-profile value. Same coverage as the original plan otherwise (owner-vs-viewer link behavior, blank sections omitted, avatar fallback, 404s, auth).
+- Extend/replace the earlier plan's controller test for the popover (`test/controllers/chat/mini_profiles_controller_test.rb`), now asserting content comes from the resolved `chat_*` values — e.g. a profile with a full-profile `pronouns` set, `mini_profile_pronouns_inherited: false`, and a blank `mini_profile_pronouns` override shows no pronouns in the popover even though the full profile has some; the same profile with `mini_profile_pronouns_inherited: true` shows the full-profile value. Same coverage as the original plan otherwise (owner-vs-viewer link behavior, blank sections omitted, avatar fallback, 404s, auth) — plus: the popover renders `mini_profile_avatar_shape` when a `mini_profile_avatar` is attached, and `avatar_shape` when it isn't, even when the two shapes differ from each other.
+- `test/models/profile_test.rb`/`group_test.rb`/`test/helpers/application_helper_test.rb` — already covered as part of step 2's model/concern work: `chat_avatar_shape_for` resolves independently of `chat_avatar_for`'s image (a `mini_profile_avatar_shape` of `"circle"` shows even when the fallback `avatar_shape` is `"square"`, and vice versa once an override is attached), and `mini_profile_avatar_shape` is validated against `AVATAR_SHAPES` the same way `avatar_shape` is.
 - Extend `test/system/chat_messaging_test.rb` (or a new `test/system/chat_mini_profile_test.rb`):
   - click a message's name/avatar opens the popover with expected resolved fields;
   - a message row shows resolved `chat_pronouns`/`chat_subtitle` (not the full-profile values when overridden) and shows nothing when the resolved value is blank;
@@ -350,6 +362,7 @@ No backfill needed — every `_inherited` flag defaults to `true` (except `mini_
   - a long inherited description shows in full inside a scrolling area in the popover, rather than being cut off;
   - the live preview on the settings page updates as fields are edited, before saving;
   - uploading a mini-profile-specific avatar changes the chat avatar (message row + popover + preview) without changing the full profile's avatar; removing it reverts chat to inheriting the main avatar;
+  - giving the mini-profile avatar a different shape than the main avatar shows that shape in the popover, but the message row still renders every avatar as a circle regardless;
   - the settings cog next to "Posting as" opens the correct postable's settings page in a new tab, and updates which postable it points to when the picker switches identity;
   - overriding a profile's name/pronouns for chat changes what the "Posting as" pill and its dropdown show for that profile too — not just the message row and popover — including the live bracket-typing preview while composing;
   - a blank resolved description/subtitle/tagline each show no empty section;
@@ -362,7 +375,6 @@ No backfill needed — every `_inherited` flag defaults to `true` (except `mini_
 - No per-server override of any chat-identity field — it's profile/group-level only, everywhere.
 - No bulk "reset everything to inherit" / "hide everything" shortcut on the settings page — each field's toggle is set individually. Worth revisiting if the per-field toggling turns out to be tedious in practice, but not scoped now.
 - No hard character cap or "show more" truncation for a long inherited description in the popover — a scroll area was chosen instead (see Direction); revisit only if that reads badly in practice.
-- No mini-profile-specific avatar shape control — shape is shared with the main avatar; only the image itself is independent.
 
 ## Depends on / relates to
 

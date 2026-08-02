@@ -173,6 +173,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_08_02_121328) do
     t.text "description"
     t.jsonb "labels", default: [], null: false
     t.string "mini_profile_avatar_alt_text"
+    t.string "mini_profile_avatar_shape", default: "rounded", null: false
     t.text "mini_profile_description"
     t.boolean "mini_profile_description_inherited", default: true, null: false
     t.boolean "mini_profile_link_enabled", default: false, null: false
@@ -231,6 +232,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_08_02_121328) do
     t.jsonb "heart_emojis", default: [], null: false
     t.jsonb "labels", default: [], null: false
     t.string "mini_profile_avatar_alt_text"
+    t.string "mini_profile_avatar_shape", default: "rounded", null: false
     t.text "mini_profile_description"
     t.boolean "mini_profile_description_inherited", default: true, null: false
     t.jsonb "mini_profile_heart_emojis", default: [], null: false

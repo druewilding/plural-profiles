@@ -2,6 +2,12 @@ class Group < ApplicationRecord
   include HasAvatar
   include HasLabels
   include ChatProxyable
+  include ChatIdentity
+
+  chat_identity_field :name
+  chat_identity_field :subtitle
+  chat_identity_field :tag_line
+  chat_identity_field :description
 
   belongs_to :user
   belongs_to :theme, optional: true
