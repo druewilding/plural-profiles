@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_08_01_132921) do
+ActiveRecord::Schema[8.1].define(version: 2026_08_02_121328) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -172,6 +172,16 @@ ActiveRecord::Schema[8.1].define(version: 2026_08_01_132921) do
     t.datetime "created_at", null: false
     t.text "description"
     t.jsonb "labels", default: [], null: false
+    t.string "mini_profile_avatar_alt_text"
+    t.text "mini_profile_description"
+    t.boolean "mini_profile_description_inherited", default: true, null: false
+    t.boolean "mini_profile_link_enabled", default: false, null: false
+    t.string "mini_profile_name"
+    t.boolean "mini_profile_name_inherited", default: true, null: false
+    t.string "mini_profile_subtitle"
+    t.boolean "mini_profile_subtitle_inherited", default: true, null: false
+    t.string "mini_profile_tag_line"
+    t.boolean "mini_profile_tag_line_inherited", default: true, null: false
     t.string "name", null: false
     t.string "subtitle"
     t.string "tag_line"
@@ -220,6 +230,20 @@ ActiveRecord::Schema[8.1].define(version: 2026_08_01_132921) do
     t.text "description"
     t.jsonb "heart_emojis", default: [], null: false
     t.jsonb "labels", default: [], null: false
+    t.string "mini_profile_avatar_alt_text"
+    t.text "mini_profile_description"
+    t.boolean "mini_profile_description_inherited", default: true, null: false
+    t.jsonb "mini_profile_heart_emojis", default: [], null: false
+    t.boolean "mini_profile_heart_emojis_inherited", default: true, null: false
+    t.boolean "mini_profile_link_enabled", default: false, null: false
+    t.string "mini_profile_name"
+    t.boolean "mini_profile_name_inherited", default: true, null: false
+    t.string "mini_profile_pronouns"
+    t.boolean "mini_profile_pronouns_inherited", default: true, null: false
+    t.string "mini_profile_subtitle"
+    t.boolean "mini_profile_subtitle_inherited", default: true, null: false
+    t.string "mini_profile_tag_line"
+    t.boolean "mini_profile_tag_line_inherited", default: true, null: false
     t.string "name", null: false
     t.string "pronouns"
     t.string "subtitle"
