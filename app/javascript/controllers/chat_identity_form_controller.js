@@ -17,8 +17,11 @@ export default class extends Controller {
   }
 
   change(event) {
-    if (event.target.classList.contains("chat-identity-toggle__input")) {
-      this.syncCard(event.target.closest(".card"))
+    const target = event.target
+    if (target.classList.contains("chat-identity-toggle__input")) {
+      const card = target.closest(".card")
+      this.syncCard(card)
+      if (target.matches('[value="false"]:checked')) this.focusOverrideField(card)
     }
     this.schedulePreview()
   }
@@ -34,6 +37,11 @@ export default class extends Controller {
     const override = card.querySelector(".chat-identity-field__override")
     if (inherited) inherited.hidden = overriding
     if (override) override.hidden = !overriding
+  }
+
+  focusOverrideField(card) {
+    const field = card?.querySelector(".chat-identity-field__override input:not([type='hidden']), .chat-identity-field__override textarea")
+    field?.focus()
   }
 
   schedulePreview() {

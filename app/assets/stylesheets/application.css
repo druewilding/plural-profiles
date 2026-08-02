@@ -4547,15 +4547,6 @@ button.profile-picker__option {
   font-size: 0.9rem;
 }
 
-.chat-identity-field__tag {
-  font-size: 0.68rem;
-  font-weight: 700;
-  text-transform: uppercase;
-  letter-spacing: 0.04em;
-  color: var(--link);
-  flex-shrink: 0;
-}
-
 .chat-identity-field__value {
   min-width: 0;
 }
