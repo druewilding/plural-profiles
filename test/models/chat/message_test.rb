@@ -100,9 +100,10 @@ class Chat::MessageTest < ActiveSupport::TestCase
 
   test "the broadcasted message partial renders without a request context and without crashing" do
     # Current.user is nil here (this is a plain model test, not a request) —
-    # same situation as a message created from a script. The author-link
-    # helper in the message partial must tolerate that rather than blow up
-    # trying to call .id on it.
+    # same situation as a message created from a script. The popover
+    # trigger's URL is built straight from the postable's own class/uuid,
+    # not through any Current.user-dependent helper, so this must render
+    # without crashing.
     assert_nil Current.user
 
     streams = capture_turbo_stream_broadcasts @channel do
@@ -111,8 +112,7 @@ class Chat::MessageTest < ActiveSupport::TestCase
 
     html = streams.first.to_html
     helpers = Rails.application.routes.url_helpers
-    assert_match helpers.profile_path(profiles(:alice)), html
-    assert_no_match helpers.our_profile_path(profiles(:alice)), html
+    assert_match helpers.chat_mini_profile_path("Profile", profiles(:alice).uuid), html
   end
 
   test "the broadcasted message partial renders a group postable without crashing" do
@@ -125,8 +125,7 @@ class Chat::MessageTest < ActiveSupport::TestCase
 
     html = streams.first.to_html
     helpers = Rails.application.routes.url_helpers
-    assert_match helpers.group_path(group), html
-    assert_no_match helpers.our_group_path(group), html
+    assert_match helpers.chat_mini_profile_path("Group", group.uuid), html
   end
 
   test "creating a message broadcasts unread dots to other server members but not the author" do

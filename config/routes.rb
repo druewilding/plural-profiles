@@ -76,6 +76,9 @@ Rails.application.routes.draw do
 
       get "invite/:token", to: "invite_redemptions#show", as: :invite_redemption
 
+      get "mini_profile/:postable_type/:postable_uuid", to: "mini_profiles#show",
+        as: :mini_profile, constraints: { postable_type: /Profile|Group/ }
+
       resources :servers, only: %i[index show new create edit update], param: :uuid do
         member do
           get :join

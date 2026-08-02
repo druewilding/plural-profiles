@@ -1,23 +1,33 @@
-.chat-message{id: dom_id(message)}
+- postable = message.postable
+.chat-message{id: dom_id(message), data: postable ? {controller: "mini-profile-popover", "mini-profile-popover-url-value": chat_mini_profile_path(postable.class.name, postable.uuid)} : {}}
   .chat-message__avatar
-    - if message.postable&.avatar&.attached?
-      = image_tag message.postable.avatar.variant(resize_to_fill: [34, 34]), class: "avatar #{avatar_shape_class(message.postable, shape: "circle")}".strip, width: 34, height: 34, alt: "", loading: "lazy"
+    - if postable
+      %button.chat-message__avatar-trigger{type: "button", data: {action: "click->mini-profile-popover#open"}}
+        - avatar = chat_avatar_for(postable)
+        - if avatar.attached?
+          = image_tag avatar.variant(resize_to_fill: [34, 34]), class: "avatar #{avatar_shape_class(postable, shape: "circle")}".strip, width: 34, height: 34, alt: chat_avatar_alt_text_for(postable), loading: "lazy"
+        - else
+          .avatar.avatar--placeholder.avatar--circle
+            = render "shared/plural_pride_logo"
     - else
       .avatar.avatar--placeholder.avatar--circle
         = render "shared/plural_pride_logo"
 
   .chat-message__content
     .chat-message__who
-      - if message.postable
-        = link_to chat_postable_url(message.postable), class: "chat-message__name-link" do
-          %span.chat-message__name= formatted_inline(message.postable.name)
-        - if message.postable.respond_to?(:pronouns) && message.postable.pronouns.present?
-          %span.chat-message__pronouns= formatted_inline(message.postable.pronouns)
+      - if postable
+        %button.chat-message__name-link{type: "button", data: {action: "click->mini-profile-popover#open"}}
+          %span.chat-message__name= formatted_inline(postable.chat_name)
+        - if postable.respond_to?(:chat_pronouns) && postable.chat_pronouns.present?
+          %span.chat-message__pronouns= formatted_inline(postable.chat_pronouns)
       - else
         %span.chat-message__name.chat-message__name--deleted= "#{message.postable_name} (deleted)"
       %time.chat-message__time{datetime: message.created_at.iso8601}= message.created_at.strftime("%H:%M")
 
-    - if message.postable&.subtitle&.present?
-      %span.chat-message__subtitle= formatted_inline(message.postable.subtitle)
+    - if postable&.chat_subtitle&.present?
+      %span.chat-message__subtitle= formatted_inline(postable.chat_subtitle)
 
     .chat-message__body{style: "white-space: pre-wrap"}= formatted_inline(message.body)
+
+  - if postable
+    %turbo-frame.mini-profile-popover{id: mini_profile_frame_id(postable), popover: "auto", data: {"mini-profile-popover-target": "frame panel"}}

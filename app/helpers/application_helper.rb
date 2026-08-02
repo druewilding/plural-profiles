@@ -138,21 +138,11 @@ module ApplicationHelper
     postable.mini_profile_avatar_inherited? ? postable.avatar_shape : postable.mini_profile_avatar_shape
   end
 
-  # The public-facing URL for a chat message's postable (a Profile or a
-  # Group): the owner's own private management page if the current viewer
-  # owns it, otherwise the public uuid-keyed share page. &. on Current.user
-  # falls back to the public link when there's no request context at all
-  # (e.g. a message broadcast rendered outside a real request) — always a
-  # safe destination, since Our::ProfilesController/Our::GroupsController
-  # redirect there anyway for anyone viewing a postable that isn't theirs.
-  def chat_postable_url(postable)
-    own = postable.user_id == Current.user&.id
-    url_options = { host: main_site_host, port: request.port, protocol: request.protocol }
-    if postable.is_a?(Group)
-      own ? our_group_url(postable, **url_options) : group_url(postable.uuid, **url_options)
-    else
-      own ? our_profile_url(postable, **url_options) : profile_url(postable.uuid, **url_options)
-    end
+  # The id shared between a message's placeholder turbo-frame (set as its
+  # src's target) and the real <turbo-frame> the mini-profile popover route
+  # renders — Turbo matches the two by id to swap the fetched content in.
+  def mini_profile_frame_id(postable)
+    "mini_profile_#{postable.class.name}_#{postable.uuid}"
   end
 
   private
