@@ -107,13 +107,17 @@ No backfill needed — every `_inherited` flag defaults to `true` (except `mini_
 
 #### Model changes
 
-- **New concern `app/models/concerns/chat_identity.rb`**, included by both `Profile` and `Group`, providing the inherit/override resolution as `chat_<field>` reader methods, plus the one cross-cutting validation (name can't resolve to blank):
+- **New concern `app/models/concerns/chat_identity.rb`**, included by both `Profile` and `Group`, providing the inherit/override resolution as `chat_<field>` reader methods, the mini-profile avatar attachment, and the two validations that go with them. **Built** — including one correction along the way, noted below:
   ```ruby
   module ChatIdentity
     extend ActiveSupport::Concern
 
     included do
       validate :mini_profile_name_present_when_not_inherited
+
+      has_one_attached :mini_profile_avatar
+      validate :mini_profile_avatar_is_valid
+      validates :mini_profile_avatar_shape, inclusion: { in: HasAvatar::AVATAR_SHAPES }
     end
 
     class_methods do
@@ -134,34 +138,22 @@ No backfill needed — every `_inherited` flag defaults to `true` (except `mini_
       return if mini_profile_name_inherited?
       errors.add(:mini_profile_name, "can't be blank when not inheriting the main name") if mini_profile_name.blank?
     end
+
+    def mini_profile_avatar_is_valid
+      return unless mini_profile_avatar.attached?
+      unless mini_profile_avatar.blob.content_type.in?(HasAvatar::AVATAR_CONTENT_TYPES)
+        errors.add(:mini_profile_avatar, "must be a JPG/JPEG, PNG, or WebP image")
+      end
+      if mini_profile_avatar.blob.byte_size > HasAvatar::AVATAR_MAX_SIZE
+        errors.add(:mini_profile_avatar, "must be 2 MB or less")
+      end
+    end
   end
   ```
   `Profile` then declares `include ChatIdentity` plus `chat_identity_field :name`, `:subtitle`, `:tag_line`, `:description`, `:pronouns`, `:heart_emojis`. `Group` declares the same minus `:pronouns`/`:heart_emojis` (it has neither the main nor the mini column). The macro works unmodified for the `heart_emojis` array case — `blank?` on `[]` is `true`, so "omit if blank" downstream needs no special-casing.
   - Because the default is `mini_profile_name_inherited: true`, this validation never fires for existing records or for saves coming from the main profile/group form — it only matters once an owner explicitly switches name to "set independently" on the new chat settings page and leaves it blank.
+  - **Correction made while building this**: `mini_profile_avatar` was originally put in `HasAvatar` instead (generalizing its validations to run against both `avatar` and `mini_profile_avatar`). That broke `Chat::Server`, which also includes `HasAvatar` but isn't a postable and was never meant to have a chat identity or a `mini_profile_avatar_shape` column — every server-related test failed with a missing-method error the moment that shipped. Moving the mini-profile-avatar bits into `ChatIdentity` (Profile/Group only) fixed it. **`HasAvatar` itself ended up completely unchanged by this feature** — still just `avatar`/`avatar_shape`, exactly as it was before this plan.
 - **`Profile`**: mirror the existing `heart_emojis=` normalization and `heart_emojis_are_valid` validation for `mini_profile_heart_emojis` — same `resolve_heart_emoji` logic, same "contains invalid hearts" error, since it's the same free-form array-of-strings shape.
-- **`HasAvatar`** (`app/models/concerns/has_avatar.rb`): add `has_one_attached :mini_profile_avatar`, generalize the existing `avatar_content_type_allowed`/`avatar_size_allowed` validations to run against both attachment names instead of duplicating them, and validate the new `mini_profile_avatar_shape` column the same way `avatar_shape` already is:
-  ```ruby
-  AVATAR_ATTACHMENTS = %i[avatar mini_profile_avatar].freeze
-
-  included do
-    has_one_attached :avatar
-    has_one_attached :mini_profile_avatar
-    validate :avatar_attachments_are_valid
-    validates :avatar_shape, inclusion: { in: AVATAR_SHAPES }
-    validates :mini_profile_avatar_shape, inclusion: { in: AVATAR_SHAPES }
-  end
-
-  private
-
-  def avatar_attachments_are_valid
-    AVATAR_ATTACHMENTS.each do |name|
-      attachment = public_send(name)
-      next unless attachment.attached?
-      errors.add(name, "must be a JPG/JPEG, PNG, or WebP image") unless attachment.blob.content_type.in?(AVATAR_CONTENT_TYPES)
-      errors.add(name, "must be 2 MB or less") if attachment.blob.byte_size > AVATAR_MAX_SIZE
-    end
-  end
-  ```
 - **New helpers** (`app/helpers/application_helper.rb`, next to `avatar_shape_class`) — the avatar's inherit/override resolution, split into "which image" and "which shape" so callers that force a shape (the message row) can use the first without the second:
   ```ruby
   def chat_avatar_for(postable)
@@ -270,8 +262,9 @@ No backfill needed — every `_inherited` flag defaults to `true` (except `mini_
   - On trigger click: if `frame.src` isn't set yet, set it to the `url` value (fires the Turbo fetch exactly once per message); position `panel` near the trigger's `getBoundingClientRect()`; call `panel.showPopover()`.
   - Uses the HTML **Popover API** (`popover="auto"`) rather than the `<dialog>` pattern used by `avatar_editor_controller.js` — deliberate, not an inconsistency: `popover="auto"` gets outside-click/Escape light-dismiss for free. First use of the Popover API in the codebase, and the first on-demand-fetch UI pattern anywhere in the app, so allow some extra care/review time.
 - **New partial-backed styles**: `.mini-profile-popover` styling (positioned via inline styles set by the controller, visually similar to the existing `.card`/`.profile-card` treatment) — left to implementation.
-- **Avatar editor needs to support a second, independent avatar on the same form — shape picker included. Built** (`app/views/shared/_avatar_editor_dialog.html.haml`): took a new optional `attribute:` local (default `"avatar"`, the other caller passes `"mini_profile_avatar"`), and every hardcoded `avatar`/`avatar_shape`/`avatar_alt_text` reference in the partial now derives from it (`record.public_send(attribute)`, `"#{attribute}_shape"`, `"#{attribute}_alt_text"`), including the remove checkbox's param name (`"#{param_prefix}[remove_#{attribute}]"`). All three existing callers (profile/group/chat-server forms) needed no changes — the new local defaults to the old hardcoded behavior.
-  - **`avatar_editor_controller.js` needed zero changes**, which wasn't obvious going in: it never references an attribute name anywhere, only Stimulus targets and CSS classes, and each `data: {controller: "avatar-editor"}` instance already scopes its own targets independently — so two instances (main avatar + chat avatar) on the chat-settings page just work once the HAML side is parameterized. The plan originally expected the JS to need updating too; it didn't.
+- **Avatar editor needs to support editing a second, independent avatar — shape picker included. Built** (`app/views/shared/_avatar_editor_dialog.html.haml`). To be clear about *why*: the main avatar dialog (`attribute: "avatar"`, default) and the chat avatar dialog (`attribute: "mini_profile_avatar"`) never appear together — the main one stays on the profile/group edit form, the chat one lives only on the new, separate "Edit chat settings" page (per round 2). They don't share a page or a form. The reason the partial still needed parameterizing is simpler: it's the *same reusable partial*, rendered once per page, and each rendering now needs to point at a different attachment/shape/alt-text trio depending on which page it's on — not because two instances coexist anywhere.
+  - Took a new optional `attribute:` local (default `"avatar"`), and every hardcoded `avatar`/`avatar_shape`/`avatar_alt_text` reference in the partial now derives from it (`record.public_send(attribute)`, `"#{attribute}_shape"`, `"#{attribute}_alt_text"`), including the remove checkbox's param name (`"#{param_prefix}[remove_#{attribute}]"`). All three existing callers (profile/group/chat-server forms) needed no changes — the new local defaults to the old hardcoded behavior.
+  - **`avatar_editor_controller.js` needed zero changes**, which wasn't obvious going in: it never references an attribute name anywhere, only Stimulus targets and CSS classes. That also means the "two instances would be scoped independently" reasoning from the original draft of this plan was correct but moot in practice — it was never exercised, since the two dialogs are one-per-page, not two-per-page. The plan originally expected the JS to need updating too; it didn't.
   - The mini-profile instance's "current" preview shows the *effective* avatar (`chat_avatar_for`) when nothing's attached yet, so the form doesn't show an empty state for someone whose main avatar will be used as the fallback anyway — but "Remove" only appears once an actual `mini_profile_avatar` is attached (removing it reverts to inheriting the main avatar, doesn't touch the main avatar itself).
 - **New "Edit chat settings" page** (`app/views/our/chat_identities/edit.html.haml`): one `form_with` posting to `our_chat_identity_path(@postable.class.name, @postable.uuid)`, containing:
   - Chat proxy brackets (moved here unchanged from `_form.html.haml`).
@@ -318,10 +311,11 @@ No backfill needed — every `_inherited` flag defaults to `true` (except `mini_
 
 ### Order of implementation
 
-1. Migration: add the new columns to `profiles` and `groups`; run `bin/rails db:migrate`.
-2. `ChatIdentity` concern (resolver methods + name-presence validation) included in `Profile`/`Group`; `Profile`'s `mini_profile_heart_emojis` normalization/validation; `HasAvatar`'s `mini_profile_avatar` attachment + generalized validations; `chat_avatar_for`/`chat_avatar_alt_text_for` helpers.
-3. Remove chat-bracket fields from `Our::ProfilesController#profile_params`/`Our::GroupsController#group_params` and from `_form.html.haml`; add the "Manage chat settings →" link.
-4. Parameterize `shared/avatar_editor_dialog` + `avatar_editor_controller.js` to support a second, independently-named avatar instance.
+1. **Built.** Migration: add the new columns to `profiles` and `groups`; run `bin/rails db:migrate`.
+2. **Built.** `ChatIdentity` concern (resolver methods, name-presence validation, and — corrected from the original plan — the `mini_profile_avatar` attachment + its validations, which belong here rather than in `HasAvatar` since `Chat::Server` also includes `HasAvatar` and isn't a postable); `Profile`'s `mini_profile_heart_emojis` normalization/validation; `chat_avatar_for`/`chat_avatar_alt_text_for`/`chat_avatar_shape_for` helpers.
+3. **Built**, minus the link (see below). Remove chat-bracket fields from `Our::ProfilesController#profile_params`/`Our::GroupsController#group_params` and from `_form.html.haml`.
+4. **Built.** Parameterize `shared/avatar_editor_dialog` to support rendering it once per page against either `avatar` or `mini_profile_avatar` (the two never appear on the same page — see Direction). `avatar_editor_controller.js` needed no changes.
+4a. **Still to do**, moved here from step 3 since it depends on step 5's route existing: add the "Manage chat settings →" link to `_form.html.haml`.
 5. New route block + `Our::ChatIdentitiesController` (`edit`/`update`/`preview`) + `edit.html.haml`.
 6. `chat_identity_form_controller.js` (inherit/override toggling + debounced preview fetch); register in `app/javascript/controllers/index.js`.
 7. `Chat::MiniProfilesController` + its view + the `_mini_profile` partial (now reading `chat_*` resolver methods) + the `mini_profile_frame_id` helper.
