@@ -114,7 +114,7 @@ export default class extends Controller {
     const shapeClass = shape === "circle" ? "avatar--circle" : shape === "square" ? "avatar--square" : null
 
     const el = document.createElement(placeholderHtml ? "div" : "img")
-    el.className = ["avatar", extraClass, placeholderHtml ? "avatar--placeholder" : shapeClass].filter(Boolean).join(" ")
+    el.className = ["avatar", extraClass, placeholderHtml ? "avatar--placeholder" : null, shapeClass].filter(Boolean).join(" ")
     if (placeholderHtml) {
       el.innerHTML = placeholderHtml
     } else {
