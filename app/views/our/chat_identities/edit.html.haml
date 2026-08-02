@@ -6,16 +6,14 @@
   %span{"aria-hidden": "true"} ‹
   = plain_field(@postable.name)
 
-%span.chat-identity-eyebrow= "#{@postable.is_a?(Group) ? "Group" : "Profile"} · chat settings"
-%h1 Edit chat settings
-
 .card.chat-identity-intro
   %svg{viewBox: "0 0 24 24", fill: "none", stroke: "currentColor", "stroke-width": "2", "stroke-linecap": "round", "stroke-linejoin": "round", "aria-hidden": "true"}
     %path{d: "M12 16v-4M12 8h.01M22 12c0 5.523-4.477 10-10 10S2 17.523 2 12 6.477 2 12 2s10 4.477 10 10z"}
-  %p
-    %strong Chat has its own identity, separate from your full profile.
-    Nothing here is filled in automatically except the name. Pick, for each field, whether chat should follow your profile or say something different.
-    %span.chat-identity-intro__sub Changes here never affect your full profile page, and changes to your full profile never affect chat unless a field below is set to "Follow profile."
+  .chat-identity-intro__body
+    %h1 Edit chat settings
+    %p
+      Chat has its own identity, separate from your full profile. Nothing here is filled in automatically except the name. Pick, for each field, whether chat should follow your profile or say something different.
+      %span.chat-identity-intro__sub Changes here never affect your full profile page, and changes to your full profile never affect chat unless a field below is set to "Follow profile."
 
 - if @postable.errors.any?
   .error-messages
@@ -24,7 +22,7 @@
 
 .chat-identity-layout
   .chat-identity-form-col
-    = form_with model: @postable, scope: :chat_identity, url: our_chat_identity_path(@postable.class.name, @postable.uuid), method: :patch, data: {controller: "chat-identity-form", "chat-identity-form-preview-url-value": preview_our_chat_identity_path(@postable.class.name, @postable.uuid)} do |form|
+    = form_with model: @postable, scope: :chat_identity, url: our_chat_identity_path(@postable.class.name, @postable.uuid), method: :patch, data: {controller: "chat-identity-form", "chat-identity-form-preview-url-value": preview_our_chat_identity_path(@postable.class.name, @postable.uuid), action: "change->chat-identity-form#change input->chat-identity-form#schedulePreview"} do |form|
 
       .card
         %h3 Chat proxy brackets

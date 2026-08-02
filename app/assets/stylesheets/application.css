@@ -4390,20 +4390,6 @@ button.profile-picker__option {
   font-size: 1.1rem;
 }
 
-.chat-identity-eyebrow {
-  display: inline-block;
-  margin-bottom: 0.5rem;
-  padding: 0.15rem 0.6rem;
-  border-radius: 999px;
-  font-size: 0.7rem;
-  font-weight: 700;
-  text-transform: uppercase;
-  letter-spacing: 0.05em;
-  background: color-mix(in srgb, var(--chat-accent-bg) 40%, transparent);
-  color: var(--chat-accent-text);
-  border: 1px solid color-mix(in srgb, var(--chat-accent-border) 45%, transparent);
-}
-
 .chat-identity-intro {
   display: flex;
   gap: 0.85rem;
@@ -4412,14 +4398,19 @@ button.profile-picker__option {
 }
 
 .chat-identity-intro svg {
-  width: 20px;
-  height: 20px;
+  width: 22px;
+  height: 22px;
   flex-shrink: 0;
-  margin-top: 0.15rem;
+  margin-top: 0.3rem;
   color: var(--chat-accent-border);
 }
 
-.chat-identity-intro p {
+.chat-identity-intro__body h1 {
+  font-size: 1.5rem;
+  margin-bottom: 0.5rem;
+}
+
+.chat-identity-intro__body p {
   margin: 0;
   font-size: 0.92rem;
 }
@@ -4496,7 +4487,8 @@ button.profile-picker__option {
   flex-shrink: 0;
   border: 1px solid var(--input-border);
   border-radius: 999px;
-  padding: 2px;
+  padding: 3px;
+  gap: 2px;
   background-color: var(--input-bg);
 }
 
@@ -4515,25 +4507,27 @@ button.profile-picker__option {
 .chat-identity-toggle__option-label {
   display: inline-flex;
   align-items: center;
-  padding: 0.35rem 0.75rem;
+  padding: 0.35rem 0.8rem;
   border-radius: 999px;
   font-size: 0.78rem;
   font-weight: 600;
   color: color-mix(in srgb, var(--text) 70%, transparent);
   white-space: nowrap;
+  transition: background-color 0.12s ease, color 0.12s ease;
 }
 
-.chat-identity-toggle__input:checked + .chat-identity-toggle__option-label {
-  background-color: var(--pane-bg);
-  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.35);
+.chat-identity-toggle__option-label:hover {
+  color: var(--heading);
 }
 
 .chat-identity-toggle__input:checked + .chat-identity-toggle__option-label--inherit {
-  color: var(--link);
+  background-color: color-mix(in srgb, var(--link) 30%, transparent);
+  color: var(--heading);
 }
 
 .chat-identity-toggle__input:checked + .chat-identity-toggle__option-label--override {
-  color: var(--chat-accent-text);
+  background-color: var(--chat-accent-bg);
+  color: var(--heading);
 }
 
 .chat-identity-toggle__input:focus-visible + .chat-identity-toggle__option-label {
