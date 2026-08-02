@@ -155,7 +155,7 @@ class Our::ChatIdentitiesControllerTest < ActionDispatch::IntegrationTest
     assert @profile.avatar.attached?
   end
 
-  test "update with mini_profile_avatar_mode true (Follow profile) purges an existing mini_profile_avatar" do
+  test "update with mini_profile_avatar_inherited true (Follow profile) purges an existing mini_profile_avatar" do
     sign_in_as @user
     @profile.mini_profile_avatar.attach(
       io: File.open(file_fixture("avatar.png")), filename: "avatar.png", content_type: "image/png"
@@ -165,12 +165,26 @@ class Our::ChatIdentitiesControllerTest < ActionDispatch::IntegrationTest
     )
 
     patch our_chat_identity_path("Profile", @profile.uuid), params: {
-      chat_identity: { mini_profile_avatar_mode: "true" }
+      chat_identity: { mini_profile_avatar_inherited: "true" }
     }
 
     @profile.reload
     assert_not @profile.mini_profile_avatar.attached?
     assert @profile.avatar.attached?
+  end
+
+  test "update with mini_profile_avatar_inherited false saves an overridden shape without uploading a new image" do
+    sign_in_as @user
+    assert_not @profile.mini_profile_avatar.attached?
+
+    patch our_chat_identity_path("Profile", @profile.uuid), params: {
+      chat_identity: { mini_profile_avatar_inherited: "false", mini_profile_avatar_shape: "square" }
+    }
+
+    @profile.reload
+    assert_not @profile.mini_profile_avatar_inherited?
+    assert_equal "square", @profile.mini_profile_avatar_shape
+    assert_not @profile.mini_profile_avatar.attached?
   end
 
   # -- preview --

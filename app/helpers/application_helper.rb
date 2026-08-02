@@ -107,29 +107,35 @@ module ApplicationHelper
     end
   end
 
-  # The avatar chat should show for a postable: its independent
-  # mini_profile_avatar if one has been uploaded, otherwise falling back to
-  # ("inheriting") the main avatar.
+  # The avatar chat should show for a postable. Gated on
+  # mini_profile_avatar_inherited rather than attachment presence: shape and
+  # alt text can be overridden independently of the image itself (see
+  # chat_avatar_shape_for), so "inherited" is the actual source of truth —
+  # attachment presence is only consulted as a fallback within the
+  # not-inherited branch, for someone who's switched to "Set for chat" but
+  # hasn't (yet, or ever) uploaded a replacement image.
   def chat_avatar_for(postable)
+    return postable.avatar if postable.mini_profile_avatar_inherited?
     postable.mini_profile_avatar.attached? ? postable.mini_profile_avatar : postable.avatar
   end
 
   def chat_avatar_alt_text_for(postable)
-    if postable.mini_profile_avatar.attached?
-      postable.mini_profile_avatar_alt_text.presence || ""
-    else
+    if postable.mini_profile_avatar_inherited?
       postable.avatar_alt_text.presence || ""
+    else
+      postable.mini_profile_avatar_alt_text.presence || ""
     end
   end
 
-  # The shape to render chat_avatar_for(postable) with. Pairs with the
-  # attachment it came from: an overridden mini_profile_avatar uses its own
-  # mini_profile_avatar_shape, an inherited main avatar uses avatar_shape.
-  # Message rows ignore this entirely and always force circle for visual
-  # consistency in the channel — only the popover (which shows "the chosen
-  # shape") should call this.
+  # The shape to render chat_avatar_for(postable) with. Independent of
+  # whether a replacement image was actually uploaded — someone can keep the
+  # main avatar's image but still pick a different shape for chat, so this
+  # follows mini_profile_avatar_inherited, not attachment presence. Message
+  # rows ignore this entirely and always force circle for visual consistency
+  # in the channel — only the popover (which shows "the chosen shape") should
+  # call this.
   def chat_avatar_shape_for(postable)
-    postable.mini_profile_avatar.attached? ? postable.mini_profile_avatar_shape : postable.avatar_shape
+    postable.mini_profile_avatar_inherited? ? postable.avatar_shape : postable.mini_profile_avatar_shape
   end
 
   # The public-facing URL for a chat message's postable (a Profile or a

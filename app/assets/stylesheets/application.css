@@ -4492,6 +4492,16 @@ button.profile-picker__option {
   font-size: 0.9rem;
 }
 
+/* The avatar card's "Follow profile" state is just the image — the tinted
+   panel styling that works for a line of text looks like an unnecessary box
+   around it, so this variant keeps the same element (still what the JS
+   toggle shows/hides) without the surrounding chrome. */
+.chat-identity-field__inherited--plain {
+  padding: 0;
+  border: none;
+  background: none;
+}
+
 .chat-identity-field__value {
   min-width: 0;
 }

@@ -11,7 +11,7 @@ class Our::ChatIdentitiesController < ApplicationController
   end
 
   def update
-    if params[:chat_identity][:remove_mini_profile_avatar] == "1" || params[:chat_identity][:mini_profile_avatar_mode] == "true"
+    if params[:chat_identity][:remove_mini_profile_avatar] == "1" || params[:chat_identity][:mini_profile_avatar_inherited] == "true"
       @postable.mini_profile_avatar.purge
     end
     if @postable.update(chat_identity_params)
@@ -46,7 +46,7 @@ class Our::ChatIdentitiesController < ApplicationController
                 mini_profile_subtitle mini_profile_subtitle_inherited
                 mini_profile_tag_line mini_profile_tag_line_inherited
                 mini_profile_description mini_profile_description_inherited
-                mini_profile_avatar mini_profile_avatar_alt_text mini_profile_avatar_shape
+                mini_profile_avatar mini_profile_avatar_alt_text mini_profile_avatar_shape mini_profile_avatar_inherited
                 mini_profile_link_enabled]
     profile_only = %i[mini_profile_pronouns mini_profile_pronouns_inherited
                        mini_profile_heart_emojis_inherited]

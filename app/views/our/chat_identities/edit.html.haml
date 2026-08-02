@@ -28,13 +28,13 @@
           %h3{id: avatar_title_id} Chat avatar
           .chat-identity-toggle
             %label.chat-identity-toggle__option
-              = form.radio_button :mini_profile_avatar_mode, true, checked: !@postable.mini_profile_avatar.attached?, class: "chat-identity-toggle__input"
+              = form.radio_button :mini_profile_avatar_inherited, true, class: "chat-identity-toggle__input"
               %span.chat-identity-toggle__option-label Follow profile
             %label.chat-identity-toggle__option
-              = form.radio_button :mini_profile_avatar_mode, false, checked: @postable.mini_profile_avatar.attached?, class: "chat-identity-toggle__input"
+              = form.radio_button :mini_profile_avatar_inherited, false, class: "chat-identity-toggle__input"
               %span.chat-identity-toggle__option-label Set for chat
 
-        .chat-identity-field__inherited
+        .chat-identity-field__inherited.chat-identity-field__inherited--plain
           - if @postable.avatar.attached?
             = image_tag @postable.avatar.variant(resize_to_fill: [64, 64]), class: "avatar #{avatar_shape_class(@postable)}".strip, width: 64, height: 64, alt: @postable.avatar_alt_text.presence || "", loading: "lazy"
           - else

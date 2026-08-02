@@ -4,14 +4,16 @@ module ChatIdentity
   included do
     validate :mini_profile_name_present_when_not_inherited
 
-    # mini_profile_avatar is the independent chat-specific avatar — when it
-    # isn't attached, chat falls back to ("inherits") the main avatar, shape
-    # included (see ApplicationHelper#chat_avatar_for/#chat_avatar_shape_for).
-    # It has its own shape and alt text, independent of avatar_shape/
-    # avatar_alt_text. Deliberately declared here rather than in HasAvatar —
-    # HasAvatar is also included by Chat::Server, which isn't a postable and
-    # has no chat identity at all, so this can't live somewhere Server would
-    # inherit it too.
+    # mini_profile_avatar is the independent chat-specific avatar, gated by
+    # mini_profile_avatar_inherited (see ApplicationHelper#chat_avatar_for/
+    # #chat_avatar_shape_for) rather than attachment presence — shape and alt
+    # text can be overridden on their own, keeping the main avatar's image,
+    # so "inherited" is the real source of truth, not "is something
+    # attached." It has its own shape and alt text, independent of
+    # avatar_shape/avatar_alt_text. Deliberately declared here rather than in
+    # HasAvatar — HasAvatar is also included by Chat::Server, which isn't a
+    # postable and has no chat identity at all, so this can't live somewhere
+    # Server would inherit it too.
     has_one_attached :mini_profile_avatar
     validate :mini_profile_avatar_is_valid
     validates :mini_profile_avatar_shape, inclusion: { in: HasAvatar::AVATAR_SHAPES }
