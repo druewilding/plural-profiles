@@ -39,15 +39,9 @@
   --warning-text: var(--warning-border);
   --tree-guide: color-mix(in srgb, var(--text) 30%, transparent);
   --avatar-placeholder-border: color-mix(in srgb, var(--text) 50%, transparent);
-  /* Same hue family as --warning-*, but a distinct token: chat-identity
-     "set independently for chat" state and its badge/icon reuse this warm
-     rose deliberately (it's the "you changed something from the default"
-     color), but aliasing it to --warning-* would tie it to actual warning
-     semantics (flash--warning) elsewhere in the app, which isn't what a
-     settings badge or an active toggle option means. */
-  --chat-accent-bg: #a81d49;
+  /* Same hue as --warning-border, but its own token — used only for the
+     chat-identity live-preview pulse dot, which isn't a warning. */
   --chat-accent-border: #e6c4cf;
-  --chat-accent-text: #e6c4cf;
 }
 
 html {
@@ -4459,6 +4453,7 @@ button.profile-picker__option {
 
 .chat-identity-toggle {
   display: inline-flex;
+  align-items: center;
   flex-shrink: 0;
   border: 1px solid var(--input-border);
   border-radius: 999px;
@@ -4470,11 +4465,13 @@ button.profile-picker__option {
 .chat-identity-toggle__option {
   position: relative;
   display: inline-flex;
+  align-items: center;
   cursor: pointer;
 }
 
 .chat-identity-toggle__input {
   position: absolute;
+  inset: 0;
   opacity: 0;
   pointer-events: none;
 }
@@ -4482,7 +4479,8 @@ button.profile-picker__option {
 .chat-identity-toggle__option-label {
   display: inline-flex;
   align-items: center;
-  padding: 0.35rem 0.8rem;
+  line-height: 1;
+  padding: 0.45rem 0.8rem;
   border-radius: 999px;
   font-size: 0.78rem;
   font-weight: 600;
@@ -4495,14 +4493,9 @@ button.profile-picker__option {
   color: var(--heading);
 }
 
-.chat-identity-toggle__input:checked + .chat-identity-toggle__option-label--inherit {
-  background-color: color-mix(in srgb, var(--link) 30%, transparent);
-  color: var(--heading);
-}
-
-.chat-identity-toggle__input:checked + .chat-identity-toggle__option-label--override {
-  background-color: var(--chat-accent-bg);
-  color: var(--heading);
+.chat-identity-toggle__input:checked + .chat-identity-toggle__option-label {
+  background-color: var(--secondary-button-bg);
+  color: var(--secondary-button-text);
 }
 
 .chat-identity-toggle__input:focus-visible + .chat-identity-toggle__option-label {

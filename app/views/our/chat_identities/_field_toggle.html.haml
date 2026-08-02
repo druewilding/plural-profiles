@@ -39,10 +39,10 @@
     .chat-identity-toggle
       %label.chat-identity-toggle__option
         = form.radio_button inherited_field, true, class: "chat-identity-toggle__input"
-        %span.chat-identity-toggle__option-label.chat-identity-toggle__option-label--inherit Follow profile
+        %span.chat-identity-toggle__option-label Follow profile
       %label.chat-identity-toggle__option
         = form.radio_button inherited_field, false, class: "chat-identity-toggle__input"
-        %span.chat-identity-toggle__option-label.chat-identity-toggle__option-label--override Set for chat
+        %span.chat-identity-toggle__option-label Set for chat
 
   .chat-identity-field__inherited
     - if inherited_value.present?
