@@ -4039,6 +4039,14 @@ turbo-frame {
   cursor: pointer;
 }
 
+/* The global button:hover rule (for .btn-style buttons) has higher
+   specificity than a plain class selector, so it wins over the reset
+   above on hover without this. */
+.chat-message__avatar-trigger:hover,
+.chat-message__name-link:hover {
+  background: none;
+}
+
 .chat-message__avatar-trigger {
   display: block;
   border-radius: 999px;
