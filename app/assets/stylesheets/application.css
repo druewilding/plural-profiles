@@ -117,6 +117,16 @@ body {
   cursor: pointer;
 }
 
+/* Forced-colors mode (e.g. Firefox/Windows high-contrast) applies its
+   link-text color to real <a> elements but not to <button>-based
+   look-alikes like .link-button, so it's left showing our themed color
+   instead of the OS-forced one. Force it back to CanvasText to match. */
+@media (forced-colors: active) {
+  .site-header nav .link-button {
+    color: CanvasText;
+  }
+}
+
 .admin-badge {
   margin-left: 1.5rem;
   font-size: 0.7rem;
@@ -4060,6 +4070,15 @@ turbo-frame {
   font-weight: 700;
   font-size: 0.9rem;
   color: var(--heading);
+}
+
+/* Same forced-colors issue as .link-button above: the name is a <button>
+   (it opens the mini-profile popover), so forced-colors mode leaves it in
+   our themed --heading color instead of switching it to CanvasText. */
+@media (forced-colors: active) {
+  .chat-message__name-link .chat-message__name {
+    color: CanvasText;
+  }
 }
 
 .chat-message__name--deleted {
