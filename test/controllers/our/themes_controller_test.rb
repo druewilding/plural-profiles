@@ -40,7 +40,7 @@ class Our::ThemesControllerTest < ActionDispatch::IntegrationTest
     sign_in_as @user
     assert_difference("Theme.count", 1) do
       post our_themes_path, params: {
-        theme: { name: "Midnight", colors: { page_bg: "#000000", text: "#ffffff" } }
+        theme: { name: "Midnight", colors: { page_bg: "#000000", pane_text: "#ffffff" } }
       }
     end
     assert_redirected_to edit_our_theme_path(Theme.find_by!(name: "Midnight"))
@@ -50,13 +50,13 @@ class Our::ThemesControllerTest < ActionDispatch::IntegrationTest
     sign_in_as @user
     assert_difference("Theme.count", 1) do
       post our_themes_path, params: {
-        theme: { name: "Translucent", colors: { page_bg: "#00000080", text: "#ffffffcc" } }
+        theme: { name: "Translucent", colors: { page_bg: "#00000080", pane_text: "#ffffffcc" } }
       }
     end
     theme = Theme.find_by!(name: "Translucent")
     assert_redirected_to edit_our_theme_path(theme)
     assert_equal "#00000080", theme.colors["page_bg"]
-    assert_equal "#ffffffcc", theme.colors["text"]
+    assert_equal "#ffffffcc", theme.colors["pane_text"]
   end
 
   test "create rejects blank name" do
@@ -598,11 +598,21 @@ class Our::ThemesControllerTest < ActionDispatch::IntegrationTest
   test "new with JSON-imported colours populates the form" do
     sign_in_as @user
     get new_our_theme_path, params: {
-      theme: { colors: { page_bg: "#aabbcc", text: "#112233" } }
+      theme: { colors: { page_bg: "#aabbcc", pane_text: "#112233" } }
     }
     assert_response :success
     assert_match "#aabbcc", response.body
     assert_match "#112233", response.body
+  end
+
+  test "new with a legacy heading/text/link colour key populates both header and pane variants" do
+    sign_in_as @user
+    get new_our_theme_path, params: {
+      theme: { colors: { text: "#112233" } }
+    }
+    assert_response :success
+    assert_select "input[name='theme[colors][header_text]'][value='#112233']"
+    assert_select "input[name='theme[colors][pane_text]'][value='#112233']"
   end
 
   test "new with imported name uses it instead of default" do

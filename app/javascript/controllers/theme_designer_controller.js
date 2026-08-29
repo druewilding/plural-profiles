@@ -118,10 +118,10 @@ export default class extends Controller {
     if (!this.hasPreviewTarget) return
     this.previewTarget.style.setProperty(cssProp(property), value)
 
-    // Also update computed properties that depend on text.
+    // Also update computed properties that depend on pane text.
     // Percentages come from the server via derivedTextPropertiesValue so they
     // stay in sync with Theme::DERIVED_TEXT_PROPERTIES without duplication.
-    if (property === "text") {
+    if (property === "pane_text") {
       const derived = this.hasDerivedTextPropertiesValue ? this.derivedTextPropertiesValue : {}
       Object.entries(derived).forEach(([prop, percent]) => {
         this.previewTarget.style.setProperty(`--${prop}`, `color-mix(in srgb, ${value} ${percent}%, transparent)`)
@@ -140,7 +140,7 @@ export default class extends Controller {
   updateJsonOutput() {
     if (!this.hasJsonOutputTarget) return
 
-    const data = { plural_profiles_theme: 1 }
+    const data = { plural_profiles_theme: 2 }
 
     if (this.hasNameInputTarget && this.nameInputTarget.value.trim()) {
       data.name = this.nameInputTarget.value.trim()

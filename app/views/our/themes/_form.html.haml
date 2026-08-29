@@ -15,7 +15,7 @@
 
   - Theme::PROPERTY_GROUPS.each do |group_key, group_label|
     %hr.form-divider
-    %details{open: group_key == :base || nil}
+    %details{open: [:page, :header, :pane].include?(group_key) || nil}
       %summary.form-section-summary= group_label
       - Theme::THEMEABLE_PROPERTIES.select { |_, v| v[:group] == group_key }.each do |prop, meta|
         .form-group.theme-designer__color-group

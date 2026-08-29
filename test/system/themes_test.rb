@@ -279,11 +279,15 @@ class ThemesTest < ApplicationSystemTestCase
     find("textarea.import-dialog__textarea").set(css_block)
     click_button "Import"
 
-    # Should redirect to new theme page with colors pre-filled
+    # Should redirect to new theme page with colors pre-filled — the legacy
+    # --text/--link keys (from before the header/pane split) upgrade into
+    # both location-specific variants.
     assert_current_path new_our_theme_path, ignore_query: true
     assert_equal "#12345678", find("input[name='theme[colors][page_bg]'].theme-designer__hex-input").value
-    assert_equal "#aabbccdd", find("input[name='theme[colors][text]'].theme-designer__hex-input").value
-    assert_equal "#ff0000ff", find("input[name='theme[colors][link]'].theme-designer__hex-input").value
+    assert_equal "#aabbccdd", find("input[name='theme[colors][header_text]'].theme-designer__hex-input").value
+    assert_equal "#aabbccdd", find("input[name='theme[colors][pane_text]'].theme-designer__hex-input").value
+    assert_equal "#ff0000ff", find("input[name='theme[colors][header_link]'].theme-designer__hex-input").value
+    assert_equal "#ff0000ff", find("input[name='theme[colors][pane_link]'].theme-designer__hex-input").value
   end
 
   # -- Import theme via JSON --
@@ -303,10 +307,13 @@ class ThemesTest < ApplicationSystemTestCase
     find("textarea.import-dialog__textarea").set(json_block)
     click_button "Import"
 
+    # A v1 export's legacy text/link keys upgrade into both header and pane variants.
     assert_current_path new_our_theme_path, ignore_query: true
     assert_equal "#112233", find("input[name='theme[colors][page_bg]'].theme-designer__hex-input").value
-    assert_equal "#aabbcc", find("input[name='theme[colors][text]'].theme-designer__hex-input").value
-    assert_equal "#ff0000", find("input[name='theme[colors][link]'].theme-designer__hex-input").value
+    assert_equal "#aabbcc", find("input[name='theme[colors][header_text]'].theme-designer__hex-input").value
+    assert_equal "#aabbcc", find("input[name='theme[colors][pane_text]'].theme-designer__hex-input").value
+    assert_equal "#ff0000", find("input[name='theme[colors][header_link]'].theme-designer__hex-input").value
+    assert_equal "#ff0000", find("input[name='theme[colors][pane_link]'].theme-designer__hex-input").value
   end
 
   test "import JSON theme populates name on new theme page" do
@@ -364,7 +371,7 @@ class ThemesTest < ApplicationSystemTestCase
     export_text = find("textarea[data-theme-designer-target='jsonOutput']").value
     parsed = JSON.parse(export_text)
 
-    assert_equal 1, parsed["plural_profiles_theme"]
+    assert_equal 2, parsed["plural_profiles_theme"]
     assert_equal "Dark Forest", parsed["name"]
     assert_equal "#0e2e24", parsed["colors"]["page_bg"]
     assert_includes parsed["tags"], "dark"

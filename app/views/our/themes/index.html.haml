@@ -22,7 +22,7 @@
         %form{data: { action: "submit->theme-import#import" }}
           %h2 Import theme
           %p Paste a theme JSON export below (or a legacy CSS block).
-          %textarea.import-dialog__textarea{data: { "theme-import-target": "cssInput" }, rows: 12, placeholder: "{\n  \"plural_profiles_theme\": 1,\n  \"name\": \"My theme\",\n  \"colors\": { ... }\n}", spellcheck: false}
+          %textarea.import-dialog__textarea{data: { "theme-import-target": "cssInput" }, rows: 12, placeholder: "{\n  \"plural_profiles_theme\": 2,\n  \"name\": \"My theme\",\n  \"colors\": { ... }\n}", spellcheck: false}
           %p.import-dialog__error{data: { "theme-import-target": "error" }, role: "alert"}
           .import-dialog__actions
             %button.btn{type: "submit"} Import
