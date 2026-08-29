@@ -1,7 +1,7 @@
 - content_for(:title) { "Edit #{@theme.name} — Plural Profiles" }
 - content_for(:container_class, "theme-designer-container")
 
-%h1 Edit theme
+%h1.visually-hidden= "Edit #{@theme.name}"
 
 .theme-designer{data: { controller: "theme-designer", "theme-designer-derived-text-properties-value": Theme::DERIVED_TEXT_PROPERTIES.to_json }}
   .theme-designer__controls
@@ -10,7 +10,7 @@
 
     .card{data: { controller: "clipboard" }}
       %details
-        %summary Export theme
+        %summary.form-section-summary Export theme
         %p.text-muted Copy this JSON to share your theme with others.
         .form-group
           %textarea.theme-designer__css-output{readonly: true, rows: 12, data: { "theme-designer-target": "jsonOutput", "clipboard-target": "source" }}= @theme.to_export_json

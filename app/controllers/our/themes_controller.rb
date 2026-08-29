@@ -30,8 +30,7 @@ class Our::ThemesController < ApplicationController
     if params[:theme].present?
       raw_colors = params[:theme][:colors]
       if raw_colors.is_a?(ActionController::Parameters) || raw_colors.is_a?(Hash)
-        imported_colors = raw_colors.to_unsafe_h
-                            .transform_keys(&:to_s)
+        imported_colors = Theme.migrate_legacy_colors(raw_colors.to_unsafe_h.transform_keys(&:to_s))
                             .slice(*Theme::THEMEABLE_PROPERTIES.keys)
         colors.merge!(imported_colors)
       end

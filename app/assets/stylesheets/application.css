@@ -10,10 +10,13 @@
   --page-bg: #0b221b;
   --pane-bg: #133b2f;
   --header-bg: #0e2e24;
+  --header-title-text: #5ea389;
+  --header-text: #5ea389;
+  --header-link: #3ab580;
   --pane-border: #02120e;
-  --heading: #5ea389;
-  --text: #5ea389;
-  --link: #3ab580;
+  --pane-title-text: #5ea389;
+  --pane-text: #5ea389;
+  --pane-link: #3ab580;
   --spoiler: #3A3A3A;
   --primary-button-bg: #12684e;
   --primary-button-text: #4ec59a;
@@ -27,18 +30,18 @@
   --input-label: #599981;
   --input-bg: #263a2e;
   --input-border: #3c6f5f;
-  --input-text: var(--text);
+  --input-text: var(--pane-text);
   --notice-bg: var(--pane-bg);
-  --notice-border: var(--text);
-  --notice-text: var(--text);
+  --notice-border: var(--pane-text);
+  --notice-text: var(--pane-text);
   --alert-bg: #11694a;
   --alert-border: #58cc9d;
   --alert-text: var(--alert-border);
   --warning-bg: #a81d49;
   --warning-border: #e6c4cf;
   --warning-text: var(--warning-border);
-  --tree-guide: color-mix(in srgb, var(--text) 30%, transparent);
-  --avatar-placeholder-border: color-mix(in srgb, var(--text) 50%, transparent);
+  --tree-guide: color-mix(in srgb, var(--pane-text) 30%, transparent);
+  --avatar-placeholder-border: color-mix(in srgb, var(--pane-text) 50%, transparent);
 }
 
 html {
@@ -53,7 +56,7 @@ body {
   margin: 0;
   font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
   background-color: var(--page-bg);
-  color: var(--text);
+  color: var(--pane-text);
   line-height: 1.6;
   min-height: 100vh;
   display: flex;
@@ -63,6 +66,7 @@ body {
 
 .site-header {
   background-color: var(--header-bg);
+  color: var(--header-text);
   padding: 0.5rem 1.25rem;
   display: flex;
   align-items: center;
@@ -79,7 +83,7 @@ body {
 .site-header .logo {
   font-size: 1.05rem;
   font-weight: 700;
-  color: var(--heading);
+  color: var(--header-title-text);
   text-decoration: none;
   display: flex;
   align-items: center;
@@ -93,7 +97,7 @@ body {
 
 .site-header nav a,
 .site-header nav .link-button {
-  color: var(--link);
+  color: var(--header-link);
   text-decoration: none;
   margin-left: 1.5rem;
   font-size: 0.9rem;
@@ -215,7 +219,7 @@ body {
   cursor: pointer;
   font-size: 1rem;
   font-weight: 600;
-  color: var(--heading);
+  color: var(--pane-title-text);
   list-style: none;
   user-select: none;
   padding: 0.25rem 0;
@@ -272,7 +276,7 @@ details[open] > .form-section-summary::before {
 .sidebar summary {
   cursor: pointer;
   font-weight: 700;
-  color: var(--heading);
+  color: var(--pane-title-text);
   font-size: 0.85rem;
   letter-spacing: 0.05em;
   padding: 0.4rem 0.5rem;
@@ -319,15 +323,15 @@ details[open] > .form-section-summary::before {
 }
 
 .sidebar__item:hover {
-  background-color: color-mix(in srgb, var(--text) 10%, transparent);
+  background-color: color-mix(in srgb, var(--pane-text) 10%, transparent);
 }
 
 .sidebar__item--active {
-  background-color: color-mix(in srgb, var(--text) 20%, transparent);
+  background-color: color-mix(in srgb, var(--pane-text) 20%, transparent);
 }
 
 .sidebar__item--active .sidebar__link {
-  color: var(--heading);
+  color: var(--pane-title-text);
   font-weight: 600;
 }
 
@@ -346,7 +350,7 @@ details[open] > .form-section-summary::before {
 }
 
 .sidebar__link {
-  color: var(--link);
+  color: var(--pane-link);
   text-decoration: none;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -354,17 +358,17 @@ details[open] > .form-section-summary::before {
 }
 
 .sidebar__link:hover {
-  color: var(--heading);
+  color: var(--pane-title-text);
 }
 
 .sidebar__link--action {
-  color: var(--link);
+  color: var(--pane-link);
   font-size: 0.85rem;
   font-weight: 600;
 }
 
 .sidebar__link--action:hover {
-  color: var(--heading);
+  color: var(--pane-title-text);
 }
 
 /* ---- Sidebar tree ---- */
@@ -386,7 +390,7 @@ details[open] > .form-section-summary::before {
   border: none;
   padding: 0 0.2rem;
   font-size: 0.75rem;
-  color: var(--link);
+  color: var(--pane-link);
   cursor: pointer;
 }
 
@@ -459,15 +463,15 @@ details[open] > .form-section-summary::before {
 }
 
 .sidebar-tree__leaf:hover {
-  background-color: color-mix(in srgb, var(--text) 10%, transparent);
+  background-color: color-mix(in srgb, var(--pane-text) 10%, transparent);
 }
 
 .sidebar-tree__leaf--active {
-  background-color: color-mix(in srgb, var(--text) 20%, transparent);
+  background-color: color-mix(in srgb, var(--pane-text) 20%, transparent);
 }
 
 .sidebar-tree__leaf--active .sidebar-tree__label {
-  color: var(--heading);
+  color: var(--pane-title-text);
   font-weight: 600;
 }
 
@@ -492,23 +496,23 @@ details[open] > .form-section-summary::before {
 /* Higher specificity (0,2,0) to beat .sidebar summary (0,1,1) */
 .sidebar .sidebar-tree__row {
   font-weight: normal;
-  color: var(--text);
+  color: var(--pane-text);
   font-size: 0.9rem;
   letter-spacing: normal;
   padding: 0.3rem 0.4rem;
 }
 
 .sidebar-tree__row:hover {
-  background-color: color-mix(in srgb, var(--text) 10%, transparent);
+  background-color: color-mix(in srgb, var(--pane-text) 10%, transparent);
   text-decoration: none;
 }
 
 .sidebar-tree__row--active {
-  background-color: color-mix(in srgb, var(--text) 20%, transparent);
+  background-color: color-mix(in srgb, var(--pane-text) 20%, transparent);
 }
 
 .sidebar-tree__row--active .sidebar-tree__link {
-  color: var(--heading);
+  color: var(--pane-title-text);
   font-weight: 600;
 }
 
@@ -533,7 +537,7 @@ details[open] > .form-section-summary::before {
 }
 
 .sidebar-tree__link {
-  color: var(--link);
+  color: var(--pane-link);
   text-decoration: none;
   overflow: visible;
   display: flex;
@@ -544,7 +548,7 @@ details[open] > .form-section-summary::before {
 }
 
 .sidebar-tree__link:hover {
-  color: var(--heading);
+  color: var(--pane-title-text);
   text-decoration: none;
 }
 
@@ -556,7 +560,7 @@ details[open] > .form-section-summary::before {
 
 .sidebar-tree__subtitle {
   font-size: 0.75rem;
-  color: color-mix(in srgb, var(--text) 75%, transparent);
+  color: color-mix(in srgb, var(--pane-text) 75%, transparent);
   width: 100%;
   min-width: 0;
   overflow-wrap: break-word;
@@ -597,7 +601,7 @@ details[open] > .form-section-summary::before {
 }
 
 h1, h2, h3 {
-  color: var(--heading);
+  color: var(--pane-title-text);
   margin-top: 0;
 }
 
@@ -642,14 +646,14 @@ h2 { font-size: 1.4rem; }
 .subtitle {
   margin: 0 0 0.5rem;
   font-size: 0.9rem;
-  color: color-mix(in srgb, var(--text) 80%, transparent);
+  color: color-mix(in srgb, var(--pane-text) 80%, transparent);
 }
 
 .tag-line {
   margin: 0 0 0.75rem;
   font-size: 1.1rem;
   font-style: italic;
-  color: color-mix(in srgb, var(--text) 80%, transparent);
+  color: color-mix(in srgb, var(--pane-text) 80%, transparent);
 }
 
 .profile-card .tag-line {
@@ -657,7 +661,7 @@ h2 { font-size: 1.4rem; }
   padding-top: 0.5rem;
   font-style: italic;
   font-size: 1rem;
-  color: color-mix(in srgb, var(--text) 80%, transparent);
+  color: color-mix(in srgb, var(--pane-text) 80%, transparent);
   text-align: center;
 }
 
@@ -665,7 +669,7 @@ h2 a { color: inherit; }
 h2 a:hover { text-decoration: none; opacity: 0.8; }
 
 a {
-  color: var(--link);
+  color: var(--pane-link);
   text-decoration: none;
 }
 
@@ -750,7 +754,7 @@ fieldset.form-group legend {
   display: block;
   width: 100%;
   font-size: 0.8rem;
-  color: color-mix(in srgb, var(--text) 80%, transparent);
+  color: color-mix(in srgb, var(--pane-text) 80%, transparent);
 }
 
 label {
@@ -808,7 +812,7 @@ select {
 input:focus,
 textarea:focus,
 select:focus {
-  border-color: var(--link);
+  border-color: var(--pane-link);
 }
 
 /* Chrome autofill: override the forced white background */
@@ -830,7 +834,7 @@ textarea {
 }
 
 input[type="file"] {
-  color: var(--text);
+  color: var(--pane-text);
 }
 
 input[type="file"]::file-selector-button {
@@ -1019,7 +1023,7 @@ button:hover,
   font-size: 2.5rem;
   font-weight: 700;
   line-height: 1;
-  color: var(--link);
+  color: var(--pane-link);
 }
 
 .stats-card__label {
@@ -1042,11 +1046,11 @@ button:hover,
   text-align: center;
   padding: 1.5rem 1rem;
   cursor: pointer;
-  color: var(--text);
+  color: var(--pane-text);
 }
 
 .profile-card:hover {
-  color: var(--text);
+  color: var(--pane-text);
 }
 
 @media (forced-colors: active) {
@@ -1100,6 +1104,7 @@ button:hover,
 /* Profile header (show pages) — edge-to-edge banner inside .card */
 .card > .card__header {
   background-color: var(--header-bg);
+  color: var(--header-text);
   display: flex;
   align-items: center;
   flex-wrap: wrap;
@@ -1107,6 +1112,28 @@ button:hover,
   margin: -2rem -2rem 1.5rem -2rem;
   padding: 2rem;
   border-radius: 7px 7px 0 0;
+}
+
+/* Overrides the global h1/h2/h3, .subtitle, .tag-line and .pronouns rules,
+   which otherwise assume they're sitting on --pane-bg. */
+.card > .card__header h1,
+.card > .card__header h2,
+.card > .card__header h3 {
+  color: var(--header-title-text);
+}
+
+.card > .card__header .subtitle,
+.card > .card__header .tag-line,
+.card > .card__header .pronouns {
+  color: color-mix(in srgb, var(--header-text) 80%, transparent);
+}
+
+/* A link's own `color` rule always wins over an inherited one, so the
+   .subtitle/.tag-line/.pronouns override above doesn't reach an <a> nested
+   inside them — it needs its own override to pick up --header-link instead
+   of the global (--pane-link) rule. */
+.card > .card__header a {
+  color: var(--header-link);
 }
 
 .card > .card__header > .tag-line {
@@ -1332,7 +1359,7 @@ a .spoiler--revealed {
      the fallback lines above when supported. */
   background: oklch(from var(--pane-bg) l c h / 1);
   border: 1px solid var(--pane-border);
-  color: var(--text);
+  color: var(--pane-text);
   border-radius: 4px;
   padding: 2px 8px;
   box-shadow: 0 2px 6px color-mix(in srgb, var(--pane-border) 50%, transparent);
@@ -1406,8 +1433,19 @@ a .spoiler--revealed {
 .sidebar__avatar--placeholder,
 .sidebar-tree__avatar--placeholder,
 .tree__avatar--placeholder {
-  color: var(--text);
+  color: var(--pane-text);
   border: 1px solid var(--avatar-placeholder-border);
+}
+
+/* Overrides the rule above — .avatar--placeholder is the only one of these
+   ever used inside a header_bg banner (.card > .card__header,
+   .mini-profile__header), where it needs to read against --header-bg
+   instead. Reuses the same 50% mix as --avatar-placeholder-border, just
+   against the header's own text colour rather than the pane's body text. */
+.card > .card__header .avatar--placeholder,
+.mini-profile__header .avatar--placeholder {
+  color: var(--header-text);
+  border-color: color-mix(in srgb, var(--header-text) 50%, transparent);
 }
 
 .avatar--placeholder svg,
@@ -1451,7 +1489,7 @@ a .spoiler--revealed {
 .group-list-subtitle {
   display: block;
   font-size: 0.85rem;
-  color: color-mix(in srgb, var(--text) 80%, transparent);
+  color: color-mix(in srgb, var(--pane-text) 80%, transparent);
 }
 
 .pronouns {
@@ -1459,8 +1497,16 @@ a .spoiler--revealed {
   flex-wrap: wrap;
   align-items: center;
   font-style: italic;
-  color: color-mix(in srgb, var(--text) 80%, transparent);
+  color: color-mix(in srgb, var(--pane-text) 80%, transparent);
   font-size: 0.9rem;
+}
+
+/* .pronouns is a flex container, so a trailing space in a text node right
+   before another flex-item child (e.g. an inline link) collapses away —
+   same reason .heart-display__grid below carries its own margin-left
+   rather than relying on a space in the markup. */
+.pronouns a {
+  margin-left: 0.3em;
 }
 
 /* Avatar shape modifiers */
@@ -1509,7 +1555,7 @@ html:not(.js) .avatar-editor-dialog__actions {
   background-color: var(--pane-bg);
   border: 1px solid var(--pane-border);
   border-radius: 8px;
-  color: var(--text);
+  color: var(--pane-text);
   padding: 1.5rem;
   width: min(480px, 90vw);
   max-height: 90vh;
@@ -1523,7 +1569,7 @@ html:not(.js) .avatar-editor-dialog__actions {
 .avatar-editor-dialog__title {
   font-size: 1.2rem;
   font-weight: 600;
-  color: var(--heading);
+  color: var(--pane-title-text);
   margin: 0 0 1.25rem;
 }
 
@@ -1553,7 +1599,7 @@ html:not(.js) .avatar-editor-dialog__actions {
   gap: 0.4rem;
   cursor: pointer;
   font-size: 0.85rem;
-  color: var(--text);
+  color: var(--pane-text);
 }
 
 .avatar-shape-picker__option input[type="radio"] {
@@ -1584,11 +1630,11 @@ html:not(.js) .avatar-editor-dialog__actions {
 }
 
 .avatar-shape-picker__option input[type="radio"]:checked ~ .avatar-shape-picker__sample {
-  outline-color: var(--link);
+  outline-color: var(--pane-link);
 }
 
 .avatar-shape-picker__option input[type="radio"]:focus-visible ~ .avatar-shape-picker__sample {
-  outline-color: var(--link);
+  outline-color: var(--pane-link);
 }
 
 .avatar-editor-dialog__actions {
@@ -1721,14 +1767,14 @@ html:not(.js) .avatar-editor-dialog__actions {
   padding: 0.6rem 0;
   border: none;
   background: none;
-  color: var(--text);
+  color: var(--pane-text);
   cursor: pointer;
   border-radius: 4px;
   user-select: none;
 }
 
 .tree__arrow-btn:hover {
-  background-color: color-mix(in srgb, var(--text) 15%, transparent);
+  background-color: color-mix(in srgb, var(--pane-text) 15%, transparent);
 }
 
 .tree__item {
@@ -1741,7 +1787,7 @@ html:not(.js) .avatar-editor-dialog__actions {
   border: none;
   border-radius: 4px;
   background: none;
-  color: var(--text);
+  color: var(--pane-text);
   cursor: pointer;
   text-align: left;
   text-decoration: none;
@@ -1749,13 +1795,13 @@ html:not(.js) .avatar-editor-dialog__actions {
 }
 
 .tree__item:hover {
-  background-color: color-mix(in srgb, var(--text) 10%, transparent);
+  background-color: color-mix(in srgb, var(--pane-text) 10%, transparent);
   text-decoration: none;
 }
 
 .tree__item--active {
-  background-color: color-mix(in srgb, var(--text) 20%, transparent);
-  color: var(--heading);
+  background-color: color-mix(in srgb, var(--pane-text) 20%, transparent);
+  color: var(--pane-title-text);
   font-weight: 600;
 }
 
@@ -1808,7 +1854,7 @@ html:not(.js) .avatar-editor-dialog__actions {
 
 .tree__subtitle {
   font-size: 0.75rem;
-  color: color-mix(in srgb, var(--text) 75%, transparent);
+  color: color-mix(in srgb, var(--pane-text) 75%, transparent);
   min-width: 0;
   overflow-wrap: break-word;
 }
@@ -1888,7 +1934,7 @@ details[open] > .tree-editor__summary::before {
 
 .tree-editor__summary:hover,
 .tree-editor__leaf:hover {
-  background-color: color-mix(in srgb, var(--text) 10%, transparent);
+  background-color: color-mix(in srgb, var(--pane-text) 10%, transparent);
 }
 
 .tree-editor__summary .tree-editor__item-info {
@@ -1979,7 +2025,7 @@ details[open] > .tree-editor__summary::before {
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
-  color: var(--heading);
+  color: var(--pane-title-text);
 }
 
 .tree-editor__subtitle {
@@ -2005,7 +2051,7 @@ details[open] > .tree-editor__summary::before {
 }
 
 .tree-editor__hide-label {
-  color: var(--text);
+  color: var(--pane-text);
   display: inline-flex;
   align-items: center;
   gap: 0.3rem;
@@ -2035,7 +2081,7 @@ details[open] > .tree-editor__summary::before {
 
 .tag--active, .tag--default {
   background-color: color-mix(in srgb, var(--primary-button-bg) 35%, transparent);
-  color: var(--text);
+  color: var(--pane-text);
 }
 
 @media (forced-colors: active) {
@@ -2047,7 +2093,7 @@ details[open] > .tree-editor__summary::before {
 /* Descriptive tags shown on theme cards */
 .tag--theme {
   background-color: color-mix(in srgb, var(--input-border) 20%, transparent);
-  color: var(--text);
+  color: var(--pane-text);
   border: 1px solid color-mix(in srgb, var(--input-border) 50%, transparent);
 }
 
@@ -2061,7 +2107,7 @@ details[open] > .tree-editor__summary::before {
 
 .tag--filter {
   background-color: color-mix(in srgb, var(--input-border) 15%, transparent);
-  color: var(--text);
+  color: var(--pane-text);
   border: 1px solid color-mix(in srgb, var(--input-border) 40%, transparent);
   text-decoration: none;
   cursor: pointer;
@@ -2074,14 +2120,14 @@ details[open] > .tree-editor__summary::before {
 }
 
 .tag--filter-active {
-  background-color: color-mix(in srgb, var(--link) 25%, transparent);
-  color: var(--heading);
-  border-color: color-mix(in srgb, var(--link) 60%, transparent);
+  background-color: color-mix(in srgb, var(--pane-link) 25%, transparent);
+  color: var(--pane-title-text);
+  border-color: color-mix(in srgb, var(--pane-link) 60%, transparent);
   font-weight: 600;
 }
 
 .tag--filter-active:hover {
-  background-color: color-mix(in srgb, var(--link) 35%, transparent);
+  background-color: color-mix(in srgb, var(--pane-link) 35%, transparent);
 }
 
 @media (forced-colors: active) {
@@ -2123,12 +2169,12 @@ details[open] > .tree-editor__summary::before {
 /* Duplication preview tags (new copy / existing copy) */
 .tree-editor__tag--new {
   background-color: color-mix(in srgb, var(--primary-button-bg) 35%, transparent);
-  color: var(--text);
+  color: var(--pane-text);
 }
 
 .tree-editor__tag--reuse {
   background-color: color-mix(in srgb, var(--input-border) 25%, transparent);
-  color: var(--text);
+  color: var(--pane-text);
 }
 
 /* ── Save indicator ──────────────────────────────────── */
@@ -2233,7 +2279,7 @@ details[open] > .tree-editor__summary::before {
 }
 
 .metadata strong {
-  color: var(--heading);
+  color: var(--pane-title-text);
 }
 
 .metadata time {
@@ -2692,7 +2738,7 @@ input[type="submit"].btn--small,
   line-height: 1;
   font-size: 1rem;
   background-color: transparent;
-  color: var(--text);
+  color: var(--pane-text);
 }
 
 .invite-code-delete:hover {
@@ -2966,19 +3012,19 @@ h1 .heart-inline {
 
 .theme-preview {
   background-color: var(--page-bg);
-  color: var(--text);
+  color: var(--pane-text);
   border-radius: 8px;
   padding: 1.5rem;
   border: 1px solid var(--pane-border);
 }
 
 .theme-preview a {
-  color: var(--link);
+  color: var(--pane-link);
 }
 
 .theme-preview h2,
 .theme-preview h3 {
-  color: var(--heading);
+  color: var(--pane-title-text);
 }
 
 .theme-preview__section {
@@ -2996,7 +3042,8 @@ h1 .heart-inline {
 }
 
 .theme-preview__header {
-  background-color: var(--pane-bg);
+  background-color: var(--header-bg);
+  color: var(--header-text);
   border: 1px solid var(--pane-border);
   border-radius: 6px;
   padding: 0.75rem 1rem;
@@ -3007,7 +3054,7 @@ h1 .heart-inline {
 
 .theme-preview__logo {
   font-weight: 700;
-  color: var(--heading);
+  color: var(--header-title-text);
   display: flex;
   align-items: center;
   gap: 0.4rem;
@@ -3019,7 +3066,7 @@ h1 .heart-inline {
 }
 
 .theme-preview__header nav a {
-  color: var(--link);
+  color: var(--header-link);
   text-decoration: none;
   margin-left: 1rem;
   font-size: 0.9rem;
@@ -3045,7 +3092,7 @@ h1 .heart-inline {
 
 .import-dialog {
   background-color: var(--pane-bg);
-  color: var(--text);
+  color: var(--pane-text);
   border: 1px solid var(--pane-border);
   border-radius: 8px;
   padding: 2rem;
@@ -3058,7 +3105,7 @@ h1 .heart-inline {
 }
 
 .import-dialog h2 {
-  color: var(--heading);
+  color: var(--pane-title-text);
   margin-top: 0;
   margin-bottom: 0.5rem;
 }
@@ -3151,7 +3198,7 @@ h1 .heart-inline {
 
 .duplicate-comparison__description {
   font-size: 0.875rem;
-  color: var(--text);
+  color: var(--pane-text);
   opacity: 0.8;
 }
 
@@ -3235,12 +3282,12 @@ h1 .heart-inline {
 
 .filter-bar__label {
   font-size: 0.875rem;
-  color: var(--text);
+  color: var(--pane-text);
 }
 
 .filter-bar__clear {
   font-size: 0.8rem;
-  color: var(--link);
+  color: var(--pane-link);
   text-decoration: underline;
 }
 
@@ -3251,7 +3298,7 @@ h1 .heart-inline {
   padding: 0.75rem 2rem;
   text-align: center;
   font-size: 0.85rem;
-  color: var(--text);
+  color: var(--pane-text);
 }
 
 .theme-credit__name {
@@ -3259,7 +3306,7 @@ h1 .heart-inline {
 }
 
 .theme-credit a {
-  color: var(--link);
+  color: var(--pane-link);
   font-weight: bold;
 }
 
@@ -3288,7 +3335,7 @@ h1 .heart-inline {
 }
 
 .theme-row--active {
-  border-left: 3px solid var(--link);
+  border-left: 3px solid var(--pane-link);
   padding-left: calc(2rem - 3px);
 }
 
@@ -3432,16 +3479,16 @@ h1 .heart-inline {
 .action-dropdown__item {
   display: block;
   padding: 0.5rem 1rem;
-  color: var(--text);
+  color: var(--pane-text);
   text-decoration: none;
   font-size: 0.9rem;
   white-space: nowrap;
 }
 
 .action-dropdown__item:hover {
-  background-color: color-mix(in srgb, var(--text) 8%, transparent);
+  background-color: color-mix(in srgb, var(--pane-text) 8%, transparent);
   text-decoration: none;
-  color: var(--text);
+  color: var(--pane-text);
 }
 
 .action-dropdown__divider {
@@ -3592,12 +3639,12 @@ details.theme-section-card:not([open]) .theme-section-card__header {
   gap: 0.6rem;
   padding: 0.5rem 0.75rem;
   border-radius: 6px;
-  color: var(--text);
+  color: var(--pane-text);
   text-decoration: none;
 }
 
 .server-list__link:hover {
-  background-color: color-mix(in srgb, var(--text) 8%, transparent);
+  background-color: color-mix(in srgb, var(--pane-text) 8%, transparent);
 }
 
 .server-list__link .avatar {
@@ -3629,7 +3676,7 @@ details.theme-section-card:not([open]) .theme-section-card__header {
 
 .server-list__description {
   font-size: 0.85rem;
-  color: color-mix(in srgb, var(--text) 80%, transparent);
+  color: color-mix(in srgb, var(--pane-text) 80%, transparent);
   min-width: 0;
   flex: 1 1 auto;
   overflow: hidden;
@@ -3639,7 +3686,7 @@ details.theme-section-card:not([open]) .theme-section-card__header {
 
 .server-list__subtitle {
   font-size: 0.85rem;
-  color: color-mix(in srgb, var(--text) 80%, transparent);
+  color: color-mix(in srgb, var(--pane-text) 80%, transparent);
   overflow: hidden;
   white-space: nowrap;
   text-overflow: ellipsis;
@@ -3672,7 +3719,7 @@ details.theme-section-card:not([open]) .theme-section-card__header {
   height: 42px;
   flex-shrink: 0;
   border-radius: 25%;
-  color: var(--text);
+  color: var(--pane-text);
   text-decoration: none;
   border: 2px solid transparent;
 }
@@ -3697,17 +3744,17 @@ details.theme-section-card:not([open]) .theme-section-card__header {
 }
 
 .server-rail__icon:hover {
-  border-color: color-mix(in srgb, var(--text) 40%, transparent);
+  border-color: color-mix(in srgb, var(--pane-text) 40%, transparent);
 }
 
 .server-rail__icon--active {
   border-color: transparent;
-  box-shadow: 0 0 0 2px var(--pane-border), 0 0 0 4px var(--heading);
+  box-shadow: 0 0 0 2px var(--pane-border), 0 0 0 4px var(--pane-title-text);
 }
 
 .server-rail__icon--add {
-  border: 1px dashed color-mix(in srgb, var(--text) 40%, transparent);
-  color: var(--link);
+  border: 1px dashed color-mix(in srgb, var(--pane-text) 40%, transparent);
+  color: var(--pane-link);
   font-size: 1.3rem;
   text-decoration: none;
 }
@@ -3781,7 +3828,7 @@ details.theme-section-card:not([open]) .theme-section-card__header {
 .channel-pane__server-name {
   display: block;
   font-weight: 700;
-  color: var(--heading);
+  color: var(--pane-title-text);
   text-decoration: none;
   margin-bottom: 0.75rem;
 }
@@ -3795,7 +3842,7 @@ details.theme-section-card:not([open]) .theme-section-card__header {
   margin-top: 0.6rem;
   padding-left: 1.1rem;
   font-size: 0.85rem;
-  color: var(--link);
+  color: var(--pane-link);
   text-decoration: none;
 }
 
@@ -3917,14 +3964,14 @@ details.theme-section-card:not([open]) .theme-section-card__header {
   height: 32px;
   flex-shrink: 0;
   border-radius: 6px;
-  color: var(--text);
+  color: var(--pane-text);
   text-decoration: none;
   font-size: 1.5rem;
   line-height: 1;
 }
 
 .chat-channel-back:hover {
-  background-color: color-mix(in srgb, var(--text) 10%, transparent);
+  background-color: color-mix(in srgb, var(--pane-text) 10%, transparent);
 }
 
 /* Mobile (600px and below): collapse to a single pane at a time, matching
@@ -3989,7 +4036,7 @@ turbo-frame {
   align-items: center;
   gap: 0.75rem;
   padding-top: 1.5rem;
-  color: color-mix(in srgb, var(--text) 65%, transparent);
+  color: color-mix(in srgb, var(--pane-text) 65%, transparent);
   font-size: 0.76rem;
   font-weight: 700;
   text-transform: uppercase;
@@ -4069,12 +4116,12 @@ turbo-frame {
 .chat-message__name {
   font-weight: 700;
   font-size: 0.9rem;
-  color: var(--heading);
+  color: var(--pane-title-text);
 }
 
 /* Same forced-colors issue as .link-button above: the name is a <button>
    (it opens the mini-profile popover), so forced-colors mode leaves it in
-   our themed --heading color instead of switching it to CanvasText. */
+   our themed --pane-title-text color instead of switching it to CanvasText. */
 @media (forced-colors: active) {
   .chat-message__name-link .chat-message__name {
     color: CanvasText;
@@ -4085,13 +4132,13 @@ turbo-frame {
   font-style: italic;
   font-weight: 500;
   font-size: 0.9rem;
-  color: color-mix(in srgb, var(--text) 65%, transparent);
+  color: color-mix(in srgb, var(--pane-text) 65%, transparent);
 }
 
 .chat-message__pronouns,
 .chat-message__time {
   font-size: 0.76rem;
-  color: color-mix(in srgb, var(--text) 65%, transparent);
+  color: color-mix(in srgb, var(--pane-text) 65%, transparent);
 }
 
 .chat-message__pronouns {
@@ -4101,7 +4148,7 @@ turbo-frame {
 .chat-message__subtitle {
   display: block;
   font-size: 0.78rem;
-  color: color-mix(in srgb, var(--text) 75%, transparent);
+  color: color-mix(in srgb, var(--pane-text) 75%, transparent);
 }
 
 .chat-message__body {
@@ -4126,7 +4173,7 @@ turbo-frame {
   align-items: center;
   gap: 0.4rem;
   background-color: color-mix(in srgb, var(--pane-bg) 85%, var(--page-bg) 15%);
-  border: 1px solid color-mix(in srgb, var(--text) 35%, transparent);
+  border: 1px solid color-mix(in srgb, var(--pane-text) 35%, transparent);
   border-radius: 7px;
   padding: 0.3rem 0.6rem 0.3rem 0.4rem;
   font-size: 0.82rem;
@@ -4171,7 +4218,7 @@ turbo-frame {
   margin-left: 0.3rem;
   font-size: 0.78rem;
   font-style: italic;
-  color: color-mix(in srgb, var(--text) 75%, transparent);
+  color: color-mix(in srgb, var(--pane-text) 75%, transparent);
 }
 
 .profile-picker__trigger::-webkit-details-marker,
@@ -4215,7 +4262,7 @@ turbo-frame {
   border-radius: 5px;
   border: 1px solid var(--pane-border);
   background-color: var(--page-bg);
-  color: var(--text);
+  color: var(--pane-text);
   font-size: 0.85rem;
 }
 
@@ -4244,7 +4291,7 @@ turbo-frame {
    visible system color regardless of focus state, which would otherwise put
    a box around every option, focused or not. */
 .profile-picker__option:focus-visible {
-  outline: 2px solid var(--link);
+  outline: 2px solid var(--pane-link);
   outline-offset: -2px;
 }
 
@@ -4273,7 +4320,7 @@ button.profile-picker__option {
 }
 
 .profile-picker__option--current {
-  background-color: color-mix(in srgb, var(--text) 10%, transparent);
+  background-color: color-mix(in srgb, var(--pane-text) 10%, transparent);
 }
 
 .profile-picker__option-info {
@@ -4295,20 +4342,20 @@ button.profile-picker__option {
 .profile-picker__option-pronouns {
   font-size: 0.78rem;
   font-style: italic;
-  color: color-mix(in srgb, var(--text) 75%, transparent);
+  color: color-mix(in srgb, var(--pane-text) 75%, transparent);
 }
 
 .profile-picker__option-subtitle {
   display: block;
   font-size: 0.78rem;
-  color: color-mix(in srgb, var(--text) 75%, transparent);
+  color: color-mix(in srgb, var(--pane-text) 75%, transparent);
 }
 
 .profile-picker__empty {
   padding: 0.5rem 0.75rem;
   margin: 0;
   font-size: 0.85rem;
-  color: color-mix(in srgb, var(--text) 65%, transparent);
+  color: color-mix(in srgb, var(--pane-text) 65%, transparent);
 }
 
 /* Separates the profile options from the group options within the same
@@ -4322,7 +4369,7 @@ button.profile-picker__option {
   font-weight: 600;
   text-transform: uppercase;
   letter-spacing: 0.04em;
-  color: color-mix(in srgb, var(--text) 60%, transparent);
+  color: color-mix(in srgb, var(--pane-text) 60%, transparent);
 }
 
 .profile-picker__group-label:first-child {
@@ -4382,7 +4429,7 @@ button.profile-picker__option {
 .invite-card__description {
   margin: 0;
   font-size: 0.85rem;
-  color: color-mix(in srgb, var(--text) 80%, transparent);
+  color: color-mix(in srgb, var(--pane-text) 80%, transparent);
 }
 
 .invite-card__description {
@@ -4404,14 +4451,14 @@ button.profile-picker__option {
   display: inline-flex;
   align-items: center;
   gap: 0.25rem;
-  color: color-mix(in srgb, var(--text) 80%, transparent);
+  color: color-mix(in srgb, var(--pane-text) 80%, transparent);
   text-decoration: none;
   font-size: 0.85rem;
   margin-bottom: 0.75rem;
 }
 
 .back-link:hover {
-  color: var(--text);
+  color: var(--pane-text);
   text-decoration: underline;
 }
 
@@ -4422,7 +4469,7 @@ button.profile-picker__option {
 .chat-identity-intro__sub {
   display: block;
   margin-top: 0.35rem;
-  color: color-mix(in srgb, var(--text) 75%, transparent);
+  color: color-mix(in srgb, var(--pane-text) 75%, transparent);
   font-size: 0.85rem;
 }
 
@@ -4493,13 +4540,13 @@ button.profile-picker__option {
   border-radius: 999px;
   font-size: 0.78rem;
   font-weight: 600;
-  color: color-mix(in srgb, var(--text) 70%, transparent);
+  color: color-mix(in srgb, var(--pane-text) 70%, transparent);
   white-space: nowrap;
   transition: background-color 0.12s ease, color 0.12s ease;
 }
 
 .chat-identity-toggle__option-label:hover {
-  color: var(--heading);
+  color: var(--pane-title-text);
 }
 
 .chat-identity-toggle__input:checked + .chat-identity-toggle__option-label {
@@ -4508,7 +4555,7 @@ button.profile-picker__option {
 }
 
 .chat-identity-toggle__input:focus-visible + .chat-identity-toggle__option-label {
-  outline: 2px solid var(--link);
+  outline: 2px solid var(--pane-link);
   outline-offset: 2px;
 }
 
@@ -4530,8 +4577,8 @@ button.profile-picker__option {
   gap: 0.5rem;
   padding: 0.6rem 0.85rem;
   border-radius: 6px;
-  background-color: color-mix(in srgb, var(--link) 12%, transparent);
-  border: 1px solid color-mix(in srgb, var(--link) 30%, transparent);
+  background-color: color-mix(in srgb, var(--pane-link) 12%, transparent);
+  border: 1px solid color-mix(in srgb, var(--pane-link) 30%, transparent);
   font-size: 0.9rem;
 }
 
@@ -4551,7 +4598,7 @@ button.profile-picker__option {
 
 .chat-identity-field__blank {
   font-style: italic;
-  color: color-mix(in srgb, var(--text) 65%, transparent);
+  color: color-mix(in srgb, var(--pane-text) 65%, transparent);
 }
 
 .chat-identity-field__override {
@@ -4597,6 +4644,22 @@ button.profile-picker__option {
   margin: 0;
 }
 
+/* Overrides the global rules, which otherwise assume they're sitting on
+   --pane-bg — .mini-profile__header is always the header_bg banner. */
+.mini-profile__header .mini-profile__name {
+  color: var(--header-title-text);
+}
+
+.mini-profile__header .subtitle,
+.mini-profile__header .tag-line,
+.mini-profile__header .pronouns {
+  color: color-mix(in srgb, var(--header-text) 80%, transparent);
+}
+
+.mini-profile__header a {
+  color: var(--header-link);
+}
+
 /* Edge-to-edge banner, same technique as .card > .card__header — the
    negative margin equals whichever ancestor's own padding it needs to
    counteract, since the real popover and the settings-page preview wrap
@@ -4640,7 +4703,7 @@ button.profile-picker__option {
 .mini-profile__name {
   margin: 0;
   font-size: 1.1rem;
-  color: var(--heading);
+  color: var(--pane-title-text);
 }
 
 .mini-profile__description {
@@ -4679,7 +4742,7 @@ button.profile-picker__option {
   /* The [popover] UA stylesheet also defaults color to CanvasText — without
      overriding it here too, anything inside that doesn't set its own color
      (e.g. .profile-description) inherits that instead of the theme. */
-  color: var(--text);
+  color: var(--pane-text);
   border: 1px solid var(--pane-border);
   border-radius: 10px;
   box-shadow: 0 8px 24px color-mix(in srgb, var(--pane-border) 60%, transparent);

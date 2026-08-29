@@ -79,18 +79,30 @@ class Theme < ApplicationRecord
   end
 
   # The CSS custom properties that can be themed, mapped to their default values.
-  # Properties that reference other variables (e.g. --heading: var(--text)) are
-  # resolved to the concrete colour they point to so the colour picker always
+  # Properties that reference other variables (e.g. --input-text: var(--pane-text))
+  # are resolved to the concrete colour they point to so the colour picker always
   # starts with a hex value.
+  #
+  # Every text colour is paired with the specific background it's meant to sit
+  # on (header_* vs pane_*) rather than shared across both — a colour that
+  # only ever appears on one background can't accidentally vanish against the
+  # other. See LEGACY_COLOR_ALIASES for the pre-split heading/text/link keys
+  # this replaced.
   THEMEABLE_PROPERTIES = {
-    "page_bg"                 => { label: "Page background",           default: "#0b221b", group: :base    },
-    "header_bg"               => { label: "Pane header background",    default: "#0e2e24", group: :base    },
-    "pane_bg"                 => { label: "Pane background",           default: "#133b2f", group: :base    },
-    "pane_border"             => { label: "Pane border",               default: "#02120e", group: :base    },
-    "heading"                 => { label: "Headings",                  default: "#5ea389", group: :base    },
-    "text"                    => { label: "Text",                      default: "#5ea389", group: :base    },
-    "link"                    => { label: "Links",                     default: "#3ab580", group: :base    },
-    "spoiler"                 => { label: "Spoiler background",        default: "#3A3A3A", group: :base    },
+    "page_bg"                 => { label: "Page background",           default: "#0b221b", group: :page    },
+
+    "header_bg"               => { label: "Header background",         default: "#0e2e24", group: :header  },
+    "header_title_text"       => { label: "Header title text",         default: "#5ea389", group: :header  },
+    "header_text"             => { label: "Header text",               default: "#5ea389", group: :header  },
+    "header_link"             => { label: "Header links",              default: "#3ab580", group: :header  },
+
+    "pane_bg"                 => { label: "Pane background",           default: "#133b2f", group: :pane    },
+    "pane_border"             => { label: "Pane border",               default: "#02120e", group: :pane    },
+    "pane_title_text"         => { label: "Pane title text",           default: "#5ea389", group: :pane    },
+    "pane_text"               => { label: "Pane text",                 default: "#5ea389", group: :pane    },
+    "pane_link"               => { label: "Pane links",                default: "#3ab580", group: :pane    },
+    "spoiler"                 => { label: "Spoiler background",        default: "#3A3A3A", group: :pane    },
+
     "primary_button_bg"       => { label: "Main button background",    default: "#12684e", group: :buttons },
     "primary_button_text"     => { label: "Main button text",          default: "#4ec59a", group: :buttons },
     "primary_button_border"   => { label: "Main button border",        default: "#4ec59a", group: :buttons },
@@ -116,10 +128,24 @@ class Theme < ApplicationRecord
   }.freeze
 
   PROPERTY_GROUPS = {
-    base:    "Base colours",
+    page:    "Page",
+    header:  "Header",
+    pane:    "Pane",
     forms:   "Form controls",
     buttons: "Buttons",
     flash:   "Flash messages"
+  }.freeze
+
+  # Maps each pre-location-split colour key to the new key(s) it was folded
+  # into, so a colour used on both the header and the pane keeps working the
+  # same way it always did until someone edits the theme. Applied whenever a
+  # colours hash might still be in the old shape: importing a v1 JSON export,
+  # pasting a legacy CSS :root { } block, or reading a not-yet-migrated
+  # database row. New-key values, if already present, always win.
+  LEGACY_COLOR_ALIASES = {
+    "heading" => %w[header_title_text pane_title_text],
+    "text"    => %w[header_text pane_text],
+    "link"    => %w[header_link pane_link]
   }.freeze
 
   # CSS custom properties that are derived from the theme's text colour at render
@@ -131,11 +157,25 @@ class Theme < ApplicationRecord
     "avatar-placeholder-border" => 50
   }.freeze
 
-  SWATCH_PROPERTIES = %w[page_bg pane_bg heading link primary_button_bg].freeze
+  SWATCH_PROPERTIES = %w[page_bg pane_bg pane_title_text pane_link primary_button_bg].freeze
 
   # Returns the colour for a property, falling back to the default
   def color_for(property)
     colors&.dig(property.to_s) || THEMEABLE_PROPERTIES.dig(property.to_s, :default)
+  end
+
+  # Upgrades a colours hash that may still use the pre-location-split keys
+  # (heading/text/link) into the current schema. See LEGACY_COLOR_ALIASES.
+  def self.migrate_legacy_colors(colors)
+    return colors unless colors.is_a?(Hash)
+
+    migrated = colors.dup
+    LEGACY_COLOR_ALIASES.each do |old_key, new_keys|
+      next unless colors.key?(old_key)
+
+      new_keys.each { |new_key| migrated[new_key] ||= colors[old_key] }
+    end
+    migrated
   end
 
   def swatch_colors
@@ -144,20 +184,20 @@ class Theme < ApplicationRecord
 
   # Generates a CSS string of custom property overrides
   def to_css_properties
-    text_color = color_for("text")
+    text_color = color_for("pane_text")
     # --tree-guide and --avatar-placeholder-border are declared on :root as
-    # color-mix(in srgb, var(--text) …).  Per the CSS custom properties spec
+    # color-mix(in srgb, var(--pane-text) …).  Per the CSS custom properties spec
     # (https://www.w3.org/TR/css-variables-1/#syntax), a custom property's value
-    # is inherited as an *unresolved* token sequence, so var(--text) inside the
-    # inherited value ought to re-resolve against each element's own --text.
-    # In practice, in every tested browser (Chromium ≥119, Firefox ≥120,
-    # Safari ≥17) color-mix() containing a var() reference inside a custom
+    # is inherited as an *unresolved* token sequence, so var(--pane-text) inside
+    # the inherited value ought to re-resolve against each element's own
+    # --pane-text. In practice, in every tested browser (Chromium ≥119, Firefox
+    # ≥120, Safari ≥17) color-mix() containing a var() reference inside a custom
     # property value is resolved at the element where the property is *declared*
     # (:root), not re-resolved at each inheriting element.  As a result,
-    # overriding --text on body via inline style does not update the
+    # overriding --pane-text on body via inline style does not update the
     # already-resolved --tree-guide value that descendants inherit from :root.
     # We work around this by emitting an explicit, pre-resolved value here,
-    # substituting the concrete theme colour in place of var(--text).
+    # substituting the concrete theme colour in place of var(--pane-text).
     derived = DERIVED_TEXT_PROPERTIES.map { |css_prop, percent|
       "--#{css_prop}: color-mix(in srgb, #{text_color} #{percent}%, transparent);"
     }
@@ -195,11 +235,17 @@ class Theme < ApplicationRecord
     ].join(" ")
   end
 
+  # The plural_profiles_theme version marker in exported JSON. Bump this
+  # whenever THEMEABLE_PROPERTIES keys are renamed or restructured, and add
+  # the old shape to import_attributes_from_json's upgrade path (see
+  # LEGACY_COLOR_ALIASES for the v1 -> v2 header/pane text-colour split).
+  CURRENT_EXPORT_VERSION = 2
+
   # Returns a hash representation of the theme suitable for JSON export.
   # Includes all non-image theme data; background image is excluded.
   def to_export_hash
     {
-      plural_profiles_theme: 1,
+      plural_profiles_theme: CURRENT_EXPORT_VERSION,
       name: name,
       colors: colors,
       tags: tags,
@@ -222,11 +268,13 @@ class Theme < ApplicationRecord
   # Unknown keys are silently ignored; values are validated against allowed lists.
   def self.import_attributes_from_json(json_string)
     data = JSON.parse(json_string)
-    raise "Not a Plural Profiles theme" unless data.is_a?(Hash) && data["plural_profiles_theme"] == 1
+    version = data.is_a?(Hash) ? data["plural_profiles_theme"] : nil
+    raise "Not a Plural Profiles theme" unless version.is_a?(Integer)
+    raise "Unsupported theme version: #{version}" unless version.between?(1, CURRENT_EXPORT_VERSION)
 
     attrs = {}
     attrs[:name] = data["name"] if data["name"].present?
-    attrs[:colors] = data["colors"].slice(*THEMEABLE_PROPERTIES.keys) if data["colors"].is_a?(Hash)
+    attrs[:colors] = migrate_legacy_colors(data["colors"]).slice(*THEMEABLE_PROPERTIES.keys) if data["colors"].is_a?(Hash)
     attrs[:tags] = (data["tags"] & TAGS.keys) if data["tags"].is_a?(Array)
     attrs[:credit] = data["credit"] if data.key?("credit")
     attrs[:credit_url] = data["credit_url"] if data.key?("credit_url")

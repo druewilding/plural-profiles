@@ -3,17 +3,15 @@
 -# updated live by the theme-designer Stimulus controller.
 
 .theme-preview__section
-  %h2 Theme preview
-
-.theme-preview__section
   .card
     .card__header
       .avatar.avatar--placeholder{aria: {hidden: "true"}}
         = render "shared/plural_pride_logo"
       %div
-        %h2 Heading
-        %p.pronouns example text
-    %p This is a pane with background and border. Here is a #{link_to "sample link", "#"} in a sentence.
+        %h2 Header title text
+        %p.pronouns Header text, #{link_to "header link", "#"}
+    %h3 Pane title text
+    %p Pane text, #{link_to "pane link", "#"}
     %p
       Here is some text with a
       %span.spoiler.spoiler--revealed{aria: {expanded: "true"}} spoiler revealed
@@ -22,7 +20,6 @@
       element.
 
 .theme-preview__section
-  %h3 Profile card
   .profile-grid
     .card.profile-card
       .avatar.avatar--large.avatar--placeholder
@@ -56,7 +53,6 @@
 
 %br
 .theme-preview__section
-  %h3 Flash messages
   .flash.flash--notice This is a notice message.
   .flash.flash--alert This is an alert message.
   .flash.flash--warning This is a warning message.

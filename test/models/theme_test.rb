@@ -48,7 +48,7 @@ class ThemeTest < ActiveSupport::TestCase
     css = theme.to_css_properties
     assert_includes css, "--page-bg: #0e2e24;"
     assert_includes css, "--pane-bg: #133b2f;"
-    assert_includes css, "--link: #3ab580;"
+    assert_includes css, "--pane-link: #3ab580;"
   end
 
   test "to_css_properties includes derived tree-guide and avatar-placeholder-border using theme text color" do
@@ -56,7 +56,7 @@ class ThemeTest < ActiveSupport::TestCase
     # if to_css_properties accidentally falls back to the default instead of the
     # theme's overridden value.  Expected percentages come from the single source
     # of truth (DERIVED_TEXT_PROPERTIES) so the test stays in sync automatically.
-    theme = Theme.new(user: users(:one), name: "Custom text", colors: { "text" => "#abcdef" })
+    theme = Theme.new(user: users(:one), name: "Custom text", colors: { "pane_text" => "#abcdef" })
     css = theme.to_css_properties
     Theme::DERIVED_TEXT_PROPERTIES.each do |css_prop, percent|
       assert_includes css, "--#{css_prop}: color-mix(in srgb, #abcdef #{percent}%, transparent);"
@@ -73,7 +73,9 @@ class ThemeTest < ActiveSupport::TestCase
 
   test "THEMEABLE_PROPERTIES covers all expected groups" do
     groups = Theme::THEMEABLE_PROPERTIES.values.map { |v| v[:group] }.uniq
-    assert_includes groups, :base
+    assert_includes groups, :page
+    assert_includes groups, :header
+    assert_includes groups, :pane
     assert_includes groups, :forms
     assert_includes groups, :buttons
     assert_includes groups, :flash
@@ -87,7 +89,7 @@ class ThemeTest < ActiveSupport::TestCase
   end
 
   test "accepts 8-digit hex colors with alpha" do
-    theme = Theme.new(user: users(:one), name: "Eight digit", colors: { page_bg: "#12345678", text: "#aabbccdd" })
+    theme = Theme.new(user: users(:one), name: "Eight digit", colors: { page_bg: "#12345678", pane_text: "#aabbccdd" })
     assert theme.valid?, theme.errors.full_messages.inspect
   end
 
@@ -119,22 +121,22 @@ class ThemeTest < ActiveSupport::TestCase
     theme = Theme.new(
       user: users(:one),
       name: "Alpha theme",
-      colors: { page_bg: "#12345678", text: "#aabbccff" }
+      colors: { page_bg: "#12345678", pane_text: "#aabbccff" }
     )
     css = theme.to_css
     assert_includes css, "--page-bg: #12345678;"
-    assert_includes css, "--text: #aabbccff;"
+    assert_includes css, "--pane-text: #aabbccff;"
   end
 
   test "to_css_properties includes 8-digit hex with alpha" do
     theme = Theme.new(
       user: users(:one),
       name: "Alpha inline",
-      colors: { page_bg: "#00000080", link: "#ff0000ff" }
+      colors: { page_bg: "#00000080", pane_link: "#ff0000ff" }
     )
     css = theme.to_css_properties
     assert_includes css, "--page-bg: #00000080;"
-    assert_includes css, "--link: #ff0000ff;"
+    assert_includes css, "--pane-link: #ff0000ff;"
   end
 
   # -- Tags --
@@ -372,7 +374,7 @@ class ThemeTest < ActiveSupport::TestCase
   test "to_export_hash includes expected keys" do
     theme = themes(:dark_forest)
     hash = theme.to_export_hash
-    assert_equal 1, hash[:plural_profiles_theme]
+    assert_equal 2, hash[:plural_profiles_theme]
     assert_equal "Dark Forest", hash[:name]
     assert_kind_of Hash, hash[:colors]
     assert_equal "#0e2e24", hash[:colors]["page_bg"]
@@ -384,7 +386,7 @@ class ThemeTest < ActiveSupport::TestCase
   test "to_export_hash omits nil values via compact" do
     theme = Theme.new(user: users(:one), name: "Minimal", colors: { "page_bg" => "#000000" })
     hash = theme.to_export_hash
-    assert_equal 1, hash[:plural_profiles_theme]
+    assert_equal 2, hash[:plural_profiles_theme]
     assert_equal "Minimal", hash[:name]
     assert_not hash.key?(:credit)
     assert_not hash.key?(:credit_url)
@@ -408,7 +410,7 @@ class ThemeTest < ActiveSupport::TestCase
     theme = themes(:dark_forest)
     json = theme.to_export_json
     parsed = JSON.parse(json)
-    assert_equal 1, parsed["plural_profiles_theme"]
+    assert_equal 2, parsed["plural_profiles_theme"]
     assert_equal "Dark Forest", parsed["name"]
     assert_equal "#0e2e24", parsed["colors"]["page_bg"]
   end
@@ -417,9 +419,9 @@ class ThemeTest < ActiveSupport::TestCase
 
   test "import_attributes_from_json parses valid JSON correctly" do
     json = {
-      plural_profiles_theme: 1,
+      plural_profiles_theme: 2,
       name: "Imported",
-      colors: { page_bg: "#112233", text: "#aabbcc" },
+      colors: { page_bg: "#112233", pane_text: "#aabbcc" },
       tags: [ "dark", "cool-colours" ],
       credit: "Test Author",
       credit_url: "https://example.com",
@@ -432,7 +434,7 @@ class ThemeTest < ActiveSupport::TestCase
 
     attrs = Theme.import_attributes_from_json(json)
     assert_equal "Imported", attrs[:name]
-    assert_equal({ "page_bg" => "#112233", "text" => "#aabbcc" }, attrs[:colors])
+    assert_equal({ "page_bg" => "#112233", "pane_text" => "#aabbcc" }, attrs[:colors])
     assert_equal [ "dark", "cool-colours" ], attrs[:tags]
     assert_equal "Test Author", attrs[:credit]
     assert_equal "https://example.com", attrs[:credit_url]
@@ -441,6 +443,25 @@ class ThemeTest < ActiveSupport::TestCase
     assert_equal "cover", attrs[:background_size]
     assert_equal "top", attrs[:background_position]
     assert_equal "fixed", attrs[:background_attachment]
+  end
+
+  test "import_attributes_from_json upgrades legacy heading/text/link colours to header/pane variants" do
+    json = {
+      plural_profiles_theme: 1,
+      colors: { page_bg: "#112233", heading: "#111111", text: "#222222", link: "#333333" }
+    }.to_json
+
+    attrs = Theme.import_attributes_from_json(json)
+    assert_equal "#112233", attrs[:colors]["page_bg"]
+    assert_equal "#111111", attrs[:colors]["header_title_text"]
+    assert_equal "#111111", attrs[:colors]["pane_title_text"]
+    assert_equal "#222222", attrs[:colors]["header_text"]
+    assert_equal "#222222", attrs[:colors]["pane_text"]
+    assert_equal "#333333", attrs[:colors]["header_link"]
+    assert_equal "#333333", attrs[:colors]["pane_link"]
+    assert_not attrs[:colors].key?("heading")
+    assert_not attrs[:colors].key?("text")
+    assert_not attrs[:colors].key?("link")
   end
 
   test "import_attributes_from_json raises on invalid JSON" do
@@ -455,6 +476,20 @@ class ThemeTest < ActiveSupport::TestCase
       Theme.import_attributes_from_json('{"name": "No version"}')
     end
     assert_match(/Not a Plural Profiles theme/, error.message)
+  end
+
+  test "import_attributes_from_json raises on an unsupported future version" do
+    error = assert_raises(RuntimeError) do
+      Theme.import_attributes_from_json({ plural_profiles_theme: 99, name: "Future" }.to_json)
+    end
+    assert_match(/Unsupported theme version: 99/, error.message)
+  end
+
+  test "migrate_legacy_colors upgrades heading/text/link without clobbering existing new keys" do
+    colors = { "heading" => "#111111", "pane_title_text" => "#existing" }
+    migrated = Theme.migrate_legacy_colors(colors)
+    assert_equal "#existing", migrated["pane_title_text"]
+    assert_equal "#111111", migrated["header_title_text"]
   end
 
   test "import_attributes_from_json ignores unknown keys" do
