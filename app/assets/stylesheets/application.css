@@ -1128,6 +1128,14 @@ button:hover,
   color: color-mix(in srgb, var(--header-text) 80%, transparent);
 }
 
+/* A link's own `color` rule always wins over an inherited one, so the
+   .subtitle/.tag-line/.pronouns override above doesn't reach an <a> nested
+   inside them — it needs its own override to pick up --header-link instead
+   of the global (--pane-link) rule. */
+.card > .card__header a {
+  color: var(--header-link);
+}
+
 .card > .card__header > .tag-line {
   flex-basis: 100%;
   margin: -0.5rem 0 0;
@@ -1491,6 +1499,14 @@ a .spoiler--revealed {
   font-style: italic;
   color: color-mix(in srgb, var(--pane-text) 80%, transparent);
   font-size: 0.9rem;
+}
+
+/* .pronouns is a flex container, so a trailing space in a text node right
+   before another flex-item child (e.g. an inline link) collapses away —
+   same reason .heart-display__grid below carries its own margin-left
+   rather than relying on a space in the markup. */
+.pronouns a {
+  margin-left: 0.3em;
 }
 
 /* Avatar shape modifiers */
@@ -4638,6 +4654,10 @@ button.profile-picker__option {
 .mini-profile__header .tag-line,
 .mini-profile__header .pronouns {
   color: color-mix(in srgb, var(--header-text) 80%, transparent);
+}
+
+.mini-profile__header a {
+  color: var(--header-link);
 }
 
 /* Edge-to-edge banner, same technique as .card > .card__header — the
