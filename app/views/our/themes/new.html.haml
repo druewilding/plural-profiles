@@ -1,6 +1,8 @@
 - content_for(:title) { "New theme — Plural Profiles" }
 - content_for(:container_class, "theme-designer-container")
 
+%h1.visually-hidden New theme
+
 .theme-designer{data: { controller: "theme-designer", "theme-designer-derived-text-properties-value": Theme::DERIVED_TEXT_PROPERTIES.to_json }}
   .theme-designer__controls
     .card
