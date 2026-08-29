@@ -1441,11 +1441,11 @@ a .spoiler--revealed {
    ever used inside a header_bg banner (.card > .card__header,
    .mini-profile__header), where it needs to read against --header-bg
    instead. Reuses the same 50% mix as --avatar-placeholder-border, just
-   against the header's title colour rather than the pane's body text. */
+   against the header's own text colour rather than the pane's body text. */
 .card > .card__header .avatar--placeholder,
 .mini-profile__header .avatar--placeholder {
-  color: var(--header-title-text);
-  border-color: color-mix(in srgb, var(--header-title-text) 50%, transparent);
+  color: var(--header-text);
+  border-color: color-mix(in srgb, var(--header-text) 50%, transparent);
 }
 
 .avatar--placeholder svg,
