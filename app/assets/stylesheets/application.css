@@ -1429,6 +1429,17 @@ a .spoiler--revealed {
   border: 1px solid var(--avatar-placeholder-border);
 }
 
+/* Overrides the rule above — .avatar--placeholder is the only one of these
+   ever used inside a header_bg banner (.card > .card__header,
+   .mini-profile__header), where it needs to read against --header-bg
+   instead. Reuses the same 50% mix as --avatar-placeholder-border, just
+   against the header's title colour rather than the pane's body text. */
+.card > .card__header .avatar--placeholder,
+.mini-profile__header .avatar--placeholder {
+  color: var(--header-title-text);
+  border-color: color-mix(in srgb, var(--header-title-text) 50%, transparent);
+}
+
 .avatar--placeholder svg,
 .sidebar__avatar--placeholder svg,
 .sidebar-tree__avatar--placeholder svg,
