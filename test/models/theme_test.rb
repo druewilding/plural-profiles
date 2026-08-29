@@ -482,7 +482,7 @@ class ThemeTest < ActiveSupport::TestCase
     error = assert_raises(RuntimeError) do
       Theme.import_attributes_from_json({ plural_profiles_theme: 99, name: "Future" }.to_json)
     end
-    assert_match(/Not a Plural Profiles theme/, error.message)
+    assert_match(/Unsupported theme version: 99/, error.message)
   end
 
   test "migrate_legacy_colors upgrades heading/text/link without clobbering existing new keys" do

@@ -269,7 +269,8 @@ class Theme < ApplicationRecord
   def self.import_attributes_from_json(json_string)
     data = JSON.parse(json_string)
     version = data.is_a?(Hash) ? data["plural_profiles_theme"] : nil
-    raise "Not a Plural Profiles theme" unless version.is_a?(Integer) && version.between?(1, CURRENT_EXPORT_VERSION)
+    raise "Not a Plural Profiles theme" unless version.is_a?(Integer)
+    raise "Unsupported theme version: #{version}" unless version.between?(1, CURRENT_EXPORT_VERSION)
 
     attrs = {}
     attrs[:name] = data["name"] if data["name"].present?
