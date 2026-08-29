@@ -26,7 +26,7 @@
 
   %hr.form-divider
   %details
-    %summary Background image
+    %summary.form-section-summary Background image
     .form-group
       = form.label :background_image, "Background image (JPG, PNG, or WebP, up to 2 MB)"
       = form.file_field :background_image, accept: "image/jpeg, image/png, image/webp",
@@ -66,7 +66,7 @@
 
   %hr.form-divider
   %details
-    %summary Tags
+    %summary.form-section-summary Tags
     = hidden_field_tag "theme[tags][]", ""
     .checkbox-list
       - Theme::TAGS.each do |value, label|
@@ -77,7 +77,7 @@
 
   %hr.form-divider
   %details
-    %summary Share theme
+    %summary.form-section-summary Share theme
     - if Current.user.admin?
       .form-group
         %label.checkbox-label

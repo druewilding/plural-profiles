@@ -8,7 +8,7 @@
 
     .card{data: { controller: "clipboard" }}
       %details
-        %summary Export theme
+        %summary.form-section-summary Export theme
         %p.text-muted Copy this JSON to share your theme with others.
         .form-group
           %textarea.theme-designer__css-output{readonly: true, rows: 12, data: { "theme-designer-target": "jsonOutput", "clipboard-target": "source" }}= @theme.to_export_json
